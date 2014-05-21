@@ -1,13 +1,15 @@
 package me.Christian.pack;
 
 
-
-
-
+import me.Christian.other.OtherStuff;
 import me.Christian.threads.Thread_GetWeather;
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -17,13 +19,17 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 public class Main extends Application{
+	public static Label calendar, town, weathericonlabel;
+	public static ImageView Light_Head;
 	public static ImageView Light1_Button1;
 	public static ImageView Light1_Button2;
-	public static Text Light1_Text;
+	public static Text Light1_Text, Light_HeadText;
 	public static ImageView Light1_Lock;
 	public static ImageView Light1_Lockcross;
 	public static ImageView Light1_State1, Light1_State2, Light1_State3;
 	public static final String City = "Schweinfurt";
+	StringProperty title = new SimpleStringProperty();
+	public static boolean Weatherinit = false;
 	
 	public static void main(String[] args) {
 		Thread_GetWeather.StartCheck(City);
@@ -41,7 +47,47 @@ public class Main extends Application{
 		imgView.setFitWidth(1100);
 		imgView.setFitHeight(625);
 		root.getChildren().add(imgView);
-
+		
+	
+        
+		new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+            	update();
+            }
+        }.start();
+        
+        calendar = new Label(OtherStuff.TheNormalTime());
+        calendar.setLayoutX(20);
+        calendar.setLayoutY(20);
+        calendar.setFont(Font.font(java.awt.Font.SERIF, 18));
+		root.getChildren().add(calendar);
+		
+		town = new Label(Main.City + ", " + Thread_GetWeather.degree + "°C");
+		town.setLayoutX(198);
+		town.setLayoutY(20);
+		town.setFont(Font.font(java.awt.Font.SERIF, 18));
+		root.getChildren().add(town);
+		
+		weathericonlabel = new Label("");
+		weathericonlabel.setLayoutX(330);
+		weathericonlabel.setLayoutY(8);
+		weathericonlabel.setFont(Font.font(java.awt.Font.SERIF, 18));
+		root.getChildren().add(weathericonlabel);
+		
+		Light_Head = new ImageView(new Image("B12.png"));
+		Light_Head.setLayoutX(60);
+		Light_Head.setScaleX(1.9);
+		Light_Head.setLayoutY(72);
+		root.getChildren().add(Light_Head);
+		
+		Light_HeadText = new Text();
+		Light_HeadText.setText("Lichtsteuerung");
+		Light_HeadText.setLayoutX(41);
+		Light_HeadText.setLayoutY(99);
+		Light_HeadText.setFont(Font.font(java.awt.Font.SERIF, 20));
+		root.getChildren().add(Light_HeadText);
+		
 		Light1_Button1 = new ImageView(new Image("B12.png"));
 		Light1_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Light1_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -132,7 +178,21 @@ public class Main extends Application{
 		primaryStage.setScene(new Scene(root, 1024, 600));
 		primaryStage.show();
 	}
+
+
+	protected void update() {
+		calendar.setText(OtherStuff.TheNormalTime());	
+		if(Thread_GetWeather.weathericon != null && !Weatherinit){
+			resetweather();
+			Weatherinit = true;
+		}
+	}
 	
+	public void resetweather(){
+		weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
+		town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
+	}
+
 	public static void SetState(ImageView img1, ImageView img2, ImageView img3, int state){
 		if(state == 0){
 			img1.setVisible(true);

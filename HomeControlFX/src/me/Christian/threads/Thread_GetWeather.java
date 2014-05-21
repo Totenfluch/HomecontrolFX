@@ -8,9 +8,9 @@ import java.net.URL;
 
 public class Thread_GetWeather implements Runnable {
 	
-	public static String City;
-	public static int degree;
-	public static String weathericon; 
+	public static String City = "Fetching..";
+	public static int degree = 0;
+	public static String weathericon = null; 
 	
 	public void run() {
 		URL url = null;

@@ -9,7 +9,7 @@ public class OtherStuff {
 	public static String TheNormalTime(){
 		Calendar cal = Calendar.getInstance();
 		cal.getTime();
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss / dd.MM.yyyy");
+		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy - HH:mm:ss - ");
 		String time = sdf.format(cal.getTime());
 		String currenttime =  time ;
 		return currenttime;
