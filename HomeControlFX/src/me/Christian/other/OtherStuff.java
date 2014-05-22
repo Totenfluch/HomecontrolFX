@@ -14,7 +14,15 @@ public class OtherStuff {
 		String currenttime =  time ;
 		return currenttime;
 	}
-	
+	public static String TheSimpleNormalTime(){
+		Calendar cal = Calendar.getInstance();
+		cal.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+		String time = sdf.format(cal.getTime());
+		String currenttime =  time ;
+		return currenttime;
+	}
+
 	public static void openwebsite(String url){
 		try {
 			Desktop dt = Desktop.getDesktop();
@@ -25,5 +33,5 @@ public class OtherStuff {
 			e.printStackTrace();
 		}
 	}
-	
+
 }

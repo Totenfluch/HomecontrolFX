@@ -14,7 +14,7 @@ public class Server implements Runnable
 	@SuppressWarnings("rawtypes")
 	public static Hashtable outputStreams = new Hashtable();
 	//private boolean AcceptSocket = true;
-	
+
 	public static void startServer( int port ) throws IOException {
 		portz = port;
 		(new Thread(new Server())).start();
@@ -64,28 +64,28 @@ public class Server implements Runnable
 				} catch (BadLocationException e1) {
 					e1.printStackTrace();
 				}*/
-			
-				
-				DataOutputStream dout = null;
-				try {
-					dout = new DataOutputStream( s.getOutputStream() );
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				Server.reply(s, "You are connected to Homecontrol-Server-1");
-					
-			
-				outputStreams.put( s, dout );
-				new ServerThread( this, s );
+
+
+			DataOutputStream dout = null;
+			try {
+				dout = new DataOutputStream( s.getOutputStream() );
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			Server.reply(s, "You are connected to Homecontrol-Server-1");
+
+
+			outputStreams.put( s, dout );
+			new ServerThread( this, s );
 		}
-	
-	
+	}
+
+
 	@SuppressWarnings("rawtypes")
 	static Enumeration getOutputStreams() {
 		return outputStreams.elements();
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public static void sendToAll( String message ) {
 		synchronized( outputStreams ) {

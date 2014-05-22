@@ -4,6 +4,5 @@
 	<classpathentry kind="lib" path="C:/Program Files/Java/jre8/lib/ext/jfxrt.jar"/>
 	<classpathentry kind="src" path="res"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Program Files/eclipse/dependencies/jsch-0.1.51.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

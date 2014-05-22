@@ -2,9 +2,14 @@ package me.Christian.pack;
 
 
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+
+import javax.swing.Timer;
 
 import me.Christian.networking.Server;
 import me.Christian.other.OtherStuff;
@@ -19,6 +24,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -26,22 +32,28 @@ import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class Main extends Application{
+	public static boolean Testbuild = false;
+	
+	public static TextArea Console;
 	public static Label calendar, town, weathericonlabel;
 	public static ImageView Light_Head, Music_Head;
 	public static ImageView Music_prev, Music_next, Music_pause, Music_play;
 	public static Slider Music_Slider;
-	public static ImageView Light1_Button1, Light2_Button1, Light3_Button1;
-	public static ImageView Light1_Button2, Light2_Button2, Light3_Button2;
-	public static Text Light1_Text, Light_HeadText, Light2_Text, Light3_Text, Music_Title;
+	public static ImageView Light1_Button1, Light2_Button1, Light3_Button1, Console_Button1;
+	public static ImageView Light1_Button2, Light2_Button2, Light3_Button2, Console_Button2;
+	public static Text Light1_Text, Light_HeadText, Light2_Text, Light3_Text, Music_Title, Music_HeadText, Console_ButtonText;
 	public static ImageView Light1_Lock, Light2_Lock, Light3_Lock;
 	public static ImageView Light1_Lockcross, Light2_Lockcross, Light3_Lockcross;
 	public static ImageView Light1_State1, Light1_State2, Light1_State3, Light2_State1, Light2_State2, Light2_State3, Light3_State1, Light3_State2, Light3_State3;
 	public static String currenttitle = "Feting Title...";
 	public static String volume;
 	public static final String City = "Schweinfurt";
+	private static Timer MpcRefreshTimer;
 	StringProperty title = new SimpleStringProperty();
+
 	public static boolean Weatherinit = false;
 
 	public static void main(String[] args) {
@@ -52,7 +64,16 @@ public class Main extends Application{
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
+		MpcRefreshTimer = new Timer(2000, new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				RefreshMpc();
+			}
+		});
+		if(!Testbuild){
+			MpcRefreshTimer.start();
+		}
 		launch(args);
 	}
 
@@ -60,7 +81,12 @@ public class Main extends Application{
 		primaryStage.setTitle("Homecontrol");
 
 		primaryStage.setResizable(false);
-
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent event) {
+				System.exit(0);
+			}
+		});;
 		Pane root = new Pane();
 
 		ImageView imgView = new ImageView(new Image("438120.jpg"));
@@ -258,7 +284,7 @@ public class Main extends Application{
 		Light2_State3.setFitWidth(35);
 		Light2_State3.setVisible(false);
 		root.getChildren().add(Light2_State3);
-		
+
 		// Button3
 		Light3_Button1 = new ImageView(new Image("B12.png"));
 		Light3_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -335,16 +361,79 @@ public class Main extends Application{
 		Light3_State3.setVisible(false);
 		root.getChildren().add(Light3_State3);
 
+
+		// Console
+		Console = new TextArea();
+		Console.setPrefSize(250, 400);
+		Console.setLayoutX(500);
+		Console.setLayoutY(130);
+		Console.setWrapText(true);
+		Console.setEditable(false);
+		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
+		Console.textProperty().addListener(new ChangeListener<Object>() {
+			@Override
+			public void changed(ObservableValue<?> observable, Object oldValue,
+					Object newValue) {
+				Console.setScrollTop(Double.MIN_VALUE);
+			}
+		});
+		root.getChildren().add(Console);
+		System.setOut(new PrintStream(System.out) {
+			public void println(String s) {
+				Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
+			}
+		});
+		
+		// Console Toggle
+		Console_Button1 = new ImageView(new Image("iB12.png"));
+		Console_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Console_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Console_Button1.getOnMousePressed();
+		Console_Button1.getOnMouseReleased();
+		Console_Button1.setLayoutX(585);
+		Console_Button1.setLayoutY(80);
+		root.getChildren().add(Console_Button1);
+
+		Console_Button2 = new ImageView(new Image("iB3.png"));
+		Console_Button2.setLayoutX(585);
+		Console_Button2.setLayoutY(80);
+		Console_Button2.setVisible(false);
+		root.getChildren().add(Console_Button2);
+		
+		Console_ButtonText = new Text();
+		Console_ButtonText.setText("Toggle");
+		Console_ButtonText.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Console_ButtonText.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Console_ButtonText.getOnMousePressed();
+		Console_ButtonText.getOnMouseReleased();
+		Console_ButtonText.getOnMousePressed();
+		Console_ButtonText.setFont(Font.font(java.awt.Font.SERIF, 18));
+		Console_ButtonText.setLayoutX(675);
+		Console_ButtonText.setLayoutY(105);
+		root.getChildren().add(Console_ButtonText);
 		
 		// Music
-		
+		Music_Head = new ImageView(new Image("iB12.png"));
+		Music_Head.setLayoutX(809);
+		Music_Head.setScaleX(1.9);
+		Music_Head.setLayoutY(72);
+		root.getChildren().add(Music_Head);
+
+		Music_HeadText = new Text();
+		Music_HeadText.setText("Musiksteuerung");
+		Music_HeadText.setLayoutX(860);
+		Music_HeadText.setLayoutY(99);
+		Music_HeadText.setFont(Font.font(java.awt.Font.SERIF, 20));
+		root.getChildren().add(Music_HeadText);
+
+
 		Music_Title = new Text();
 		Music_Title.setText(currenttitle);
-		Music_Title.setFont(Font.font(java.awt.Font.SERIF, 9));
-		Music_Title.setLayoutX(850);
-		Music_Title.setLayoutY(130);
+		Music_Title.setFont(Font.font(java.awt.Font.SERIF, 14));
+		Music_Title.setLayoutX(800);
+		Music_Title.setLayoutY(135);
 		root.getChildren().add(Music_Title);
-		
+
 		Music_Slider = new Slider();
 		Music_Slider.setMin(0);
 		Music_Slider.setMax(100);
@@ -356,18 +445,18 @@ public class Main extends Application{
 		Music_Slider.setLayoutX(860);
 		Music_Slider.setLayoutY(200);
 		Music_Slider.valueProperty().addListener(new ChangeListener<Number>() {
-            public void changed(ObservableValue<? extends Number> ov,
-                Number old_val, Number new_val) {
-            	int volume = (int) Math.floor(new_val.doubleValue());
-            	try {
+			public void changed(ObservableValue<? extends Number> ov,
+					Number old_val, Number new_val) {
+				int volume = (int) Math.floor(new_val.doubleValue());
+				try {
 					Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h 192.168.11.205 volume " + volume});
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-            }
-        });
+			}
+		});
 		root.getChildren().add(Music_Slider);
-		
+
 		Music_prev = new ImageView(new Image("prev.png"));
 		Music_prev.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Music_prev.getOnMouseReleased();
@@ -377,7 +466,7 @@ public class Main extends Application{
 		Music_prev.setFitWidth(35);
 		Music_prev.setVisible(true);
 		root.getChildren().add(Music_prev);
-		
+
 		Music_pause = new ImageView(new Image("pause.png"));
 		Music_pause.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Music_pause.getOnMouseReleased();
@@ -387,7 +476,7 @@ public class Main extends Application{
 		Music_pause.setFitWidth(35);
 		Music_pause.setVisible(true);
 		root.getChildren().add(Music_pause);
-		
+
 		Music_play = new ImageView(new Image("play.png"));
 		Music_play.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Music_play.getOnMouseReleased();
@@ -397,7 +486,7 @@ public class Main extends Application{
 		Music_play.setFitWidth(35);
 		Music_play.setVisible(true);
 		root.getChildren().add(Music_play);
-		
+
 		Music_next = new ImageView(new Image("next.png"));
 		Music_next.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Music_next.getOnMouseReleased();
@@ -407,8 +496,8 @@ public class Main extends Application{
 		Music_next.setFitWidth(35);
 		Music_next.setVisible(true);
 		root.getChildren().add(Music_next);
-		
-		
+
+
 		primaryStage.setScene(new Scene(root, 1024, 600));
 		primaryStage.show();
 	}
@@ -445,7 +534,32 @@ public class Main extends Application{
 		}
 	}
 
+	public static void RefreshMpc(){
+		try {
+			String[] commands = {"bash","-c","mpc -h 192.168.11.205"};
+			Runtime rt = Runtime.getRuntime();
+			Process proc = rt.exec(commands);
+			BufferedReader stdInput = new BufferedReader(new 
+					InputStreamReader(proc.getInputStream()));
 
+			BufferedReader stdError = new BufferedReader(new 
+					InputStreamReader(proc.getErrorStream()));
+			String s = null;
+			int line = 0;
+			while ((s = stdInput.readLine()) != null) {
+				if(line == 0){
+					currenttitle = s;
+					Music_Title.setText(currenttitle);
+				}else if (line == 2){
+					volume = s;
+				}
+				line++;
+			}
+			while ((s = stdError.readLine()) != null) {System.out.println(s);}
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+	}
 	class MyEventHandler implements EventHandler<MouseEvent> {
 
 		@Override
@@ -529,109 +643,130 @@ public class Main extends Application{
 				}
 			}
 			if(e.getSource() == Music_next){
-            	try {
+				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 next"};
 					Runtime rt = Runtime.getRuntime();
 					Process proc = rt.exec(commands);
-			        BufferedReader stdInput = new BufferedReader(new 
-			                InputStreamReader(proc.getInputStream()));
+					BufferedReader stdInput = new BufferedReader(new 
+							InputStreamReader(proc.getInputStream()));
 
-			        BufferedReader stdError = new BufferedReader(new 
-			                InputStreamReader(proc.getErrorStream()));
-			           String s = null;
-			           int line = 0;
-			           while ((s = stdInput.readLine()) != null) {
-			        	   if(line == 0){
-			        		   currenttitle = s;
-			        		   Music_Title.setText(currenttitle);
-			        	   }else if (line == 2){
-			        		   volume = s;
-			        	   }
-			        	   line++;
-			           }
-			           while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					BufferedReader stdError = new BufferedReader(new 
+							InputStreamReader(proc.getErrorStream()));
+					String s = null;
+					int line = 0;
+					while ((s = stdInput.readLine()) != null) {
+						if(line == 0){
+							currenttitle = s;
+							Music_Title.setText(currenttitle);
+						}else if (line == 2){
+							volume = s;
+						}
+						line++;
+					}
+					while ((s = stdError.readLine()) != null) {System.out.println(s);}
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
 			}
 			if(e.getSource() == Music_prev){
-            	try {
+				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 prev"};
 					Runtime rt = Runtime.getRuntime();
 					Process proc = rt.exec(commands);
-			        BufferedReader stdInput = new BufferedReader(new 
-			                InputStreamReader(proc.getInputStream()));
+					BufferedReader stdInput = new BufferedReader(new 
+							InputStreamReader(proc.getInputStream()));
 
-			        BufferedReader stdError = new BufferedReader(new 
-			                InputStreamReader(proc.getErrorStream()));
-			           String s = null;
-			           int line = 0;
-			           while ((s = stdInput.readLine()) != null) {
-			        	   if(line == 0){
-			        		   currenttitle = s;
-			        		   Music_Title.setText(currenttitle);
-			        	   }else if (line == 2){
-			        		   volume = s;
-			        	   }
-			        	   line++;
-			           }
-			           while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					BufferedReader stdError = new BufferedReader(new 
+							InputStreamReader(proc.getErrorStream()));
+					String s = null;
+					int line = 0;
+					while ((s = stdInput.readLine()) != null) {
+						if(line == 0){
+							currenttitle = s;
+							Music_Title.setText(currenttitle);
+						}else if (line == 2){
+							volume = s;
+						}
+						line++;
+					}
+					while ((s = stdError.readLine()) != null) {System.out.println(s);}
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
 			}
 			if(e.getSource() == Music_pause){
-            	try {
+				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 pause"};
 					Runtime rt = Runtime.getRuntime();
 					Process proc = rt.exec(commands);
-			        BufferedReader stdInput = new BufferedReader(new 
-			                InputStreamReader(proc.getInputStream()));
+					BufferedReader stdInput = new BufferedReader(new 
+							InputStreamReader(proc.getInputStream()));
 
-			        BufferedReader stdError = new BufferedReader(new 
-			                InputStreamReader(proc.getErrorStream()));
-			           String s = null;
-			           int line = 0;
-			           while ((s = stdInput.readLine()) != null) {
-			        	   if(line == 0){
-			        		   currenttitle = s;
-			        		   Music_Title.setText(currenttitle);
-			        	   }else if (line == 2){
-			        		   volume = s;
-			        	   }
-			        	   line++;
-			           }
-			           while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					BufferedReader stdError = new BufferedReader(new 
+							InputStreamReader(proc.getErrorStream()));
+					String s = null;
+					int line = 0;
+					while ((s = stdInput.readLine()) != null) {
+						if(line == 0){
+							currenttitle = s;
+							Music_Title.setText(currenttitle);
+						}else if (line == 2){
+							volume = s;
+						}
+						line++;
+					}
+					while ((s = stdError.readLine()) != null) {System.out.println(s);}
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
 			}
 			if(e.getSource() == Music_play){
-            	try {
+				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 play"};
 					Runtime rt = Runtime.getRuntime();
 					Process proc = rt.exec(commands);
-			        BufferedReader stdInput = new BufferedReader(new 
-			                InputStreamReader(proc.getInputStream()));
+					BufferedReader stdInput = new BufferedReader(new 
+							InputStreamReader(proc.getInputStream()));
 
-			        BufferedReader stdError = new BufferedReader(new 
-			                InputStreamReader(proc.getErrorStream()));
-			           String s = null;
-			           int line = 0;
-			           while ((s = stdInput.readLine()) != null) {
-			        	   if(line == 0){
-			        		   currenttitle = s;
-			        		   Music_Title.setText(currenttitle);
-			        	   }else if (line == 2){
-			        		   volume = s;
-			        	   }
-			        	   line++;
-			           }
-			           while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					BufferedReader stdError = new BufferedReader(new 
+							InputStreamReader(proc.getErrorStream()));
+					String s = null;
+					int line = 0;
+					while ((s = stdInput.readLine()) != null) {
+						if(line == 0){
+							currenttitle = s;
+							Music_Title.setText(currenttitle);
+						}else if (line == 2){
+							volume = s;
+						}
+						line++;
+					}
+					while ((s = stdError.readLine()) != null) {System.out.println(s);}
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
 			}
+			if(e.getSource() == Console_Button1 || e.getSource() == Console_ButtonText){
+				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
+					System.out.println("Released & Triggered Console Toggle");
+					Console_Button2.setVisible(false);
+					Console_Button1.setVisible(true);
+					if(Console.isVisible()){
+						Console.setVisible(false);
+					}else{
+						Console.setVisible(true);
+					}
+					Console_ButtonText.setLayoutX(Console_ButtonText.getLayoutX()+12);
+					Console_ButtonText.setLayoutY(Console_ButtonText.getLayoutY()-10);
+				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
+					System.out.println("Pressed Console Toggle");
+					Console_Button1.setVisible(false);
+					Console_Button2.setVisible(true);
+					Console_ButtonText.setLayoutX(Console_ButtonText.getLayoutX()-12);
+					Console_ButtonText.setLayoutY(Console_ButtonText.getLayoutY()+10);
+				}
+			}
+			
 		}
 
 	}
