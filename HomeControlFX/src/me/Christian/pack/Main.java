@@ -11,6 +11,11 @@ import java.io.PrintStream;
 
 import javax.swing.Timer;
 
+import com.pi4j.device.piface.PiFace;
+import com.pi4j.device.piface.PiFaceRelay;
+import com.pi4j.device.piface.impl.PiFaceDevice;
+import com.pi4j.wiringpi.Spi;
+
 import me.Christian.networking.Server;
 import me.Christian.other.OtherStuff;
 import me.Christian.threads.Thread_GetWeather;
@@ -36,7 +41,7 @@ import javafx.stage.WindowEvent;
 
 public class Main extends Application{
 	public static boolean Testbuild = true;
-	
+
 	public static TextArea Console;
 	public static Label calendar, town, weathericonlabel;
 	public static ImageView Light_Head, Music_Head;
@@ -53,7 +58,7 @@ public class Main extends Application{
 	public static final String City = "Schweinfurt";
 	private static Timer MpcRefreshTimer;
 	StringProperty title = new SimpleStringProperty();
-
+	static PiFace piface = null;
 	public static boolean Weatherinit = false;
 
 	public static void main(String[] args) {
@@ -61,6 +66,9 @@ public class Main extends Application{
 		Thread_GetWeather.StartCheck(City);
 		try {
 			Server.startServer( port );
+			if(!Testbuild){
+				piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
+			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -383,7 +391,7 @@ public class Main extends Application{
 				Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
 			}
 		});
-		
+
 		// Console Toggle
 		Console_Button1 = new ImageView(new Image("iB12.png"));
 		Console_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -399,7 +407,7 @@ public class Main extends Application{
 		Console_Button2.setLayoutY(80);
 		Console_Button2.setVisible(false);
 		root.getChildren().add(Console_Button2);
-		
+
 		Console_ButtonText = new Text();
 		Console_ButtonText.setText("Toggle");
 		Console_ButtonText.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -411,7 +419,7 @@ public class Main extends Application{
 		Console_ButtonText.setLayoutX(675);
 		Console_ButtonText.setLayoutY(105);
 		root.getChildren().add(Console_ButtonText);
-		
+
 		// Music
 		Music_Head = new ImageView(new Image("iB12.png"));
 		Music_Head.setLayoutX(809);
@@ -579,6 +587,25 @@ public class Main extends Application{
 					Light1_Button1.setVisible(true);
 					Light1_Text.setLayoutX(Light1_Text.getLayoutX()-12);
 					Light1_Text.setLayoutY(Light1_Text.getLayoutY()-10);
+					if(GuiVariables.Light1_State == 0){
+						if(!Testbuild){
+							piface.getRelay(PiFaceRelay.K0).close();
+						}
+						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
+						GuiVariables.Light1_State = 1;
+					}else if(GuiVariables.Light1_State == 1){
+						if(!Testbuild){
+							piface.getRelay(PiFaceRelay.K0).open();
+						}
+						SetState(Light1_State1, Light1_State2, Light1_State3, 2);
+						GuiVariables.Light1_State = 2;
+					}else if(GuiVariables.Light1_State == 2){
+						if(!Testbuild){
+							piface.getRelay(PiFaceRelay.K0).close();
+						}
+						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
+						GuiVariables.Light1_State = 1;
+					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					System.out.println("Pressed Light1_Button");
 					Light1_Button1.setVisible(false);
@@ -605,6 +632,25 @@ public class Main extends Application{
 					Light2_Button1.setVisible(true);
 					Light2_Text.setLayoutX(Light2_Text.getLayoutX()-12);
 					Light2_Text.setLayoutY(Light2_Text.getLayoutY()-10);
+					if(GuiVariables.Light2_State == 0){
+						if(!Testbuild){
+							piface.getRelay(PiFaceRelay.K1).close();
+						}
+						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
+						GuiVariables.Light2_State = 1;
+					}else if(GuiVariables.Light2_State == 1){
+						if(!Testbuild){
+							piface.getRelay(PiFaceRelay.K1).open();
+						}
+						SetState(Light2_State1, Light2_State2, Light2_State3, 2);
+						GuiVariables.Light2_State = 2;
+					}else if(GuiVariables.Light2_State == 2){
+						if(!Testbuild){
+							piface.getRelay(PiFaceRelay.K1).close();
+						}
+						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
+						GuiVariables.Light2_State = 1;
+					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					System.out.println("Pressed Light2_Button");
 					Light2_Button1.setVisible(false);
@@ -653,30 +699,30 @@ public class Main extends Application{
 			if(e.getSource() == Music_next){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_next.setOpacity(1);
-				try {
-					String[] commands = {"bash","-c","mpc -h 192.168.11.205 next"};
-					Runtime rt = Runtime.getRuntime();
-					Process proc = rt.exec(commands);
-					BufferedReader stdInput = new BufferedReader(new 
-							InputStreamReader(proc.getInputStream()));
+					try {
+						String[] commands = {"bash","-c","mpc -h 192.168.11.205 next"};
+						Runtime rt = Runtime.getRuntime();
+						Process proc = rt.exec(commands);
+						BufferedReader stdInput = new BufferedReader(new 
+								InputStreamReader(proc.getInputStream()));
 
-					BufferedReader stdError = new BufferedReader(new 
-							InputStreamReader(proc.getErrorStream()));
-					String s = null;
-					int line = 0;
-					while ((s = stdInput.readLine()) != null) {
-						if(line == 0){
-							currenttitle = s;
-							Music_Title.setText(currenttitle);
-						}else if (line == 2){
-							volume = s;
+						BufferedReader stdError = new BufferedReader(new 
+								InputStreamReader(proc.getErrorStream()));
+						String s = null;
+						int line = 0;
+						while ((s = stdInput.readLine()) != null) {
+							if(line == 0){
+								currenttitle = s;
+								Music_Title.setText(currenttitle);
+							}else if (line == 2){
+								volume = s;
+							}
+							line++;
 						}
-						line++;
+						while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					} catch (IOException e2) {
+						e2.printStackTrace();
 					}
-					while ((s = stdError.readLine()) != null) {System.out.println(s);}
-				} catch (IOException e2) {
-					e2.printStackTrace();
-				}
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_next.setOpacity(0.5);
 				}
@@ -684,30 +730,30 @@ public class Main extends Application{
 			if(e.getSource() == Music_prev){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_prev.setOpacity(1);
-				try {
-					String[] commands = {"bash","-c","mpc -h 192.168.11.205 prev"};
-					Runtime rt = Runtime.getRuntime();
-					Process proc = rt.exec(commands);
-					BufferedReader stdInput = new BufferedReader(new 
-							InputStreamReader(proc.getInputStream()));
+					try {
+						String[] commands = {"bash","-c","mpc -h 192.168.11.205 prev"};
+						Runtime rt = Runtime.getRuntime();
+						Process proc = rt.exec(commands);
+						BufferedReader stdInput = new BufferedReader(new 
+								InputStreamReader(proc.getInputStream()));
 
-					BufferedReader stdError = new BufferedReader(new 
-							InputStreamReader(proc.getErrorStream()));
-					String s = null;
-					int line = 0;
-					while ((s = stdInput.readLine()) != null) {
-						if(line == 0){
-							currenttitle = s;
-							Music_Title.setText(currenttitle);
-						}else if (line == 2){
-							volume = s;
+						BufferedReader stdError = new BufferedReader(new 
+								InputStreamReader(proc.getErrorStream()));
+						String s = null;
+						int line = 0;
+						while ((s = stdInput.readLine()) != null) {
+							if(line == 0){
+								currenttitle = s;
+								Music_Title.setText(currenttitle);
+							}else if (line == 2){
+								volume = s;
+							}
+							line++;
 						}
-						line++;
+						while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					} catch (IOException e2) {
+						e2.printStackTrace();
 					}
-					while ((s = stdError.readLine()) != null) {System.out.println(s);}
-				} catch (IOException e2) {
-					e2.printStackTrace();
-				}
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_prev.setOpacity(0.5);
 				}
@@ -715,30 +761,30 @@ public class Main extends Application{
 			if(e.getSource() == Music_pause){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_pause.setOpacity(1);
-				try {
-					String[] commands = {"bash","-c","mpc -h 192.168.11.205 pause"};
-					Runtime rt = Runtime.getRuntime();
-					Process proc = rt.exec(commands);
-					BufferedReader stdInput = new BufferedReader(new 
-							InputStreamReader(proc.getInputStream()));
+					try {
+						String[] commands = {"bash","-c","mpc -h 192.168.11.205 pause"};
+						Runtime rt = Runtime.getRuntime();
+						Process proc = rt.exec(commands);
+						BufferedReader stdInput = new BufferedReader(new 
+								InputStreamReader(proc.getInputStream()));
 
-					BufferedReader stdError = new BufferedReader(new 
-							InputStreamReader(proc.getErrorStream()));
-					String s = null;
-					int line = 0;
-					while ((s = stdInput.readLine()) != null) {
-						if(line == 0){
-							currenttitle = s;
-							Music_Title.setText(currenttitle);
-						}else if (line == 2){
-							volume = s;
+						BufferedReader stdError = new BufferedReader(new 
+								InputStreamReader(proc.getErrorStream()));
+						String s = null;
+						int line = 0;
+						while ((s = stdInput.readLine()) != null) {
+							if(line == 0){
+								currenttitle = s;
+								Music_Title.setText(currenttitle);
+							}else if (line == 2){
+								volume = s;
+							}
+							line++;
 						}
-						line++;
+						while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					} catch (IOException e2) {
+						e2.printStackTrace();
 					}
-					while ((s = stdError.readLine()) != null) {System.out.println(s);}
-				} catch (IOException e2) {
-					e2.printStackTrace();
-				}
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_pause.setOpacity(0.5);
 				}
@@ -746,30 +792,30 @@ public class Main extends Application{
 			if(e.getSource() == Music_play){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_play.setOpacity(1);
-				try {
-					String[] commands = {"bash","-c","mpc -h 192.168.11.205 play"};
-					Runtime rt = Runtime.getRuntime();
-					Process proc = rt.exec(commands);
-					BufferedReader stdInput = new BufferedReader(new 
-							InputStreamReader(proc.getInputStream()));
+					try {
+						String[] commands = {"bash","-c","mpc -h 192.168.11.205 play"};
+						Runtime rt = Runtime.getRuntime();
+						Process proc = rt.exec(commands);
+						BufferedReader stdInput = new BufferedReader(new 
+								InputStreamReader(proc.getInputStream()));
 
-					BufferedReader stdError = new BufferedReader(new 
-							InputStreamReader(proc.getErrorStream()));
-					String s = null;
-					int line = 0;
-					while ((s = stdInput.readLine()) != null) {
-						if(line == 0){
-							currenttitle = s;
-							Music_Title.setText(currenttitle);
-						}else if (line == 2){
-							volume = s;
+						BufferedReader stdError = new BufferedReader(new 
+								InputStreamReader(proc.getErrorStream()));
+						String s = null;
+						int line = 0;
+						while ((s = stdInput.readLine()) != null) {
+							if(line == 0){
+								currenttitle = s;
+								Music_Title.setText(currenttitle);
+							}else if (line == 2){
+								volume = s;
+							}
+							line++;
 						}
-						line++;
+						while ((s = stdError.readLine()) != null) {System.out.println(s);}
+					} catch (IOException e2) {
+						e2.printStackTrace();
 					}
-					while ((s = stdError.readLine()) != null) {System.out.println(s);}
-				} catch (IOException e2) {
-					e2.printStackTrace();
-				}
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_play.setOpacity(0.5);
 				}
@@ -794,7 +840,7 @@ public class Main extends Application{
 					Console_ButtonText.setLayoutY(Console_ButtonText.getLayoutY()+10);
 				}
 			}
-			
+
 		}
 
 	}
