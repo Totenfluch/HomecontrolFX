@@ -35,7 +35,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 public class Main extends Application{
-	public static boolean Testbuild = false;
+	public static boolean Testbuild = true;
 	
 	public static TextArea Console;
 	public static Label calendar, town, weathericonlabel;
@@ -439,7 +439,7 @@ public class Main extends Application{
 		Music_Slider.setMax(100);
 		Music_Slider.setValue(55);
 		Music_Slider.setShowTickLabels(true);
-		Music_Slider.setMajorTickUnit(50);
+		Music_Slider.setMajorTickUnit(25);
 		Music_Slider.setMinorTickCount(5);
 		Music_Slider.setBlockIncrement(10);
 		Music_Slider.setLayoutX(860);
@@ -459,7 +459,9 @@ public class Main extends Application{
 
 		Music_prev = new ImageView(new Image("prev.png"));
 		Music_prev.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Music_prev.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_prev.getOnMouseReleased();
+		Music_prev.getOnMousePressed();
 		Music_prev.setLayoutX(850);
 		Music_prev.setLayoutY(150);
 		Music_prev.setFitHeight(35);
@@ -469,7 +471,9 @@ public class Main extends Application{
 
 		Music_pause = new ImageView(new Image("pause.png"));
 		Music_pause.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Music_pause.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_pause.getOnMouseReleased();
+		Music_pause.getOnMousePressed();
 		Music_pause.setLayoutX(890);
 		Music_pause.setLayoutY(150);
 		Music_pause.setFitHeight(35);
@@ -479,7 +483,9 @@ public class Main extends Application{
 
 		Music_play = new ImageView(new Image("play.png"));
 		Music_play.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Music_play.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_play.getOnMouseReleased();
+		Music_play.getOnMousePressed();
 		Music_play.setLayoutX(930);
 		Music_play.setLayoutY(150);
 		Music_play.setFitHeight(35);
@@ -489,7 +495,9 @@ public class Main extends Application{
 
 		Music_next = new ImageView(new Image("next.png"));
 		Music_next.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Music_next.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_next.getOnMouseReleased();
+		Music_prev.getOnMousePressed();
 		Music_next.setLayoutX(970);
 		Music_next.setLayoutY(150);
 		Music_next.setFitHeight(35);
@@ -643,6 +651,8 @@ public class Main extends Application{
 				}
 			}
 			if(e.getSource() == Music_next){
+				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
+					Music_next.setOpacity(1);
 				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 next"};
 					Runtime rt = Runtime.getRuntime();
@@ -667,8 +677,13 @@ public class Main extends Application{
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
+				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
+					Music_next.setOpacity(0.5);
+				}
 			}
 			if(e.getSource() == Music_prev){
+				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
+					Music_prev.setOpacity(1);
 				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 prev"};
 					Runtime rt = Runtime.getRuntime();
@@ -693,8 +708,13 @@ public class Main extends Application{
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
+				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
+					Music_prev.setOpacity(0.5);
+				}
 			}
 			if(e.getSource() == Music_pause){
+				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
+					Music_pause.setOpacity(1);
 				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 pause"};
 					Runtime rt = Runtime.getRuntime();
@@ -719,8 +739,13 @@ public class Main extends Application{
 				} catch (IOException e2) {
 					e2.printStackTrace();
 				}
+				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
+					Music_pause.setOpacity(0.5);
+				}
 			}
 			if(e.getSource() == Music_play){
+				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
+					Music_play.setOpacity(1);
 				try {
 					String[] commands = {"bash","-c","mpc -h 192.168.11.205 play"};
 					Runtime rt = Runtime.getRuntime();
@@ -744,6 +769,9 @@ public class Main extends Application{
 					while ((s = stdError.readLine()) != null) {System.out.println(s);}
 				} catch (IOException e2) {
 					e2.printStackTrace();
+				}
+				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
+					Music_play.setOpacity(0.5);
 				}
 			}
 			if(e.getSource() == Console_Button1 || e.getSource() == Console_ButtonText){
