@@ -147,6 +147,7 @@ public class Main extends Application{
 					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_06),
 					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_07),
 			};
+			
 			// Disable all output pins
 			gpio.setState(false, myOutputs);
 
@@ -179,7 +180,12 @@ public class Main extends Application{
 		Pane root = new Pane();
 		
 		// Background
-		ImageView imgView = new ImageView(new Image("438120.jpg"));
+		ImageView imgView = null;
+		if(!Testbuild){
+			imgView = new ImageView(new Image("438120.jpg"));
+		}else{
+			imgView = new ImageView(new Image("testbuild.png"));
+		}
 		imgView.setFitWidth(1100);
 		imgView.setFitHeight(625);
 		root.getChildren().add(imgView);
