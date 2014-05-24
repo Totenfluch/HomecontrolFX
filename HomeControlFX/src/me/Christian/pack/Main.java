@@ -14,6 +14,14 @@ import javax.swing.Timer;
 import com.pi4j.device.piface.PiFace;
 import com.pi4j.device.piface.PiFaceRelay;
 import com.pi4j.device.piface.impl.PiFaceDevice;
+import com.pi4j.gpio.extension.piface.PiFaceGpioProvider;
+import com.pi4j.gpio.extension.piface.PiFacePin;
+import com.pi4j.io.gpio.GpioController;
+import com.pi4j.io.gpio.GpioFactory;
+import com.pi4j.io.gpio.GpioPinDigitalInput;
+import com.pi4j.io.gpio.GpioPinDigitalOutput;
+import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
+import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.wiringpi.Spi;
 
 import me.Christian.networking.Server;
@@ -58,20 +66,26 @@ public class Main extends Application{
 	public static final String City = "Schweinfurt";
 	private static Timer MpcRefreshTimer;
 	StringProperty title = new SimpleStringProperty();
-	static PiFace piface = null;
+	public static PiFace piface = null;
+	public static GpioController gpio = null;
+	public static PiFaceGpioProvider gpioProvider = null;
 	public static boolean Weatherinit = false;
 
+	public static GpioPinDigitalOutput oPin0, oPin1, oPin2, oPin3, oPin4, oPin5, oPin6, oPin7;
+	public static GpioPinDigitalInput iPin0, iPin1, iPin2, iPin3, iPin4, iPin5, iPin6, iPin7;
+
 	public static void main(String[] args) {
+		// Integer for Server
 		int port = Integer.parseInt("9977");
+		// Get the weather from thread
 		Thread_GetWeather.StartCheck(City);
+		// Start Server for mobile app & slave Pi's
 		try {
 			Server.startServer( port );
-			if(!Testbuild){
-				piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
-			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		// build Refresh of music title
 		MpcRefreshTimer = new Timer(2000, new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
@@ -80,15 +94,82 @@ public class Main extends Application{
 			}
 		});
 		if(!Testbuild){
+			// Start Refresh
 			MpcRefreshTimer.start();
+			try {
+				// Setup Piface instances
+				gpio = GpioFactory.getInstance();
+				gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
+				piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+
+			// Set up all Input Pins in an array
+			GpioPinDigitalInput myInputs[] = {
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_00),
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_01),
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_02),
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_03),
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_04),
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_05),
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_06),
+					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_07)
+			};
+
+			//  Get them as single variable
+			iPin0 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_00);
+			iPin1 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_01);
+			iPin2 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_02);
+			iPin3 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_03);
+			iPin4 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_04);
+			iPin5 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_05);
+			iPin6 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_06);
+			iPin7 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_07);
+
+			// Set up Listener if a Input Pin changes
+			gpio.addListener(new GpioPinListenerDigital() {
+				@Override
+				public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+					System.out.println(OtherStuff.TheSimpleNormalTime() + " Input Pin changed: " + event.getPin() + " = "
+							+ event.getState());
+				}
+			}, myInputs);
+
+			// Set up all Output Pins in an array
+			GpioPinDigitalOutput myOutputs[] = { 
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_00),
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_01),
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_02),
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_03),
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_04),
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_05),
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_06),
+					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_07),
+			};
+			// Disable all output pins
+			gpio.setState(false, myOutputs);
+
+			// Set up all Output Pins as single variable
+			oPin0 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_00);
+			oPin1 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_01);
+			oPin2 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_02);
+			oPin3 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_03);
+			oPin4 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_04);
+			oPin5 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_05);
+			oPin6 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_06);
+			oPin7 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_07);
 		}
+		// start GUI
 		launch(args);
 	}
 
 	public void start(Stage primaryStage) {
+		// name the window
 		primaryStage.setTitle("Homecontrol");
-
 		primaryStage.setResizable(false);
+		
+		// Exit the programm on window close
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent event) {
@@ -96,52 +177,59 @@ public class Main extends Application{
 			}
 		});;
 		Pane root = new Pane();
-
+		
+		// Background
 		ImageView imgView = new ImageView(new Image("438120.jpg"));
 		imgView.setFitWidth(1100);
 		imgView.setFitHeight(625);
 		root.getChildren().add(imgView);
 
 
-
+		// Refresh timer for labels ect.
 		new AnimationTimer() {
 			@Override
 			public void handle(long now) {
 				update();
 			}
 		}.start();
-
+		
+		// Date & time
 		calendar = new Label(OtherStuff.TheNormalTime());
 		calendar.setLayoutX(20);
 		calendar.setLayoutY(20);
 		calendar.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(calendar);
-
+		
+		// State and weather degrees
 		town = new Label(Main.City + ", " + Thread_GetWeather.degree + "°C");
 		town.setLayoutX(198);
 		town.setLayoutY(20);
 		town.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(town);
-
+		
+		// Icon for weather
 		weathericonlabel = new Label("");
 		weathericonlabel.setLayoutX(330);
 		weathericonlabel.setLayoutY(8);
 		weathericonlabel.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(weathericonlabel);
-
+		
+		// Light head bar image
 		Light_Head = new ImageView(new Image("B12.png"));
 		Light_Head.setLayoutX(60);
 		Light_Head.setScaleX(1.9);
 		Light_Head.setLayoutY(72);
 		root.getChildren().add(Light_Head);
-
+		
+		// Light head text
 		Light_HeadText = new Text();
 		Light_HeadText.setText("Lichtsteuerung");
 		Light_HeadText.setLayoutX(41);
 		Light_HeadText.setLayoutY(99);
 		Light_HeadText.setFont(Font.font(java.awt.Font.SERIF, 20));
 		root.getChildren().add(Light_HeadText);
-
+		
+		// Light1_Button1 unpressed
 		Light1_Button1 = new ImageView(new Image("B12.png"));
 		Light1_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Light1_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -151,12 +239,14 @@ public class Main extends Application{
 		Light1_Button1.setLayoutY(125);
 		root.getChildren().add(Light1_Button1);
 
+		// Light1_Button1 pressed
 		Light1_Button2 = new ImageView(new Image("B3.png"));
 		Light1_Button2.setLayoutX(60);
 		Light1_Button2.setLayoutY(125);
 		Light1_Button2.setVisible(false);
 		root.getChildren().add(Light1_Button2);
-
+		
+		// Light1_Button1 text
 		Light1_Text = new Text();
 		Light1_Text.setText("Licht I");
 		Light1_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -168,7 +258,8 @@ public class Main extends Application{
 		Light1_Text.setLayoutX(80);
 		Light1_Text.setLayoutY(150);
 		root.getChildren().add(Light1_Text);
-
+		
+		// Light1_Lock quadrat
 		Light1_Lock = new ImageView(new Image("filledquad.png"));
 		Light1_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Light1_Lock.getOnMouseReleased();
@@ -177,7 +268,8 @@ public class Main extends Application{
 		Light1_Lock.setFitHeight(40);
 		Light1_Lock.setFitWidth(40);
 		root.getChildren().add(Light1_Lock);
-
+		
+		// Light1_Lock red X
 		Light1_Lockcross = new ImageView(new Image("redcross.png"));
 		Light1_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Light1_Lockcross.getOnMouseReleased();
@@ -187,7 +279,8 @@ public class Main extends Application{
 		Light1_Lockcross.setFitWidth(30);
 		Light1_Lockcross.setVisible(false);
 		root.getChildren().add(Light1_Lockcross);
-
+		
+		// Light1 state of it
 		Light1_State1 = new ImageView(new Image("tealorb.png"));
 		Light1_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Light1_State1.getOnMouseReleased();
@@ -532,6 +625,7 @@ public class Main extends Application{
 		town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
 	}
 
+	// to change the icons of the check states // Light/door/window ect.
 	public static void SetState(ImageView img1, ImageView img2, ImageView img3, int state){
 		if(state == 0){
 			img1.setVisible(true);
@@ -549,7 +643,8 @@ public class Main extends Application{
 			System.out.println("SetStates Error - Out of bounds");
 		}
 	}
-
+	
+	// Refresh of music title
 	public static void RefreshMpc(){
 		try {
 			String[] commands = {"bash","-c","mpc -h 192.168.11.205"};
@@ -580,6 +675,7 @@ public class Main extends Application{
 
 		@Override
 		public void handle(MouseEvent e) {
+			// Buttons pressed, set state to pressed and change icon & do smth.
 			if(e.getSource() == Light1_Button1 || e.getSource() == Light1_Text){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Light1_Button");
