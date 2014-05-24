@@ -29,6 +29,7 @@ public class Server implements Runnable
 		}
 
 		System.out.println("Listening on " + ss);
+		System.out.println("Starting [1]: Server - Done");
 
 		while (true) {
 			Socket s = null;
@@ -37,6 +38,9 @@ public class Server implements Runnable
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
+			// Block double connect
+
 			//AcceptSocket = true;
 
 
@@ -116,13 +120,13 @@ public class Server implements Runnable
 				s.close();
 				if(outputStreams.contains(s.toString())){
 					outputStreams.remove(s);
-					System.out.println("Error #1");
+					//System.out.println("Error #1");
 				}
 			} catch( IOException ie ) {
 				ie.printStackTrace();
 				System.out.println("Error closing connection");
 			}
-			System.out.println("Error #3");
+			//System.out.println("Error #3");
 			System.out.println(OtherStuff.TheNormalTime() + " Removing connection to "+s);
 
 		}

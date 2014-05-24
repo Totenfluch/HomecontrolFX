@@ -12,11 +12,6 @@ public class CheckMessage {
 
 	public static void forcmd(Socket socket, String pcname, String cmd, String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8, String arg9, String arg10 ){
 		if(cmd.equals(login)){
-			/*if(OtherStuff.ValidUserPassCombination(arg1, arg2)){
-					Server.reply(socket, "Authorized");
-				}else{
-					Server.reply(socket, "broadcast incorrect_credicals");
-				}*/
 
 		}
 

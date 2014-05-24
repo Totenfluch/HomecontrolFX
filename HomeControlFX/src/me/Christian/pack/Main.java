@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.util.logging.Logger;
 
 import javax.swing.Timer;
 
@@ -76,6 +77,7 @@ public class Main extends Application{
 
 	public static void main(String[] args) {
 		// Integer for Server
+		System.out.println("Starting [1]: Server");
 		int port = Integer.parseInt("9977");
 		// Get the weather from thread
 		Thread_GetWeather.StartCheck(City);
@@ -162,6 +164,7 @@ public class Main extends Application{
 			oPin7 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_07);
 		}
 		// start GUI
+		System.out.println("Starting [2]: GUI");
 		launch(args);
 	}
 
@@ -169,7 +172,7 @@ public class Main extends Application{
 		// name the window
 		primaryStage.setTitle("Homecontrol");
 		primaryStage.setResizable(false);
-		
+		System.out.println("Loading: 10%");
 		// Exit the programm on window close
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
@@ -198,7 +201,7 @@ public class Main extends Application{
 			root.getChildren().add(watermark);
 		}
 
-
+		System.out.println("Loading: 20%");
 		// Refresh timer for labels ect.
 		new AnimationTimer() {
 			@Override
@@ -206,7 +209,6 @@ public class Main extends Application{
 				update();
 			}
 		}.start();
-		
 		// Date & time
 		calendar = new Label(OtherStuff.TheNormalTime());
 		calendar.setLayoutX(20);
@@ -220,7 +222,7 @@ public class Main extends Application{
 		town.setLayoutY(20);
 		town.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(town);
-		
+		System.out.println("Loading: 30%");
 		// Icon for weather
 		weathericonlabel = new Label("");
 		weathericonlabel.setLayoutX(330);
@@ -259,7 +261,7 @@ public class Main extends Application{
 		Light1_Button2.setLayoutY(125);
 		Light1_Button2.setVisible(false);
 		root.getChildren().add(Light1_Button2);
-		
+		System.out.println("Loading: 40%");
 		// Light1_Button1 text
 		Light1_Text = new Text();
 		Light1_Text.setText("Licht I");
@@ -339,7 +341,7 @@ public class Main extends Application{
 		Light2_Button2.setLayoutY(175);
 		Light2_Button2.setVisible(false);
 		root.getChildren().add(Light2_Button2);
-
+		System.out.println("Loading: 50%");
 		Light2_Text = new Text();
 		Light2_Text.setText("Licht II");
 		Light2_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -379,7 +381,7 @@ public class Main extends Application{
 		Light2_State1.setFitHeight(35);
 		Light2_State1.setFitWidth(35);
 		root.getChildren().add(Light2_State1);
-
+		System.out.println("Loading: 60%");
 		Light2_State2 = new ImageView(new Image("greenorb.png"));
 		Light2_State2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Light2_State2.getOnMouseReleased();
@@ -475,7 +477,7 @@ public class Main extends Application{
 		Light3_State3.setFitWidth(35);
 		Light3_State3.setVisible(false);
 		root.getChildren().add(Light3_State3);
-
+		System.out.println("Loading: 70%");
 
 		// Console
 		Console = new TextArea();
@@ -485,6 +487,7 @@ public class Main extends Application{
 		Console.setWrapText(true);
 		Console.setEditable(false);
 		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
+
 		Console.textProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue,
@@ -492,13 +495,9 @@ public class Main extends Application{
 				Console.setScrollTop(Double.MIN_VALUE);
 			}
 		});
+		System.out.println("Loading: 80%");
+		
 		root.getChildren().add(Console);
-		System.setOut(new PrintStream(System.out) {
-			public void println(String s) {
-				Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
-			}
-		});
-
 		// Console Toggle
 		Console_Button1 = new ImageView(new Image("iB12.png"));
 		Console_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -526,7 +525,7 @@ public class Main extends Application{
 		Console_ButtonText.setLayoutX(675);
 		Console_ButtonText.setLayoutY(105);
 		root.getChildren().add(Console_ButtonText);
-
+		System.out.println("Loading: 90%");
 		// Music
 		Music_Head = new ImageView(new Image("iB12.png"));
 		Music_Head.setLayoutX(809);
@@ -619,12 +618,25 @@ public class Main extends Application{
 		Music_next.setFitWidth(35);
 		Music_next.setVisible(true);
 		root.getChildren().add(Music_next);
-
-
+		
+	
+		
+		System.out.println("Loading: 100%");
+		System.out.println("Launching Now!!!");
 		primaryStage.setScene(new Scene(root, 1024, 600));
 		primaryStage.show();
+		System.out.println("Starting [2]: GUI - Done");
+		System.out.println("--- finished loading ---");
+		
+		System.setOut(new PrintStream(System.out) {
+			public void println(String s) {
+				Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
+				Logger log = Logger.getLogger("");
+				log.info(s);
+			}
+		});
 	}
-
+	
 
 	protected void update() {
 		calendar.setText(OtherStuff.TheNormalTime());	

@@ -25,7 +25,6 @@ public class Thread_GetWeather implements Runnable {
 		    reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
 
 		    for (String line; (line = reader.readLine()) != null;) {
-		        System.out.println(line);
 		        if(line.contains("temperature")){
 		        	String temp;
 		        	temp = line;
@@ -39,13 +38,10 @@ public class Thread_GetWeather implements Runnable {
 		        if(line.contains("weather number")){
 		        	String halfturn;
 		        	String[] temp = line.split("icon=");
-		        	System.out.println(temp[0]);
-		        	System.out.println(temp[1]);
 		        	String r1 = "\"\\";
 		        	r1 = r1.replace("\\", "");
 		        	temp[1] = temp[1].replace(r1, "");
 		        	halfturn = temp[1].replace("/>", "");
-		        	System.out.println(halfturn);
 		        	weathericon = halfturn;
 		        }
 		    }

@@ -3,7 +3,7 @@ package me.Christian.networking;
 import java.io.*;
 import java.net.*;
 
-
+import javafx.application.Platform;
 import me.Christian.other.OtherStuff;
 
 public class ServerThread extends Thread
@@ -25,7 +25,7 @@ public class ServerThread extends Thread
 	public ServerThread( Server server, Socket socket ) {
 		this.server = server;
 		this.socket = socket;
-		start();
+		Platform.runLater(this);
 	}
 
 	public void run() {
@@ -142,13 +142,6 @@ public class ServerThread extends Thread
 					}else{
 						System.out.println("Message from "+ socket + "is too long or too short!");
 					}
-
-					/*try {
-						ServerFrame.doc.insertString(ServerFrame.doc.getLength(), OtherStuff.TheNormalTime() + " Recieving: "+message +"\n", ServerFrame.keyWord);
-						ServerFrame.textPane.setCaretPosition(ServerFrame.textPane.getDocument().getLength());
-					} catch (BadLocationException e) {
-						e.printStackTrace();
-					}*/
 
 					CheckMessage.forcmd(socket, user, cmd, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
 
