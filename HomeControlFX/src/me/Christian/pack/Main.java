@@ -183,12 +183,20 @@ public class Main extends Application{
 		ImageView imgView = null;
 		if(!Testbuild){
 			imgView = new ImageView(new Image("438120.jpg"));
+			imgView.setFitWidth(1100);
+			imgView.setFitHeight(625);
+			root.getChildren().add(imgView);
 		}else{
-			imgView = new ImageView(new Image("testbuild.png"));
+			imgView = new ImageView(new Image("438120.jpg"));
+			imgView.setFitWidth(1100);
+			imgView.setFitHeight(625);
+			root.getChildren().add(imgView);
+			ImageView watermark = new ImageView(new Image("watermark.png"));
+			watermark.setFitWidth(1100);
+			watermark.setFitHeight(625);
+			watermark.setOpacity(0.15);
+			root.getChildren().add(watermark);
 		}
-		imgView.setFitWidth(1100);
-		imgView.setFitHeight(625);
-		root.getChildren().add(imgView);
 
 
 		// Refresh timer for labels ect.
