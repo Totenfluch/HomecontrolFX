@@ -3,10 +3,9 @@ package me.Christian.networking;
 import java.io.*;
 import java.net.*;
 
-import javafx.concurrent.Task;
 import me.Christian.other.OtherStuff;
 
-public class ServerThread extends Task<Void>
+public class ServerThread implements Runnable
 {
 
 	private Server server;
@@ -27,7 +26,7 @@ public class ServerThread extends Task<Void>
 		this.socket = socket;
 	}
 
-	protected Void call() throws Exception {
+	public void run(){
 		try {
 			DataInputStream din = new DataInputStream( socket.getInputStream() );
 
@@ -156,6 +155,5 @@ public class ServerThread extends Task<Void>
 			server.removeConnection( socket );
 			System.out.println("Closing connection " + socket.toString());
 		}
-		return null;
 	}
 }

@@ -53,7 +53,7 @@ public class Main extends Application{
 	//
 	//
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
-	public static boolean Testbuild = false;
+	public static boolean Testbuild = true;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
 	//
@@ -74,27 +74,34 @@ public class Main extends Application{
 	public static final String City = "Schweinfurt";
 	private static Timer MpcRefreshTimer;
 
+	public static String[] todo = new String[1000];
+	public static int todosize = 0;
+
+	public static Thread Thread_MainServer;
+	public static Server server;
+
 	StringProperty title = new SimpleStringProperty();
 	public static boolean Weatherinit = false;
 
 
 	// Setup Piface instances
-	public static final GpioController gpio = GpioFactory.getInstance();
+	/*public static final GpioController gpio = GpioFactory.getInstance();
 	public static PiFaceGpioProvider gpioProvider;
-	public static PiFace piface;
+	public static PiFace piface;*/
 
 	public static void main(String[] args) throws IOException{
-
+		for(int i = 999; i>-1; i--){
+			todo[i] = "";
+		}
 		Platform.setImplicitExit(false);
 		// Integer for Server
 		System.out.println("Starting [1]: Server");
 		// Get the weather from thread
 		Thread_GetWeather.StartCheck(City);
 
-		Server task = new Server();
-		Thread th = new Thread(task);
-		th.setDaemon(true);
-		th.start();
+		server = new Server();
+		Thread_MainServer = new Thread(server);
+		Thread_MainServer.start();
 
 		// build Refresh of music title
 		MpcRefreshTimer = new Timer(2000, new ActionListener()
@@ -109,8 +116,14 @@ public class Main extends Application{
 			// Start Refresh
 			MpcRefreshTimer.start();
 
-			gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
-			piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
+			GpioController gpio = GpioFactory.getInstance();
+			PiFaceGpioProvider gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
+			PiFace piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
+
+
+			//gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
+			//piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
+
 
 			// Set up all Input Pins in an array
 			GpioPinDigitalInput myInputs[] = {
@@ -492,6 +505,7 @@ public class Main extends Application{
 				Console.setScrollTop(Double.MIN_VALUE);
 			}
 		});
+
 		System.out.println("Loading: 80%");
 
 		root.getChildren().add(Console);
@@ -632,7 +646,7 @@ public class Main extends Application{
 	public void FinalInit(){
 		if(!Testbuild){
 			for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-				piface.getLed(index).off();
+				//piface.getLed(index).off();
 			}
 		}
 		System.out.println("Finished [3]: Final init");
@@ -643,6 +657,13 @@ public class Main extends Application{
 
 
 	protected void update() {
+		if(todo[0] != ""){
+			for(int x = todosize; x > -1; x--){
+				System.out.println(todo[x]);
+				todo[x] = "";
+				todosize--;
+			}
+		}
 		calendar.setText(OtherStuff.TheNormalTime());	
 		if(Thread_GetWeather.weathericon != null && !Weatherinit){
 			resetweather();
@@ -715,19 +736,19 @@ public class Main extends Application{
 					Light1_Text.setLayoutY(Light1_Text.getLayoutY()-10);
 					if(GuiVariables.Light1_State == 0){
 						if(!Testbuild){
-							piface.getRelay(PiFaceRelay.K0).close();
+
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
 						GuiVariables.Light1_State = 1;
 					}else if(GuiVariables.Light1_State == 1){
 						if(!Testbuild){
-							piface.getRelay(PiFaceRelay.K0).open();
+
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 2);
 						GuiVariables.Light1_State = 2;
 					}else if(GuiVariables.Light1_State == 2){
 						if(!Testbuild){
-							piface.getRelay(PiFaceRelay.K0).close();
+
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
 						GuiVariables.Light1_State = 1;
@@ -760,19 +781,19 @@ public class Main extends Application{
 					Light2_Text.setLayoutY(Light2_Text.getLayoutY()-10);
 					if(GuiVariables.Light2_State == 0){
 						if(!Testbuild){
-							piface.getRelay(PiFaceRelay.K1).close();
+
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
 						GuiVariables.Light2_State = 1;
 					}else if(GuiVariables.Light2_State == 1){
 						if(!Testbuild){
-							piface.getRelay(PiFaceRelay.K1).open();
+
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 2);
 						GuiVariables.Light2_State = 2;
 					}else if(GuiVariables.Light2_State == 2){
 						if(!Testbuild){
-							piface.getRelay(PiFaceRelay.K1).close();
+
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
 						GuiVariables.Light2_State = 1;

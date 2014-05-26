@@ -4,22 +4,15 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import javafx.concurrent.Task;
 import me.Christian.other.OtherStuff;
 
-public class Server extends Task<Void>
+public class Server implements Runnable
 {
 	private static int portz = 9977;
 	private ServerSocket ss;
 
 	@SuppressWarnings("rawtypes")
 	public static Hashtable outputStreams = new Hashtable();
-
-	
-	protected Void call() throws Exception {
-		new Thread(this).start();
-		return null;
-	}
 	
 	@SuppressWarnings("unchecked")
 	public void run() {
@@ -52,10 +45,13 @@ public class Server extends Task<Void>
 			outputStreams.put( s, dout );
 			//new ServerThread( this, s );
 			
-			ServerThread task2 = new ServerThread(this, s);
+			/*ServerThread task2 = new ServerThread(this, s);
 			Thread th2 = new Thread(task2);
 	        th2.setDaemon(true);
-	        th2.start();
+	        th2.start();*/
+	        
+	        Thread n = new Thread(new ServerThread(this, s));
+	        n.start();
 		}
 	}
 
