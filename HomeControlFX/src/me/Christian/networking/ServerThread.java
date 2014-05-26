@@ -3,10 +3,10 @@ package me.Christian.networking;
 import java.io.*;
 import java.net.*;
 
-import javafx.application.Platform;
+import javafx.concurrent.Task;
 import me.Christian.other.OtherStuff;
 
-public class ServerThread extends Thread
+public class ServerThread extends Task<Void>
 {
 
 	private Server server;
@@ -25,12 +25,10 @@ public class ServerThread extends Thread
 	public ServerThread( Server server, Socket socket ) {
 		this.server = server;
 		this.socket = socket;
-		Platform.runLater(this);
 	}
 
-	public void run() {
+	protected Void call() throws Exception {
 		try {
-
 			DataInputStream din = new DataInputStream( socket.getInputStream() );
 
 			while (true) {
@@ -158,5 +156,6 @@ public class ServerThread extends Thread
 			server.removeConnection( socket );
 			System.out.println("Closing connection " + socket.toString());
 		}
+		return null;
 	}
 }

@@ -4,24 +4,26 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import javafx.concurrent.Task;
 import me.Christian.other.OtherStuff;
 
-public class Server implements Runnable
+public class Server extends Task<Void>
 {
-	private static int portz;
+	private static int portz = 9977;
 	private ServerSocket ss;
 
 	@SuppressWarnings("rawtypes")
 	public static Hashtable outputStreams = new Hashtable();
-	//private boolean AcceptSocket = true;
 
-	public static void startServer( int port ) throws IOException {
-		portz = port;
-		(new Thread(new Server())).start();
+	
+	protected Void call() throws Exception {
+		new Thread(this).start();
+		return null;
 	}
+	
 	@SuppressWarnings("unchecked")
 	public void run() {
-
+		
 		try {
 			ss = new ServerSocket( portz );
 		} catch (IOException e) {
@@ -29,7 +31,7 @@ public class Server implements Runnable
 		}
 
 		System.out.println("Listening on " + ss);
-		System.out.println("Starting [1]: Server - Done");
+		System.out.println("Finished [1]: Server");
 
 		while (true) {
 			Socket s = null;
@@ -39,37 +41,6 @@ public class Server implements Runnable
 				e.printStackTrace();
 			}
 
-			// Block double connect
-
-			//AcceptSocket = true;
-
-
-			/*for (Object key : outputStreams.keySet()) {
-				if(OtherStuff.SocketStringToIPSting(key.toString()).equals(OtherStuff.SocketStringToIPSting(s.toString()))){
-					AcceptSocket = false;
-					try {
-						ServerFrame.doc.insertString(ServerFrame.doc.getLength(), OtherStuff.TheNormalTime() +"  " +s.toString() + " Denied - Multiple Instances opened\n", ServerFrame.notes );
-					} catch (BadLocationException e1) {
-						e1.printStackTrace();
-					}
-
-					Server.reply(s, "broadcast Denied-Connection-Multiple-windows-opened");
-					System.out.println("Denied: " + s.toString());
-					s.close();
-				}
-				System.out.println("Checking match of:" + OtherStuff.SocketStringToIPSting(s.toString()) + " AND " + OtherStuff.SocketStringToIPSting(key.toString()));
-			}
-
-			if(AcceptSocket == true){
-
-				try {
-					ServerFrame.doc.insertString(ServerFrame.doc.getLength(), OtherStuff.TheNormalTime() +  " Connection from "+s +"\n", ServerFrame.keyWord);
-					ServerFrame.addConnectedUser(s.toString());
-				} catch (BadLocationException e1) {
-					e1.printStackTrace();
-				}*/
-
-
 			DataOutputStream dout = null;
 			try {
 				dout = new DataOutputStream( s.getOutputStream() );
@@ -78,9 +49,13 @@ public class Server implements Runnable
 			}
 			Server.reply(s, "You are connected to Homecontrol-Server-1");
 
-
 			outputStreams.put( s, dout );
-			new ServerThread( this, s );
+			//new ServerThread( this, s );
+			
+			ServerThread task2 = new ServerThread(this, s);
+			Thread th2 = new Thread(task2);
+	        th2.setDaemon(true);
+	        th2.start();
 		}
 	}
 
@@ -131,4 +106,5 @@ public class Server implements Runnable
 
 		}
 	}
+
 }

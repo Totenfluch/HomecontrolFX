@@ -7,12 +7,11 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.util.logging.Logger;
 
 import javax.swing.Timer;
 
 import com.pi4j.device.piface.PiFace;
+import com.pi4j.device.piface.PiFaceLed;
 import com.pi4j.device.piface.PiFaceRelay;
 import com.pi4j.device.piface.impl.PiFaceDevice;
 import com.pi4j.gpio.extension.piface.PiFaceGpioProvider;
@@ -26,10 +25,12 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.wiringpi.Spi;
 
 import me.Christian.networking.Server;
+import me.Christian.other.ChangeOutStream;
 import me.Christian.other.OtherStuff;
 import me.Christian.threads.Thread_GetWeather;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -49,7 +50,13 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
 public class Main extends Application{
-	public static boolean Testbuild = true;
+	//
+	//
+	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
+	public static boolean Testbuild = false;
+	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
+	//
+	//
 
 	public static TextArea Console;
 	public static Label calendar, town, weathericonlabel;
@@ -66,27 +73,29 @@ public class Main extends Application{
 	public static String volume;
 	public static final String City = "Schweinfurt";
 	private static Timer MpcRefreshTimer;
+
 	StringProperty title = new SimpleStringProperty();
-	public static PiFace piface = null;
-	public static GpioController gpio = null;
-	public static PiFaceGpioProvider gpioProvider = null;
 	public static boolean Weatherinit = false;
 
-	public static GpioPinDigitalOutput oPin0, oPin1, oPin2, oPin3, oPin4, oPin5, oPin6, oPin7;
-	public static GpioPinDigitalInput iPin0, iPin1, iPin2, iPin3, iPin4, iPin5, iPin6, iPin7;
 
-	public static void main(String[] args) {
+	// Setup Piface instances
+	public static final GpioController gpio = GpioFactory.getInstance();
+	public static PiFaceGpioProvider gpioProvider;
+	public static PiFace piface;
+
+	public static void main(String[] args) throws IOException{
+
+		Platform.setImplicitExit(false);
 		// Integer for Server
 		System.out.println("Starting [1]: Server");
-		int port = Integer.parseInt("9977");
 		// Get the weather from thread
 		Thread_GetWeather.StartCheck(City);
-		// Start Server for mobile app & slave Pi's
-		try {
-			Server.startServer( port );
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+
+		Server task = new Server();
+		Thread th = new Thread(task);
+		th.setDaemon(true);
+		th.start();
+
 		// build Refresh of music title
 		MpcRefreshTimer = new Timer(2000, new ActionListener()
 		{
@@ -95,17 +104,13 @@ public class Main extends Application{
 				RefreshMpc();
 			}
 		});
+
 		if(!Testbuild){
 			// Start Refresh
 			MpcRefreshTimer.start();
-			try {
-				// Setup Piface instances
-				gpio = GpioFactory.getInstance();
-				gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
-				piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+
+			gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
+			piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
 
 			// Set up all Input Pins in an array
 			GpioPinDigitalInput myInputs[] = {
@@ -118,16 +123,6 @@ public class Main extends Application{
 					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_06),
 					gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_07)
 			};
-
-			//  Get them as single variable
-			iPin0 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_00);
-			iPin1 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_01);
-			iPin2 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_02);
-			iPin3 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_03);
-			iPin4 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_04);
-			iPin5 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_05);
-			iPin6 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_06);
-			iPin7 = gpio.provisionDigitalInputPin(gpioProvider, PiFacePin.INPUT_07);
 
 			// Set up Listener if a Input Pin changes
 			gpio.addListener(new GpioPinListenerDigital() {
@@ -149,19 +144,20 @@ public class Main extends Application{
 					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_06),
 					gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_07),
 			};
-			
+
 			// Disable all output pins
 			gpio.setState(false, myOutputs);
+			gpio.setState(true, myOutputs);
 
-			// Set up all Output Pins as single variable
-			oPin0 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_00);
-			oPin1 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_01);
-			oPin2 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_02);
-			oPin3 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_03);
-			oPin4 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_04);
-			oPin5 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_05);
-			oPin6 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_06);
-			oPin7 = gpio.provisionDigitalOutputPin(gpioProvider, PiFacePin.OUTPUT_07);
+
+			// Shutdown hook
+			Runtime.getRuntime().addShutdownHook(new Thread() { 
+				public void run() { 
+					// Disable all LED's
+					gpio.setState(false, myOutputs);
+					gpio.shutdown();
+				}
+			}); 
 		}
 		// start GUI
 		System.out.println("Starting [2]: GUI");
@@ -170,6 +166,7 @@ public class Main extends Application{
 
 	public void start(Stage primaryStage) {
 		// name the window
+		Platform.setImplicitExit(false);
 		primaryStage.setTitle("Homecontrol");
 		primaryStage.setResizable(false);
 		System.out.println("Loading: 10%");
@@ -181,7 +178,7 @@ public class Main extends Application{
 			}
 		});;
 		Pane root = new Pane();
-		
+
 		// Background
 		ImageView imgView = null;
 		if(!Testbuild){
@@ -215,7 +212,7 @@ public class Main extends Application{
 		calendar.setLayoutY(20);
 		calendar.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(calendar);
-		
+
 		// State and weather degrees
 		town = new Label(Main.City + ", " + Thread_GetWeather.degree + "°C");
 		town.setLayoutX(198);
@@ -229,14 +226,14 @@ public class Main extends Application{
 		weathericonlabel.setLayoutY(8);
 		weathericonlabel.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(weathericonlabel);
-		
+
 		// Light head bar image
 		Light_Head = new ImageView(new Image("B12.png"));
 		Light_Head.setLayoutX(60);
 		Light_Head.setScaleX(1.9);
 		Light_Head.setLayoutY(72);
 		root.getChildren().add(Light_Head);
-		
+
 		// Light head text
 		Light_HeadText = new Text();
 		Light_HeadText.setText("Lichtsteuerung");
@@ -244,7 +241,7 @@ public class Main extends Application{
 		Light_HeadText.setLayoutY(99);
 		Light_HeadText.setFont(Font.font(java.awt.Font.SERIF, 20));
 		root.getChildren().add(Light_HeadText);
-		
+
 		// Light1_Button1 unpressed
 		Light1_Button1 = new ImageView(new Image("B12.png"));
 		Light1_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -274,7 +271,7 @@ public class Main extends Application{
 		Light1_Text.setLayoutX(80);
 		Light1_Text.setLayoutY(150);
 		root.getChildren().add(Light1_Text);
-		
+
 		// Light1_Lock quadrat
 		Light1_Lock = new ImageView(new Image("filledquad.png"));
 		Light1_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -284,7 +281,7 @@ public class Main extends Application{
 		Light1_Lock.setFitHeight(40);
 		Light1_Lock.setFitWidth(40);
 		root.getChildren().add(Light1_Lock);
-		
+
 		// Light1_Lock red X
 		Light1_Lockcross = new ImageView(new Image("redcross.png"));
 		Light1_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -295,7 +292,7 @@ public class Main extends Application{
 		Light1_Lockcross.setFitWidth(30);
 		Light1_Lockcross.setVisible(false);
 		root.getChildren().add(Light1_Lockcross);
-		
+
 		// Light1 state of it
 		Light1_State1 = new ImageView(new Image("tealorb.png"));
 		Light1_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -496,7 +493,7 @@ public class Main extends Application{
 			}
 		});
 		System.out.println("Loading: 80%");
-		
+
 		root.getChildren().add(Console);
 		// Console Toggle
 		Console_Button1 = new ImageView(new Image("iB12.png"));
@@ -618,25 +615,32 @@ public class Main extends Application{
 		Music_next.setFitWidth(35);
 		Music_next.setVisible(true);
 		root.getChildren().add(Music_next);
-		
-	
-		
+
+
+
 		System.out.println("Loading: 100%");
-		System.out.println("Launching Now!!!");
+		System.out.println("Launching GUI Now!!!");
 		primaryStage.setScene(new Scene(root, 1024, 600));
 		primaryStage.show();
-		System.out.println("Starting [2]: GUI - Done");
+		System.out.println("Finished [2]: GUI");
+		System.out.println("Starting [3]: Final init");
+		FinalInit();
 		System.out.println("--- finished loading ---");
-		
-		System.setOut(new PrintStream(System.out) {
-			public void println(String s) {
-				Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
-				Logger log = Logger.getLogger("");
-				log.info(s);
-			}
-		});
+
 	}
-	
+
+	public void FinalInit(){
+		if(!Testbuild){
+			for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+				piface.getLed(index).off();
+			}
+		}
+		System.out.println("Finished [3]: Final init");
+		new ChangeOutStream();
+		System.out.println("Stream changed into GUI - now Operating fully in the GUI console.");
+	}
+
+
 
 	protected void update() {
 		calendar.setText(OtherStuff.TheNormalTime());	
@@ -669,7 +673,7 @@ public class Main extends Application{
 			System.out.println("SetStates Error - Out of bounds");
 		}
 	}
-	
+
 	// Refresh of music title
 	public static void RefreshMpc(){
 		try {
