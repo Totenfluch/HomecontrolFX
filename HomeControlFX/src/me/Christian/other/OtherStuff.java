@@ -5,6 +5,8 @@ import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import me.Christian.pack.Main;
+
 public class OtherStuff {
 	public static String TheNormalTime(){
 		Calendar cal = Calendar.getInstance();
@@ -32,6 +34,15 @@ public class OtherStuff {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void addToMainQueue(String string){
+		int x = 0;
+		while(Main.todo[x] != ""){
+			x++;
+		}
+		Main.todo[x] = string;
+		Main.todosize = x;
 	}
 
 }

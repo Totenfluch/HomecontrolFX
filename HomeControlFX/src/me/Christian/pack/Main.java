@@ -12,7 +12,6 @@ import javax.swing.Timer;
 
 import com.pi4j.device.piface.PiFace;
 import com.pi4j.device.piface.PiFaceLed;
-import com.pi4j.device.piface.PiFaceRelay;
 import com.pi4j.device.piface.impl.PiFaceDevice;
 import com.pi4j.gpio.extension.piface.PiFaceGpioProvider;
 import com.pi4j.gpio.extension.piface.PiFacePin;
@@ -53,7 +52,7 @@ public class Main extends Application{
 	//
 	//
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
-	public static boolean Testbuild = true;
+	public static boolean Testbuild = false;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
 	//
@@ -85,9 +84,9 @@ public class Main extends Application{
 
 
 	// Setup Piface instances
-	/*public static final GpioController gpio = GpioFactory.getInstance();
+	public static GpioController gpio;
 	public static PiFaceGpioProvider gpioProvider;
-	public static PiFace piface;*/
+	public static PiFace piface;
 
 	public static void main(String[] args) throws IOException{
 		for(int i = 999; i>-1; i--){
@@ -108,7 +107,7 @@ public class Main extends Application{
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				RefreshMpc();
+				//RefreshMpc();
 			}
 		});
 
@@ -116,13 +115,9 @@ public class Main extends Application{
 			// Start Refresh
 			MpcRefreshTimer.start();
 
-			GpioController gpio = GpioFactory.getInstance();
-			PiFaceGpioProvider gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
-			PiFace piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
-
-
-			//gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
-			//piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
+			gpio = GpioFactory.getInstance();
+			gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
+			piface = new PiFaceDevice(PiFace.DEFAULT_ADDRESS, Spi.CHANNEL_0);
 
 
 			// Set up all Input Pins in an array
@@ -646,13 +641,14 @@ public class Main extends Application{
 	public void FinalInit(){
 		if(!Testbuild){
 			for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-				//piface.getLed(index).off();
+				piface.getLed(index).off();
 			}
 		}
 		System.out.println("Finished [3]: Final init");
 		new ChangeOutStream();
-		System.out.println("Stream changed into GUI - now Operating fully in the GUI console.");
+		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
+
 
 
 
@@ -736,19 +732,19 @@ public class Main extends Application{
 					Light1_Text.setLayoutY(Light1_Text.getLayoutY()-10);
 					if(GuiVariables.Light1_State == 0){
 						if(!Testbuild){
-
+							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
 						GuiVariables.Light1_State = 1;
 					}else if(GuiVariables.Light1_State == 1){
 						if(!Testbuild){
-
+							piface.getLed(PiFaceLed.LED7.getIndex()).off();
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 2);
 						GuiVariables.Light1_State = 2;
 					}else if(GuiVariables.Light1_State == 2){
 						if(!Testbuild){
-
+							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
 						GuiVariables.Light1_State = 1;
@@ -781,19 +777,19 @@ public class Main extends Application{
 					Light2_Text.setLayoutY(Light2_Text.getLayoutY()-10);
 					if(GuiVariables.Light2_State == 0){
 						if(!Testbuild){
-
+							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
 						GuiVariables.Light2_State = 1;
 					}else if(GuiVariables.Light2_State == 1){
 						if(!Testbuild){
-
+							piface.getLed(PiFaceLed.LED6.getIndex()).off();
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 2);
 						GuiVariables.Light2_State = 2;
 					}else if(GuiVariables.Light2_State == 2){
 						if(!Testbuild){
-
+							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
 						GuiVariables.Light2_State = 1;
@@ -824,6 +820,25 @@ public class Main extends Application{
 					Light3_Button1.setVisible(true);
 					Light3_Text.setLayoutX(Light3_Text.getLayoutX()-12);
 					Light3_Text.setLayoutY(Light3_Text.getLayoutY()-10);
+					if(GuiVariables.Light3_State == 0){
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED5.getIndex()).on();
+						}
+						SetState(Light3_State1, Light3_State2, Light3_State3, 1);
+						GuiVariables.Light3_State = 1;
+					}else if(GuiVariables.Light3_State == 1){
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED5.getIndex()).off();
+						}
+						SetState(Light3_State1, Light3_State2, Light3_State3, 2);
+						GuiVariables.Light3_State = 2;
+					}else if(GuiVariables.Light3_State == 2){
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED5.getIndex()).on();
+						}
+						SetState(Light3_State1, Light3_State2, Light3_State3, 1);
+						GuiVariables.Light3_State = 1;
+					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					System.out.println("Pressed Light3_Button");
 					Light3_Button1.setVisible(false);

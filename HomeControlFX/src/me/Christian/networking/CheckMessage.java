@@ -4,8 +4,6 @@ package me.Christian.networking;
 import java.net.Socket;
 
 import me.Christian.other.OtherStuff;
-import me.Christian.pack.Main;
-
 
 public class CheckMessage {
 	private static final String login = "/login";
@@ -15,13 +13,8 @@ public class CheckMessage {
 		if(cmd.equals(login)){
 
 		}
-		
-		int x = 0;
-		while(Main.todo[x] != ""){
-			x++;
-		}
-		Main.todo[x] = OtherStuff.TheNormalTime() +  " CMD from: "+socket + " : " + pcname + " " + cmd + " " + arg1 + "  " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 ;
-		Main.todosize = x;
+	
+		OtherStuff.addToMainQueue(OtherStuff.TheNormalTime() +  " CMD from: "+socket + " : " + pcname + " " + cmd + " " + arg1 + "  " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 );
 		System.out.println(OtherStuff.TheNormalTime() +  " CMD from: "+socket + " : " + pcname + " " + cmd + " " + arg1 + "  " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 );
 
 	}
