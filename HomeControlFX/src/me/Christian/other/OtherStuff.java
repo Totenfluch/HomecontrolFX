@@ -36,13 +36,22 @@ public class OtherStuff {
 		}
 	}
 	
-	public static void addToMainQueue(String string){
+	public static void addToPrintQueue(String string){
 		int x = 0;
-		while(Main.todo[x] != ""){
+		while(Main.todoprint[x] != ""){
 			x++;
 		}
-		Main.todo[x] = string;
-		Main.todosize = x;
+		Main.todoprint[x] = string;
+		Main.todoprintsize = x;
+	}
+	
+	public static void addToCmdQueue(String string){
+		int x = 0;
+		while(Main.todocmd[x] != ""){
+			x++;
+		}
+		Main.todocmd[x] = string;
+		Main.todocmdsize = x;
 	}
 
 }

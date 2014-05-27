@@ -43,12 +43,6 @@ public class Server implements Runnable
 			Server.reply(s, "You are connected to Homecontrol-Server-1");
 
 			outputStreams.put( s, dout );
-			//new ServerThread( this, s );
-			
-			/*ServerThread task2 = new ServerThread(this, s);
-			Thread th2 = new Thread(task2);
-	        th2.setDaemon(true);
-	        th2.start();*/
 	        
 	        Thread n = new Thread(new ServerThread(this, s));
 	        n.start();

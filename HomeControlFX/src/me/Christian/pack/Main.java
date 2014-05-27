@@ -55,6 +55,8 @@ public class Main extends Application{
 	public static boolean Testbuild = false;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
+	public static boolean MPCEnabled = false;
+	public static String MPCServerIP = "192.168.11.205";
 	//
 
 	public static TextArea Console;
@@ -73,8 +75,11 @@ public class Main extends Application{
 	public static final String City = "Schweinfurt";
 	private static Timer MpcRefreshTimer;
 
-	public static String[] todo = new String[1000];
-	public static int todosize = 0;
+	public static String[] todoprint = new String[1000];
+	public static int todoprintsize = 0;
+	
+	public static String[] todocmd = new String[1000];
+	public static int todocmdsize = 0;
 
 	public static Thread Thread_MainServer;
 	public static Server server;
@@ -90,7 +95,8 @@ public class Main extends Application{
 
 	public static void main(String[] args) throws IOException{
 		for(int i = 999; i>-1; i--){
-			todo[i] = "";
+			todoprint[i] = "";
+			todocmd[i] = "";
 		}
 		Platform.setImplicitExit(false);
 		// Integer for Server
@@ -107,13 +113,15 @@ public class Main extends Application{
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				//RefreshMpc();
+				RefreshMpc();
 			}
 		});
 
 		if(!Testbuild){
-			// Start Refresh
-			MpcRefreshTimer.start();
+			// Start Refresh if MPC is enabled
+			if(MPCEnabled){
+				MpcRefreshTimer.start();
+			}
 
 			gpio = GpioFactory.getInstance();
 			gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
@@ -214,6 +222,7 @@ public class Main extends Application{
 				update();
 			}
 		}.start();
+		
 		// Date & time
 		calendar = new Label(OtherStuff.TheNormalTime());
 		calendar.setLayoutX(20);
@@ -492,7 +501,8 @@ public class Main extends Application{
 		Console.setWrapText(true);
 		Console.setEditable(false);
 		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
-
+		root.getChildren().add(Console);
+		
 		Console.textProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue,
@@ -502,8 +512,7 @@ public class Main extends Application{
 		});
 
 		System.out.println("Loading: 80%");
-
-		root.getChildren().add(Console);
+		
 		// Console Toggle
 		Console_Button1 = new ImageView(new Image("iB12.png"));
 		Console_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -569,7 +578,7 @@ public class Main extends Application{
 					Number old_val, Number new_val) {
 				int volume = (int) Math.floor(new_val.doubleValue());
 				try {
-					Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h 192.168.11.205 volume " + volume});
+					Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " volume " + volume});
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -626,7 +635,6 @@ public class Main extends Application{
 		root.getChildren().add(Music_next);
 
 
-
 		System.out.println("Loading: 100%");
 		System.out.println("Launching GUI Now!!!");
 		primaryStage.setScene(new Scene(root, 1024, 600));
@@ -653,13 +661,75 @@ public class Main extends Application{
 
 
 	protected void update() {
-		if(todo[0] != ""){
-			for(int x = todosize; x > -1; x--){
-				System.out.println(todo[x]);
-				todo[x] = "";
-				todosize--;
+		if(todoprint[0] != ""){
+			for(int x = todoprintsize; x > -1; x--){
+				System.out.println(todoprint[x]);
+				todoprint[x] = "";
+				todoprintsize--;
 			}
 		}
+		if(todocmd[0] != ""){
+			for(int y = todocmdsize; y > -1; y--){
+				// USAGE:
+				// CMD:-> * On * Off * Toggle *  Add + @
+				// Item: -> Full Item name + @
+				// List of Items: Light1, Light2, Light3, Console
+				// params: -> special things, text
+				// example: On@Light1, Toggle@Light2, Toggle@Door1, Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
+				
+				String temp[] = todocmd[y].split("@");
+				if(temp[0].equals("On")){
+					if(temp[1].equals("Light1")){
+						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED7.getIndex()).on();
+						}
+					}
+					if(temp[1].equals("Light2")){
+						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED6.getIndex()).on();
+						}
+					}
+					if(temp[1].equals("Light3")){
+						SetState(Light3_State1, Light1_State3, Light1_State3, 1);
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED5.getIndex()).on();
+						}
+					}
+				}else if(temp[0].equals("Off")){
+					if(temp[1].equals("Light1")){
+						SetState(Light1_State1, Light1_State2, Light1_State3, 2);
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED7.getIndex()).off();
+						}
+					}
+					if(temp[1].equals("Light2")){
+						SetState(Light2_State1, Light2_State2, Light2_State3, 2);
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED6.getIndex()).off();
+						}
+					}
+					if(temp[1].equals("Light3")){
+						SetState(Light3_State1, Light1_State3, Light1_State3, 2);
+						if(!Testbuild){
+							piface.getLed(PiFaceLed.LED5.getIndex()).off();
+						}
+					}
+				}else if(temp[0].equals("Toggle")){
+					// Todo
+				}else if(temp[0].equals("Add")){
+					// Todo
+				}else{
+					System.out.println("FATAL ERROR: Thread: Main.update.cmdqueue");
+				}
+				
+				
+				todocmd[y] = "";
+				todocmdsize--;
+			}
+		}
+		
 		calendar.setText(OtherStuff.TheNormalTime());	
 		if(Thread_GetWeather.weathericon != null && !Weatherinit){
 			resetweather();
@@ -694,7 +764,7 @@ public class Main extends Application{
 	// Refresh of music title
 	public static void RefreshMpc(){
 		try {
-			String[] commands = {"bash","-c","mpc -h 192.168.11.205"};
+			String[] commands = {"bash","-c","mpc -h "+ MPCServerIP};
 			Runtime rt = Runtime.getRuntime();
 			Process proc = rt.exec(commands);
 			BufferedReader stdInput = new BufferedReader(new 
@@ -702,18 +772,24 @@ public class Main extends Application{
 
 			BufferedReader stdError = new BufferedReader(new 
 					InputStreamReader(proc.getErrorStream()));
-			String s = null;
+			String linestring = null;
 			int line = 0;
-			while ((s = stdInput.readLine()) != null) {
+			while ((linestring = stdInput.readLine()) != null) {
 				if(line == 0){
-					currenttitle = s;
+					currenttitle = linestring;
 					Music_Title.setText(currenttitle);
 				}else if (line == 2){
-					volume = s;
+					////////////////////////////////////////////
+					// Needs more formating to work correctly //
+					////////////////////////////////////////////
+					volume = linestring;
+					////////////////////////////////////////////
+					// Needs more formating to work correctly //
+					////////////////////////////////////////////
 				}
 				line++;
 			}
-			while ((s = stdError.readLine()) != null) {System.out.println(s);}
+			while ((linestring = stdError.readLine()) != null) {System.out.println(linestring);}
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
@@ -862,7 +938,7 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_next.setOpacity(1);
 					try {
-						String[] commands = {"bash","-c","mpc -h 192.168.11.205 next"};
+						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" next"};
 						Runtime rt = Runtime.getRuntime();
 						Process proc = rt.exec(commands);
 						BufferedReader stdInput = new BufferedReader(new 
@@ -893,7 +969,7 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_prev.setOpacity(1);
 					try {
-						String[] commands = {"bash","-c","mpc -h 192.168.11.205 prev"};
+						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +"  prev"};
 						Runtime rt = Runtime.getRuntime();
 						Process proc = rt.exec(commands);
 						BufferedReader stdInput = new BufferedReader(new 
@@ -924,7 +1000,7 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_pause.setOpacity(1);
 					try {
-						String[] commands = {"bash","-c","mpc -h 192.168.11.205 pause"};
+						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" pause"};
 						Runtime rt = Runtime.getRuntime();
 						Process proc = rt.exec(commands);
 						BufferedReader stdInput = new BufferedReader(new 
@@ -955,7 +1031,7 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_play.setOpacity(1);
 					try {
-						String[] commands = {"bash","-c","mpc -h 192.168.11.205 play"};
+						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" play"};
 						Runtime rt = Runtime.getRuntime();
 						Process proc = rt.exec(commands);
 						BufferedReader stdInput = new BufferedReader(new 
