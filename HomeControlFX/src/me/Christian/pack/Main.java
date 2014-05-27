@@ -101,6 +101,8 @@ public class Main extends Application{
 		Platform.setImplicitExit(false);
 		// Integer for Server
 		System.out.println("Starting [1]: Server");
+		// Init user database
+		OtherStuff.initDatabase();
 		// Get the weather from thread
 		Thread_GetWeather.StartCheck(City);
 
