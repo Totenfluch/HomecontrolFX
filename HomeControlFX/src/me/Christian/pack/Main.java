@@ -52,7 +52,7 @@ public class Main extends Application{
 	//
 	//
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
-	public static boolean Testbuild = false;
+	public static boolean Testbuild = true;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
 	public static boolean MPCEnabled = false;

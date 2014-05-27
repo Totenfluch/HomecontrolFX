@@ -43,7 +43,7 @@ public class Server implements Runnable
 			Server.reply(s, "You are connected to Homecontrol-Server-1");
 
 			outputStreams.put( s, dout );
-	        
+	        OtherStuff.addToPrintQueue(s.getInetAddress().toString().replace("/", "") + " connected");
 	        Thread n = new Thread(new ServerThread(this, s));
 	        n.start();
 		}
@@ -80,19 +80,16 @@ public class Server implements Runnable
 	void removeConnection( Socket s ) {
 		synchronized( outputStreams ) {
 			outputStreams.remove(s);
-			System.out.println("Error #2");
 			try {
 				s.close();
 				if(outputStreams.contains(s.toString())){
 					outputStreams.remove(s);
-					//System.out.println("Error #1");
 				}
 			} catch( IOException ie ) {
 				ie.printStackTrace();
 				System.out.println("Error closing connection");
 			}
-			//System.out.println("Error #3");
-			System.out.println(OtherStuff.TheNormalTime() + " Removing connection to "+s);
+			OtherStuff.addToPrintQueue(s.getInetAddress().toString().replace("/", "") + " diconnected");
 
 		}
 	}
