@@ -137,13 +137,13 @@ public class ServerThread implements Runnable
 						arg9 = commands[10];
 						arg10 = commands[11];
 					}else{
-						System.out.println("Message from "+ socket + "is too long or too short!");
+						OtherStuff.addToPrintQueue("Message from "+ socket.getInetAddress().toString() + "is too long or too short!");
 					}
 
 					CheckMessage.forcmd(socket, user, cmd, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
 
 				}else{
-					System.out.println(OtherStuff.TheNormalTime() + " Invalid Message by: " + socket.toString() + "\n" + OtherStuff.TheNormalTime() + " Message: " + message);
+					OtherStuff.addToPrintQueue("Invalid Message from: " + socket.getInetAddress().toString() + " Message: " + message);
 				}
 
 
@@ -153,7 +153,6 @@ public class ServerThread implements Runnable
 			ie.printStackTrace();
 		} finally {
 			server.removeConnection( socket );
-			System.out.println("Closing connection " + socket.toString());
 		}
 	}
 }

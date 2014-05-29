@@ -30,8 +30,6 @@ import me.Christian.threads.Thread_GetWeather;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -60,43 +58,51 @@ public class Main extends Application{
 	public static boolean MPCEnabled = false;
 	public static String MPCServerIP = "192.168.11.205";
 	//
+	// INTERNAL SERVER IP
+	public static int portz = 9977;
 	//
 	// START WITH LOGIN SCREEN ??
-	public static boolean StartWithLoginScreen = false;
+	public static boolean StartWithLoginScreen = true;
 	//
-	//
+	// THE CITY WE ARE LIVING IN
+	public static final String City = "Schweinfurt";
 	//
 
 	public static Stage MainStage;
-
+	public static Scene Sroot, SLogin;
+	
 	// Root Window Stuff
 	public static TextArea Console;
 	public static Label calendar, town, weathericonlabel;
+	public static Slider Music_Slider;
 	public static ImageView Light_Head, Music_Head;
 	public static ImageView Music_prev, Music_next, Music_pause, Music_play;
-	public static Slider Music_Slider;
 	public static ImageView Light1_Button1, Light2_Button1, Light3_Button1, Console_Button1;
 	public static ImageView Light1_Button2, Light2_Button2, Light3_Button2, Console_Button2;
-	public static Text Light1_Text, Light_HeadText, Light2_Text, Light3_Text, Music_Title, Music_HeadText, Console_ButtonText;
 	public static ImageView Light1_Lock, Light2_Lock, Light3_Lock;
 	public static ImageView Light1_Lockcross, Light2_Lockcross, Light3_Lockcross;
 	public static ImageView Light1_State1, Light1_State2, Light1_State3, Light2_State1, Light2_State2, Light2_State3, Light3_State1, Light3_State2, Light3_State3;
+	public static Text Light1_Text, Light_HeadText, Light2_Text, Light3_Text, Music_Title, Music_HeadText, Console_ButtonText;
 	public static String currenttitle = "Feting Title...";
 	public static String volume;
-	public static final String City = "Schweinfurt";
+	public static String ActiveUser = "Root";
 	private static Timer MpcRefreshTimer;
-	public static Scene Sroot, SLogin;
+	public static boolean Light1_Lockstate = false, Light2_Lockstate = false, Light3_Lockstate = false, Door1_Lock = false, Door2_Lock = false;
+	public static int Light1_State = 0, Light2_State = 0, Light3_State = 0, Door1_State = 0, Door2_State = 0;
+	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
 
+	// print queue
 	public static String[] todoprint = new String[1000];
 	public static int todoprintsize = 0;
 
+	// cmd queue
 	public static String[] todocmd = new String[1000];
 	public static int todocmdsize = 0;
 
+	// Server and it's thread
 	public static Thread Thread_MainServer;
 	public static Server server;
 
-	StringProperty title = new SimpleStringProperty();
 	public static boolean Weatherinit = false;
 
 	// Login Window Stuff
@@ -113,6 +119,7 @@ public class Main extends Application{
 	public static PiFace piface;
 
 	public static void main(String[] args) throws IOException{
+		// Make both queues empty
 		for(int i = 999; i>-1; i--){
 			todoprint[i] = "";
 			todocmd[i] = "";
@@ -124,7 +131,8 @@ public class Main extends Application{
 		OtherStuff.initDatabase();
 		// Get the weather from thread
 		Thread_GetWeather.StartCheck(City);
-
+		
+		// Create a object, create a Thread, start the Thread
 		server = new Server();
 		Thread_MainServer = new Thread(server);
 		Thread_MainServer.start();
@@ -202,10 +210,13 @@ public class Main extends Application{
 	}
 
 	public void start(Stage primaryStage) {
+		// define the window, so we can handle it later
 		MainStage = primaryStage;
-		// name the window
+		// multiple threads possible?
 		Platform.setImplicitExit(false);
+		// name the window
 		primaryStage.setTitle("Homecontrol");
+		//No resize for you sir!
 		primaryStage.setResizable(false);
 		System.out.println("Loading: 10%");
 		// Exit the programm on window close
@@ -219,13 +230,14 @@ public class Main extends Application{
 
 		// Background
 		ImageView imgView = null;
+		// Watermark for Testbuild
 		if(!Testbuild){
-			imgView = new ImageView(new Image("438120.jpg"));
+			imgView = new ImageView(new Image("MainBackground.jpg"));
 			imgView.setFitWidth(1100);
 			imgView.setFitHeight(625);
 			root.getChildren().add(imgView);
 		}else{
-			imgView = new ImageView(new Image("438120.jpg"));
+			imgView = new ImageView(new Image("MainBackground.jpg"));
 			imgView.setFitWidth(1100);
 			imgView.setFitHeight(625);
 			root.getChildren().add(imgView);
@@ -524,7 +536,8 @@ public class Main extends Application{
 		Console.setEditable(false);
 		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
 		root.getChildren().add(Console);
-
+		
+		// Permanently scroll down for new text
 		Console.textProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue,
@@ -753,7 +766,8 @@ public class Main extends Application{
 			Login.getChildren().add(Login_LoginButton6);
 			Login_SparkPos[5][0] = Login_LoginButton6.getLayoutX();
 			Login_SparkPos[5][1] = Login_LoginButton6.getLayoutY();
-
+			
+			// Set up sparks (flying around the buttons)
 			for(int i=0;i<6;i++){
 				Login_Spark[i] = new ImageView(new Image("spark.png"));
 				Login_Spark[i].setFitHeight(100);
@@ -776,6 +790,7 @@ public class Main extends Application{
 	}
 
 	public void FinalInit(){
+		// Turn LED's off again
 		if(!Testbuild){
 			for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
 				piface.getLed(index).off();
@@ -785,106 +800,108 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
-
+	
+	// Complete handeling for the login screen and the code .. ps: secret code :p
 	public static void LoginChecker(Object e){
 		if(e == Login_LoginButton1){
-			if(GuiVariables.Login_LoginButton1_State < 3){
-				GuiVariables.Login_LoginButton1_State++;
-				if(GuiVariables.Login_LoginButton1_State == 1){
+			if(Login_LoginButton1_State < 3){
+				Login_LoginButton1_State++;
+				if(Login_LoginButton1_State == 1){
 					Login_Spark[0].setEffect(new Glow(0.33));
-				}else if(GuiVariables.Login_LoginButton1_State == 2){
+				}else if(Login_LoginButton1_State == 2){
 					Login_Spark[0].setEffect(new Glow(0.66));
-				}else if(GuiVariables.Login_LoginButton1_State == 3){
+				}else if(Login_LoginButton1_State == 3){
 					Login_Spark[0].setEffect(new Glow(1.0));
 				}
 			}else{
-				GuiVariables.Login_LoginButton1_State = 0;
+				Login_LoginButton1_State = 0;
 				Login_Spark[0].setEffect(new Glow(0));
 			}
 		}else if(e == Login_LoginButton2){
-			if(GuiVariables.Login_LoginButton2_State < 3){
-				GuiVariables.Login_LoginButton2_State++;
-				if(GuiVariables.Login_LoginButton2_State == 1){
+			if(Login_LoginButton2_State < 3){
+				Login_LoginButton2_State++;
+				if(Login_LoginButton2_State == 1){
 					Login_Spark[1].setEffect(new Glow(0.33));
-				}else if(GuiVariables.Login_LoginButton2_State == 2){
+				}else if(Login_LoginButton2_State == 2){
 					Login_Spark[1].setEffect(new Glow(0.66));
-				}else if(GuiVariables.Login_LoginButton2_State == 3){
+				}else if(Login_LoginButton2_State == 3){
 					Login_Spark[1].setEffect(new Glow(1.0));
 				}
 			}else{
-				GuiVariables.Login_LoginButton2_State = 0;
+				Login_LoginButton2_State = 0;
 				Login_Spark[1].setEffect(new Glow(0));
 			}
 		}else if(e == Login_LoginButton3){
-			if(GuiVariables.Login_LoginButton3_State < 3){
-				GuiVariables.Login_LoginButton3_State++;
-				if(GuiVariables.Login_LoginButton3_State == 1){
+			if(Login_LoginButton3_State < 3){
+				Login_LoginButton3_State++;
+				if(Login_LoginButton3_State == 1){
 					Login_Spark[2].setEffect(new Glow(0.33));
-				}else if(GuiVariables.Login_LoginButton3_State == 2){
+				}else if(Login_LoginButton3_State == 2){
 					Login_Spark[2].setEffect(new Glow(0.66));
-				}else if(GuiVariables.Login_LoginButton3_State == 3){
+				}else if(Login_LoginButton3_State == 3){
 					Login_Spark[2].setEffect(new Glow(1.0));
 				}
 			}else{
-				GuiVariables.Login_LoginButton3_State = 0;
+				Login_LoginButton3_State = 0;
 				Login_Spark[2].setEffect(new Glow(0));
 			}
 		}else if(e == Login_LoginButton4){
-			if(GuiVariables.Login_LoginButton4_State < 3){
-				GuiVariables.Login_LoginButton4_State++;
-				if(GuiVariables.Login_LoginButton4_State == 1){
+			if(Login_LoginButton4_State < 3){
+				Login_LoginButton4_State++;
+				if(Login_LoginButton4_State == 1){
 					Login_Spark[3].setEffect(new Glow(0.33));
-				}else if(GuiVariables.Login_LoginButton4_State == 2){
+				}else if(Login_LoginButton4_State == 2){
 					Login_Spark[3].setEffect(new Glow(0.66));
-				}else if(GuiVariables.Login_LoginButton4_State == 3){
+				}else if(Login_LoginButton4_State == 3){
 					Login_Spark[3].setEffect(new Glow(1.0));
 				}
 			}else{
-				GuiVariables.Login_LoginButton4_State = 0;
+				Login_LoginButton4_State = 0;
 				Login_Spark[3].setEffect(new Glow(0));
 			}
 		}else if(e == Login_LoginButton5){
-			if(GuiVariables.Login_LoginButton5_State < 3){
-				GuiVariables.Login_LoginButton5_State++;
-				if(GuiVariables.Login_LoginButton5_State == 1){
+			if(Login_LoginButton5_State < 3){
+				Login_LoginButton5_State++;
+				if(Login_LoginButton5_State == 1){
 					Login_Spark[4].setEffect(new Glow(0.33));
-				}else if(GuiVariables.Login_LoginButton5_State == 2){
+				}else if(Login_LoginButton5_State == 2){
 					Login_Spark[4].setEffect(new Glow(0.66));
-				}else if(GuiVariables.Login_LoginButton5_State == 3){
+				}else if(Login_LoginButton5_State == 3){
 					Login_Spark[4].setEffect(new Glow(1.0));
 				}
 			}else{
-				GuiVariables.Login_LoginButton5_State = 0;
+				Login_LoginButton5_State = 0;
 				Login_Spark[4].setEffect(new Glow(0));
 			}
 		}else if(e == Login_LoginButton6){
-			if(GuiVariables.Login_LoginButton6_State < 3){
-				GuiVariables.Login_LoginButton6_State++;
-				if(GuiVariables.Login_LoginButton6_State == 1){
+			if(Login_LoginButton6_State < 3){
+				Login_LoginButton6_State++;
+				if(Login_LoginButton6_State == 1){
 					Login_Spark[5].setEffect(new Glow(0.33));
-				}else if(GuiVariables.Login_LoginButton6_State == 2){
+				}else if(Login_LoginButton6_State == 2){
 					Login_Spark[5].setEffect(new Glow(0.66));
-				}else if(GuiVariables.Login_LoginButton6_State == 3){
+				}else if(Login_LoginButton6_State == 3){
 					Login_Spark[5].setEffect(new Glow(1.0));
 				}
 			}else{
-				GuiVariables.Login_LoginButton6_State = 0;
+				Login_LoginButton6_State = 0;
 				Login_Spark[5].setEffect(new Glow(0));
 			}
 		}
-		if(GuiVariables.Login_LoginButton1_State == 1 && GuiVariables.Login_LoginButton4_State == 2 && GuiVariables.Login_LoginButton5_State == 1){
-			if(GuiVariables.Login_LoginButton2_State == 0 && GuiVariables.Login_LoginButton3_State == 0 && GuiVariables.Login_LoginButton6_State == 0){
-				GuiVariables.Login_LoginButton1_State = 0;
-				GuiVariables.Login_LoginButton2_State = 0;
-				GuiVariables.Login_LoginButton3_State = 0;
-				GuiVariables.Login_LoginButton4_State = 0;
-				GuiVariables.Login_LoginButton5_State = 0;
-				GuiVariables.Login_LoginButton6_State = 0;
+		if(Login_LoginButton1_State == 1 && Login_LoginButton4_State == 2 && Login_LoginButton5_State == 1){
+			if(Login_LoginButton2_State == 0 && Login_LoginButton3_State == 0 && Login_LoginButton6_State == 0){
+				Login_LoginButton1_State = 0;
+				Login_LoginButton2_State = 0;
+				Login_LoginButton3_State = 0;
+				Login_LoginButton4_State = 0;
+				Login_LoginButton5_State = 0;
+				Login_LoginButton6_State = 0;
 				SwitchToMainScene();
 			}
 		}
 	}
-
+	
+	// Let the sparks fly and work the Queues
 	protected void update() {
 		if(MainStage.getScene() == SLogin){
 			for(int i = 0; i < 6; i++){
@@ -898,6 +915,7 @@ public class Main extends Application{
 				}
 			}
 		}
+		// Print queue
 		if(todoprint[0] != ""){
 			for(int x = todoprintsize; x > -1; x--){
 				System.out.println(todoprint[x]);
@@ -905,6 +923,7 @@ public class Main extends Application{
 				todoprintsize--;
 			}
 		}
+		// Cmd queue
 		if(todocmd[0] != ""){
 			for(int y = todocmdsize; y > -1; y--){
 				// USAGE:
@@ -956,7 +975,9 @@ public class Main extends Application{
 				}else if(temp[0].equals("Toggle")){
 					// Todo
 				}else if(temp[0].equals("Add")){
-					// Todo
+					if(temp[1].equals("Console")){
+						OtherStuff.addToPrintQueue(temp[2]);
+					}
 				}else{
 					System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
 				}
@@ -965,7 +986,7 @@ public class Main extends Application{
 				todocmdsize--;
 			}
 		}
-
+		// Get le time
 		calendar.setText(OtherStuff.TheNormalTime());	
 		if(Thread_GetWeather.weathericon != null && !Weatherinit){
 			resetweather();
@@ -977,7 +998,8 @@ public class Main extends Application{
 			e.printStackTrace();
 		}
 	}
-
+	
+	// Resets the weater, obviously
 	public void resetweather(){
 		weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
 		town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
@@ -1002,6 +1024,7 @@ public class Main extends Application{
 		}
 	}
 
+	// Switches from Main to Login Scene
 	public static void SwitchToMainScene(){
 		Login_LoginButton1 = null;
 		Login_LoginButton2 = null;
@@ -1014,6 +1037,7 @@ public class Main extends Application{
 		}
 		MainStage.setScene(Sroot);
 		Login_Background = null;
+		SLogin = null;
 	}
 
 	// Refresh of music title
@@ -1049,6 +1073,7 @@ public class Main extends Application{
 			e2.printStackTrace();
 		}
 	}
+	// EVERY Button EVENT! Release, click, pressed all the cool stuff :p Both login and root scene
 	class MyEventHandler implements EventHandler<MouseEvent> {
 
 		@Override
@@ -1061,24 +1086,24 @@ public class Main extends Application{
 					Light1_Button1.setVisible(true);
 					Light1_Text.setLayoutX(Light1_Text.getLayoutX()-12);
 					Light1_Text.setLayoutY(Light1_Text.getLayoutY()-10);
-					if(GuiVariables.Light1_State == 0){
+					if(Light1_State == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
-						GuiVariables.Light1_State = 1;
-					}else if(GuiVariables.Light1_State == 1){
+						Light1_State = 1;
+					}else if(Light1_State == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).off();
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 2);
-						GuiVariables.Light1_State = 2;
-					}else if(GuiVariables.Light1_State == 2){
+						Light1_State = 2;
+					}else if(Light1_State == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
 						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
-						GuiVariables.Light1_State = 1;
+						Light1_State = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					System.out.println("Pressed Light1_Button");
@@ -1106,24 +1131,24 @@ public class Main extends Application{
 					Light2_Button1.setVisible(true);
 					Light2_Text.setLayoutX(Light2_Text.getLayoutX()-12);
 					Light2_Text.setLayoutY(Light2_Text.getLayoutY()-10);
-					if(GuiVariables.Light2_State == 0){
+					if(Light2_State == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
-						GuiVariables.Light2_State = 1;
-					}else if(GuiVariables.Light2_State == 1){
+						Light2_State = 1;
+					}else if(Light2_State == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).off();
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 2);
-						GuiVariables.Light2_State = 2;
-					}else if(GuiVariables.Light2_State == 2){
+						Light2_State = 2;
+					}else if(Light2_State == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
 						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
-						GuiVariables.Light2_State = 1;
+						Light2_State = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					System.out.println("Pressed Light2_Button");
@@ -1151,24 +1176,24 @@ public class Main extends Application{
 					Light3_Button1.setVisible(true);
 					Light3_Text.setLayoutX(Light3_Text.getLayoutX()-12);
 					Light3_Text.setLayoutY(Light3_Text.getLayoutY()-10);
-					if(GuiVariables.Light3_State == 0){
+					if(Light3_State == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
 						}
 						SetState(Light3_State1, Light3_State2, Light3_State3, 1);
-						GuiVariables.Light3_State = 1;
-					}else if(GuiVariables.Light3_State == 1){
+						Light3_State = 1;
+					}else if(Light3_State == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).off();
 						}
 						SetState(Light3_State1, Light3_State2, Light3_State3, 2);
-						GuiVariables.Light3_State = 2;
-					}else if(GuiVariables.Light3_State == 2){
+						Light3_State = 2;
+					}else if(Light3_State == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
 						}
 						SetState(Light3_State1, Light3_State2, Light3_State3, 1);
-						GuiVariables.Light3_State = 1;
+						Light3_State = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					System.out.println("Pressed Light3_Button");

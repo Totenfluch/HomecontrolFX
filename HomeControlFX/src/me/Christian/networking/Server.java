@@ -5,20 +5,18 @@ import java.net.*;
 import java.util.*;
 
 import me.Christian.other.OtherStuff;
+import me.Christian.pack.Main;
 
 public class Server implements Runnable
 {
-	private static int portz = 9977;
 	private ServerSocket ss;
 
-	@SuppressWarnings("rawtypes")
-	public static Hashtable outputStreams = new Hashtable();
+	public static Hashtable<Socket, DataOutputStream> outputStreams = new Hashtable<Socket, DataOutputStream>();
 	
-	@SuppressWarnings("unchecked")
 	public void run() {
 		
 		try {
-			ss = new ServerSocket( portz );
+			ss = new ServerSocket( Main.portz );
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -50,15 +48,13 @@ public class Server implements Runnable
 	}
 
 
-	@SuppressWarnings("rawtypes")
-	static Enumeration getOutputStreams() {
+	static Enumeration<DataOutputStream> getOutputStreams() {
 		return outputStreams.elements();
 	}
 
-	@SuppressWarnings("rawtypes")
 	public static void sendToAll( String message ) {
 		synchronized( outputStreams ) {
-			for (Enumeration e = getOutputStreams(); e.hasMoreElements(); ) {
+			for (Enumeration<DataOutputStream> e = getOutputStreams(); e.hasMoreElements(); ) {
 				DataOutputStream dout = (DataOutputStream)e.nextElement();
 				try {
 					dout.writeUTF(message);
