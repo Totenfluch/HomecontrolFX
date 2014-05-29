@@ -12,7 +12,7 @@ public class CheckMessage {
 
 	public static void forcmd(Socket socket, String pcname, String cmd, String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8, String arg9, String arg10 ){
 		if(cmd.equals(ReqPrivateKey)){
-			if(OtherStuff.UserDatabase.contains(arg1)){
+			if(OtherStuff.UserDatabase.containsKey(arg1)){
 				if(OtherStuff.UserDatabase.get(arg1).equals(arg2)){
 					String temp = OtherStuff.GeneratePrivateKey();
 					if(OtherStuff.PrivateKeys.contains(socket.toString())){
@@ -25,11 +25,10 @@ public class CheckMessage {
 				}
 			}
 		}else if(cmd.equals(AuthAction)){
-			if(OtherStuff.PrivateKeys.contains(socket.toString())){
+			if(OtherStuff.PrivateKeys.containsKey(socket.toString())){
 				if(OtherStuff.PrivateKeys.get(socket.toString()).equals(arg1)){
 					OtherStuff.addToPrintQueue("Action Authorized with PrivateKey");
-				}else{
-					OtherStuff.addToPrintQueue("Invalid Private Key from: " + socket.getInetAddress());
+					OtherStuff.addToCmdQueue(arg2);
 				}
 			}
 		}

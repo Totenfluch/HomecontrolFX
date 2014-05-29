@@ -35,10 +35,12 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
+import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -58,7 +60,16 @@ public class Main extends Application{
 	public static boolean MPCEnabled = false;
 	public static String MPCServerIP = "192.168.11.205";
 	//
+	//
+	// START WITH LOGIN SCREEN ??
+	public static boolean StartWithLoginScreen = false;
+	//
+	//
+	//
 
+	public static Stage MainStage;
+
+	// Root Window Stuff
 	public static TextArea Console;
 	public static Label calendar, town, weathericonlabel;
 	public static ImageView Light_Head, Music_Head;
@@ -74,10 +85,11 @@ public class Main extends Application{
 	public static String volume;
 	public static final String City = "Schweinfurt";
 	private static Timer MpcRefreshTimer;
+	public static Scene Sroot, SLogin;
 
 	public static String[] todoprint = new String[1000];
 	public static int todoprintsize = 0;
-	
+
 	public static String[] todocmd = new String[1000];
 	public static int todocmdsize = 0;
 
@@ -86,6 +98,13 @@ public class Main extends Application{
 
 	StringProperty title = new SimpleStringProperty();
 	public static boolean Weatherinit = false;
+
+	// Login Window Stuff
+	public static ImageView Login_LoginButton1, Login_LoginButton2, Login_LoginButton3, Login_LoginButton4, Login_LoginButton5, Login_LoginButton6;
+	public static ImageView Login_Spark[] = new ImageView[6];
+	public static double Login_SparkPos[][] = new double[6][2];
+	public static int Login_SparkSeq[] = new int[6];
+	private static ImageView Login_Background;
 
 
 	// Setup Piface instances
@@ -183,6 +202,7 @@ public class Main extends Application{
 	}
 
 	public void start(Stage primaryStage) {
+		MainStage = primaryStage;
 		// name the window
 		Platform.setImplicitExit(false);
 		primaryStage.setTitle("Homecontrol");
@@ -224,7 +244,7 @@ public class Main extends Application{
 				update();
 			}
 		}.start();
-		
+
 		// Date & time
 		calendar = new Label(OtherStuff.TheNormalTime());
 		calendar.setLayoutX(20);
@@ -504,7 +524,7 @@ public class Main extends Application{
 		Console.setEditable(false);
 		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
 		root.getChildren().add(Console);
-		
+
 		Console.textProperty().addListener(new ChangeListener<Object>() {
 			@Override
 			public void changed(ObservableValue<?> observable, Object oldValue,
@@ -514,7 +534,7 @@ public class Main extends Application{
 		});
 
 		System.out.println("Loading: 80%");
-		
+
 		// Console Toggle
 		Console_Button1 = new ImageView(new Image("iB12.png"));
 		Console_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -628,7 +648,7 @@ public class Main extends Application{
 		Music_next.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Music_next.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_next.getOnMouseReleased();
-		Music_prev.getOnMousePressed();
+		Music_next.getOnMousePressed();
 		Music_next.setLayoutX(970);
 		Music_next.setLayoutY(150);
 		Music_next.setFitHeight(35);
@@ -639,13 +659,120 @@ public class Main extends Application{
 
 		System.out.println("Loading: 100%");
 		System.out.println("Launching GUI Now!!!");
-		primaryStage.setScene(new Scene(root, 1024, 600));
+		Sroot = new Scene(root, 1024, 600);
+		//primaryStage.setScene(Sroot);
+
+		if(StartWithLoginScreen){
+			Pane Login = new Pane();
+
+			Login_Background = new ImageView(new Image("loginb.gif"));
+			Login_Background.setFitHeight(630);
+			Login_Background.setFitWidth(1050);
+			Login.getChildren().add(Login_Background);
+
+			Login_LoginButton1 = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton1.getOnMouseReleased();
+			Login_LoginButton1.getOnMousePressed();
+			Login_LoginButton1.setLayoutX(115);
+			Login_LoginButton1.setLayoutY(115);
+			Login_LoginButton1.setFitHeight(80);
+			Login_LoginButton1.setFitWidth(80);
+			Login_LoginButton1.setVisible(true);
+			Login.getChildren().add(Login_LoginButton1);
+			Login_SparkPos[0][0] = Login_LoginButton1.getLayoutX();
+			Login_SparkPos[0][1] = Login_LoginButton1.getLayoutY();
+
+			Login_LoginButton2 = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton2.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton2.getOnMouseReleased();
+			Login_LoginButton2.getOnMousePressed();
+			Login_LoginButton2.setLayoutX(115);
+			Login_LoginButton2.setLayoutY(415);
+			Login_LoginButton2.setFitHeight(80);
+			Login_LoginButton2.setFitWidth(80);
+			Login_LoginButton2.setVisible(true);
+			Login.getChildren().add(Login_LoginButton2);
+			Login_SparkPos[1][0] = Login_LoginButton2.getLayoutX();
+			Login_SparkPos[1][1] = Login_LoginButton2.getLayoutY();
+
+			Login_LoginButton3 = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton3.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton3.getOnMouseReleased();
+			Login_LoginButton3.getOnMousePressed();
+			Login_LoginButton3.setLayoutX(475);
+			Login_LoginButton3.setLayoutY(115);
+			Login_LoginButton3.setFitHeight(80);
+			Login_LoginButton3.setFitWidth(80);
+			Login_LoginButton3.setVisible(true);
+			Login.getChildren().add(Login_LoginButton3);
+			Login_SparkPos[2][0] = Login_LoginButton3.getLayoutX();
+			Login_SparkPos[2][1] = Login_LoginButton3.getLayoutY();
+
+			Login_LoginButton4 = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton4.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton4.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton4.getOnMouseReleased();
+			Login_LoginButton4.getOnMousePressed();
+			Login_LoginButton4.setLayoutX(475);
+			Login_LoginButton4.setLayoutY(415);
+			Login_LoginButton4.setFitHeight(80);
+			Login_LoginButton4.setFitWidth(80);
+			Login_LoginButton4.setVisible(true);
+			Login.getChildren().add(Login_LoginButton4);
+			Login_SparkPos[3][0] = Login_LoginButton4.getLayoutX();
+			Login_SparkPos[3][1] = Login_LoginButton4.getLayoutY();
+
+			Login_LoginButton5 = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton5.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton5.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton5.getOnMouseReleased();
+			Login_LoginButton5.getOnMousePressed();
+			Login_LoginButton5.setLayoutX(835);
+			Login_LoginButton5.setLayoutY(115);
+			Login_LoginButton5.setFitHeight(80);
+			Login_LoginButton5.setFitWidth(80);
+			Login_LoginButton5.setVisible(true);
+			Login.getChildren().add(Login_LoginButton5);
+			Login_SparkPos[4][0] = Login_LoginButton5.getLayoutX();
+			Login_SparkPos[4][1] = Login_LoginButton5.getLayoutY();
+
+			Login_LoginButton6 = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton6.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton6.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton6.getOnMouseReleased();
+			Login_LoginButton6.getOnMousePressed();
+			Login_LoginButton6.setLayoutX(835);
+			Login_LoginButton6.setLayoutY(415);
+			Login_LoginButton6.setFitHeight(80);
+			Login_LoginButton6.setFitWidth(80);
+			Login_LoginButton6.setVisible(true);
+			Login.getChildren().add(Login_LoginButton6);
+			Login_SparkPos[5][0] = Login_LoginButton6.getLayoutX();
+			Login_SparkPos[5][1] = Login_LoginButton6.getLayoutY();
+
+			for(int i=0;i<6;i++){
+				Login_Spark[i] = new ImageView(new Image("spark.png"));
+				Login_Spark[i].setFitHeight(100);
+				Login_Spark[i].setFitWidth(100);
+				Login.getChildren().add(Login_Spark[i]);
+			}
+
+
+			SLogin = new Scene(Login, 1024, 600);
+			primaryStage.setScene(SLogin);
+		}else{
+			primaryStage.setScene(Sroot);
+		}
+
 		primaryStage.show();
 		System.out.println("Finished [2]: GUI");
 		System.out.println("Starting [3]: Final init");
 		FinalInit();
 		System.out.println("--- finished loading ---");
-
 	}
 
 	public void FinalInit(){
@@ -659,10 +786,118 @@ public class Main extends Application{
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
 
-
-
+	public static void LoginChecker(Object e){
+		if(e == Login_LoginButton1){
+			if(GuiVariables.Login_LoginButton1_State < 3){
+				GuiVariables.Login_LoginButton1_State++;
+				if(GuiVariables.Login_LoginButton1_State == 1){
+					Login_Spark[0].setEffect(new Glow(0.33));
+				}else if(GuiVariables.Login_LoginButton1_State == 2){
+					Login_Spark[0].setEffect(new Glow(0.66));
+				}else if(GuiVariables.Login_LoginButton1_State == 3){
+					Login_Spark[0].setEffect(new Glow(1.0));
+				}
+			}else{
+				GuiVariables.Login_LoginButton1_State = 0;
+				Login_Spark[0].setEffect(new Glow(0));
+			}
+		}else if(e == Login_LoginButton2){
+			if(GuiVariables.Login_LoginButton2_State < 3){
+				GuiVariables.Login_LoginButton2_State++;
+				if(GuiVariables.Login_LoginButton2_State == 1){
+					Login_Spark[1].setEffect(new Glow(0.33));
+				}else if(GuiVariables.Login_LoginButton2_State == 2){
+					Login_Spark[1].setEffect(new Glow(0.66));
+				}else if(GuiVariables.Login_LoginButton2_State == 3){
+					Login_Spark[1].setEffect(new Glow(1.0));
+				}
+			}else{
+				GuiVariables.Login_LoginButton2_State = 0;
+				Login_Spark[1].setEffect(new Glow(0));
+			}
+		}else if(e == Login_LoginButton3){
+			if(GuiVariables.Login_LoginButton3_State < 3){
+				GuiVariables.Login_LoginButton3_State++;
+				if(GuiVariables.Login_LoginButton3_State == 1){
+					Login_Spark[2].setEffect(new Glow(0.33));
+				}else if(GuiVariables.Login_LoginButton3_State == 2){
+					Login_Spark[2].setEffect(new Glow(0.66));
+				}else if(GuiVariables.Login_LoginButton3_State == 3){
+					Login_Spark[2].setEffect(new Glow(1.0));
+				}
+			}else{
+				GuiVariables.Login_LoginButton3_State = 0;
+				Login_Spark[2].setEffect(new Glow(0));
+			}
+		}else if(e == Login_LoginButton4){
+			if(GuiVariables.Login_LoginButton4_State < 3){
+				GuiVariables.Login_LoginButton4_State++;
+				if(GuiVariables.Login_LoginButton4_State == 1){
+					Login_Spark[3].setEffect(new Glow(0.33));
+				}else if(GuiVariables.Login_LoginButton4_State == 2){
+					Login_Spark[3].setEffect(new Glow(0.66));
+				}else if(GuiVariables.Login_LoginButton4_State == 3){
+					Login_Spark[3].setEffect(new Glow(1.0));
+				}
+			}else{
+				GuiVariables.Login_LoginButton4_State = 0;
+				Login_Spark[3].setEffect(new Glow(0));
+			}
+		}else if(e == Login_LoginButton5){
+			if(GuiVariables.Login_LoginButton5_State < 3){
+				GuiVariables.Login_LoginButton5_State++;
+				if(GuiVariables.Login_LoginButton5_State == 1){
+					Login_Spark[4].setEffect(new Glow(0.33));
+				}else if(GuiVariables.Login_LoginButton5_State == 2){
+					Login_Spark[4].setEffect(new Glow(0.66));
+				}else if(GuiVariables.Login_LoginButton5_State == 3){
+					Login_Spark[4].setEffect(new Glow(1.0));
+				}
+			}else{
+				GuiVariables.Login_LoginButton5_State = 0;
+				Login_Spark[4].setEffect(new Glow(0));
+			}
+		}else if(e == Login_LoginButton6){
+			if(GuiVariables.Login_LoginButton6_State < 3){
+				GuiVariables.Login_LoginButton6_State++;
+				if(GuiVariables.Login_LoginButton6_State == 1){
+					Login_Spark[5].setEffect(new Glow(0.33));
+				}else if(GuiVariables.Login_LoginButton6_State == 2){
+					Login_Spark[5].setEffect(new Glow(0.66));
+				}else if(GuiVariables.Login_LoginButton6_State == 3){
+					Login_Spark[5].setEffect(new Glow(1.0));
+				}
+			}else{
+				GuiVariables.Login_LoginButton6_State = 0;
+				Login_Spark[5].setEffect(new Glow(0));
+			}
+		}
+		if(GuiVariables.Login_LoginButton1_State == 1 && GuiVariables.Login_LoginButton4_State == 2 && GuiVariables.Login_LoginButton5_State == 1){
+			if(GuiVariables.Login_LoginButton2_State == 0 && GuiVariables.Login_LoginButton3_State == 0 && GuiVariables.Login_LoginButton6_State == 0){
+				GuiVariables.Login_LoginButton1_State = 0;
+				GuiVariables.Login_LoginButton2_State = 0;
+				GuiVariables.Login_LoginButton3_State = 0;
+				GuiVariables.Login_LoginButton4_State = 0;
+				GuiVariables.Login_LoginButton5_State = 0;
+				GuiVariables.Login_LoginButton6_State = 0;
+				SwitchToMainScene();
+			}
+		}
+	}
 
 	protected void update() {
+		if(MainStage.getScene() == SLogin){
+			for(int i = 0; i < 6; i++){
+				Login_Spark[i].setLayoutX(Login_SparkPos[i][0] + 80*Math.cos(Math.toRadians(Login_SparkSeq[i])));
+				Login_Spark[i].setLayoutY(Login_SparkPos[i][1] + 80*Math.sin(Math.toRadians(Login_SparkSeq[i])));
+				Login_Spark[i].setRotate(Login_SparkSeq[i]);
+
+				Login_SparkSeq[i] = Login_SparkSeq[i]+3;
+				if(Login_SparkSeq[i] > 360){
+					Login_SparkSeq[i] = 0;
+				}
+			}
+		}
 		if(todoprint[0] != ""){
 			for(int x = todoprintsize; x > -1; x--){
 				System.out.println(todoprint[x]);
@@ -678,7 +913,7 @@ public class Main extends Application{
 				// List of Items: Light1, Light2, Light3, Console
 				// params: -> special things, text
 				// example: On@Light1, Toggle@Light2, Toggle@Door1, Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
-				
+
 				String temp[] = todocmd[y].split("@");
 				if(temp[0].equals("On")){
 					if(temp[1].equals("Light1")){
@@ -723,19 +958,23 @@ public class Main extends Application{
 				}else if(temp[0].equals("Add")){
 					// Todo
 				}else{
-					System.out.println("FATAL ERROR: Thread: Main.update.cmdqueue");
+					System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
 				}
-				
-				
+
 				todocmd[y] = "";
 				todocmdsize--;
 			}
 		}
-		
+
 		calendar.setText(OtherStuff.TheNormalTime());	
 		if(Thread_GetWeather.weathericon != null && !Weatherinit){
 			resetweather();
 			Weatherinit = true;
+		}
+		try {
+			Thread.sleep(33);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -761,6 +1000,20 @@ public class Main extends Application{
 		}else{
 			System.out.println("SetStates Error - Out of bounds");
 		}
+	}
+
+	public static void SwitchToMainScene(){
+		Login_LoginButton1 = null;
+		Login_LoginButton2 = null;
+		Login_LoginButton3 = null;
+		Login_LoginButton4 = null;
+		Login_LoginButton5 = null;
+		Login_LoginButton6 = null;
+		for(int i = 0; i<6; i++){
+			Login_Spark[i] = null;
+		}
+		MainStage.setScene(Sroot);
+		Login_Background = null;
 	}
 
 	// Refresh of music title
@@ -939,30 +1192,33 @@ public class Main extends Application{
 			if(e.getSource() == Music_next){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_next.setOpacity(1);
-					try {
-						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" next"};
-						Runtime rt = Runtime.getRuntime();
-						Process proc = rt.exec(commands);
-						BufferedReader stdInput = new BufferedReader(new 
-								InputStreamReader(proc.getInputStream()));
+					if(!Testbuild && MPCEnabled){
+						try {
+							String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" next"};
+							Runtime rt = Runtime.getRuntime();
+							Process proc = rt.exec(commands);
+							BufferedReader stdInput = new BufferedReader(new 
+									InputStreamReader(proc.getInputStream()));
 
-						BufferedReader stdError = new BufferedReader(new 
-								InputStreamReader(proc.getErrorStream()));
-						String s = null;
-						int line = 0;
-						while ((s = stdInput.readLine()) != null) {
-							if(line == 0){
-								currenttitle = s;
-								Music_Title.setText(currenttitle);
-							}else if (line == 2){
-								volume = s;
+							BufferedReader stdError = new BufferedReader(new 
+									InputStreamReader(proc.getErrorStream()));
+							String s = null;
+							int line = 0;
+							while ((s = stdInput.readLine()) != null) {
+								if(line == 0){
+									currenttitle = s;
+									Music_Title.setText(currenttitle);
+								}else if (line == 2){
+									volume = s;
+								}
+								line++;
 							}
-							line++;
+							while ((s = stdError.readLine()) != null) {System.out.println(s);}
+						} catch (IOException e2) {
+							e2.printStackTrace();
 						}
-						while ((s = stdError.readLine()) != null) {System.out.println(s);}
-					} catch (IOException e2) {
-						e2.printStackTrace();
 					}
+					System.out.println("Triggered *Next Title*");
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_next.setOpacity(0.5);
 				}
@@ -970,30 +1226,34 @@ public class Main extends Application{
 			if(e.getSource() == Music_prev){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_prev.setOpacity(1);
-					try {
-						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +"  prev"};
-						Runtime rt = Runtime.getRuntime();
-						Process proc = rt.exec(commands);
-						BufferedReader stdInput = new BufferedReader(new 
-								InputStreamReader(proc.getInputStream()));
+					if(!Testbuild && MPCEnabled){
+						try {
+							String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +"  prev"};
+							Runtime rt = Runtime.getRuntime();
+							Process proc = rt.exec(commands);
+							BufferedReader stdInput = new BufferedReader(new 
+									InputStreamReader(proc.getInputStream()));
 
-						BufferedReader stdError = new BufferedReader(new 
-								InputStreamReader(proc.getErrorStream()));
-						String s = null;
-						int line = 0;
-						while ((s = stdInput.readLine()) != null) {
-							if(line == 0){
-								currenttitle = s;
-								Music_Title.setText(currenttitle);
-							}else if (line == 2){
-								volume = s;
+							BufferedReader stdError = new BufferedReader(new 
+									InputStreamReader(proc.getErrorStream()));
+							String s = null;
+							int line = 0;
+							while ((s = stdInput.readLine()) != null) {
+								if(line == 0){
+									currenttitle = s;
+									Music_Title.setText(currenttitle);
+								}else if (line == 2){
+									volume = s;
+								}
+								line++;
 							}
-							line++;
+							while ((s = stdError.readLine()) != null) {System.out.println(s);}
+
+						} catch (IOException e2) {
+							e2.printStackTrace();
 						}
-						while ((s = stdError.readLine()) != null) {System.out.println(s);}
-					} catch (IOException e2) {
-						e2.printStackTrace();
 					}
+					System.out.println("Triggered *Prev Title*");
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_prev.setOpacity(0.5);
 				}
@@ -1001,30 +1261,33 @@ public class Main extends Application{
 			if(e.getSource() == Music_pause){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_pause.setOpacity(1);
-					try {
-						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" pause"};
-						Runtime rt = Runtime.getRuntime();
-						Process proc = rt.exec(commands);
-						BufferedReader stdInput = new BufferedReader(new 
-								InputStreamReader(proc.getInputStream()));
+					if(!Testbuild && MPCEnabled){
+						try {
+							String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" pause"};
+							Runtime rt = Runtime.getRuntime();
+							Process proc = rt.exec(commands);
+							BufferedReader stdInput = new BufferedReader(new 
+									InputStreamReader(proc.getInputStream()));
 
-						BufferedReader stdError = new BufferedReader(new 
-								InputStreamReader(proc.getErrorStream()));
-						String s = null;
-						int line = 0;
-						while ((s = stdInput.readLine()) != null) {
-							if(line == 0){
-								currenttitle = s;
-								Music_Title.setText(currenttitle);
-							}else if (line == 2){
-								volume = s;
+							BufferedReader stdError = new BufferedReader(new 
+									InputStreamReader(proc.getErrorStream()));
+							String s = null;
+							int line = 0;
+							while ((s = stdInput.readLine()) != null) {
+								if(line == 0){
+									currenttitle = s;
+									Music_Title.setText(currenttitle);
+								}else if (line == 2){
+									volume = s;
+								}
+								line++;
 							}
-							line++;
+							while ((s = stdError.readLine()) != null) {System.out.println(s);}
+						} catch (IOException e2) {
+							e2.printStackTrace();
 						}
-						while ((s = stdError.readLine()) != null) {System.out.println(s);}
-					} catch (IOException e2) {
-						e2.printStackTrace();
 					}
+					System.out.println("Triggered *Pause Music*");
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_pause.setOpacity(0.5);
 				}
@@ -1032,30 +1295,33 @@ public class Main extends Application{
 			if(e.getSource() == Music_play){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_play.setOpacity(1);
-					try {
-						String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" play"};
-						Runtime rt = Runtime.getRuntime();
-						Process proc = rt.exec(commands);
-						BufferedReader stdInput = new BufferedReader(new 
-								InputStreamReader(proc.getInputStream()));
+					if(!Testbuild && MPCEnabled){
+						try {
+							String[] commands = {"bash","-c","mpc -h "+ MPCServerIP +" play"};
+							Runtime rt = Runtime.getRuntime();
+							Process proc = rt.exec(commands);
+							BufferedReader stdInput = new BufferedReader(new 
+									InputStreamReader(proc.getInputStream()));
 
-						BufferedReader stdError = new BufferedReader(new 
-								InputStreamReader(proc.getErrorStream()));
-						String s = null;
-						int line = 0;
-						while ((s = stdInput.readLine()) != null) {
-							if(line == 0){
-								currenttitle = s;
-								Music_Title.setText(currenttitle);
-							}else if (line == 2){
-								volume = s;
+							BufferedReader stdError = new BufferedReader(new 
+									InputStreamReader(proc.getErrorStream()));
+							String s = null;
+							int line = 0;
+							while ((s = stdInput.readLine()) != null) {
+								if(line == 0){
+									currenttitle = s;
+									Music_Title.setText(currenttitle);
+								}else if (line == 2){
+									volume = s;
+								}
+								line++;
 							}
-							line++;
+							while ((s = stdError.readLine()) != null) {System.out.println(s);}
+						} catch (IOException e2) {
+							e2.printStackTrace();
 						}
-						while ((s = stdError.readLine()) != null) {System.out.println(s);}
-					} catch (IOException e2) {
-						e2.printStackTrace();
 					}
+					System.out.println("Triggered *Play Music*");
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					Music_play.setOpacity(0.5);
 				}
@@ -1081,9 +1347,16 @@ public class Main extends Application{
 				}
 			}
 
+			// Login Stuff
+			if(e.getSource() == Login_LoginButton1 || e.getSource() == Login_LoginButton2 || e.getSource() == Login_LoginButton3 || e.getSource() == Login_LoginButton4 || e.getSource() == Login_LoginButton5 || e.getSource() == Login_LoginButton6){
+				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
+					((Node) e.getSource()).setOpacity(1);
+					LoginChecker(e.getSource());
+				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
+					((Node) e.getSource()).setOpacity(0.5);
+				}
+			}
 		}
-
 	}
-
 }
 
