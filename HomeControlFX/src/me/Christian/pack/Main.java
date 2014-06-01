@@ -43,6 +43,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -55,10 +56,18 @@ public class Main extends Application{
 	public static boolean Testbuild = true;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
+	//
+	// Enable MPC ( Internet Radio [Requires extern Server])
 	public static boolean MPCEnabled = false;
+	//
+	// Delay to refresh MPC in ms
+	// default: 2000 (2s)
+	public static int MpcRefreshDelay = 2000;
+	//
+	// The MPC Server Ip - should be in the same network
 	public static String MPCServerIP = "192.168.11.205";
 	//
-	// INTERNAL SERVER IP
+	// INTERNAL SERVER PORT
 	public static int portz = 9977;
 	//
 	// START WITH LOGIN SCREEN ??
@@ -67,13 +76,18 @@ public class Main extends Application{
 	// THE CITY WE ARE LIVING IN
 	public static final String City = "Schweinfurt";
 	//
+	// Delay to refresh the weather in ms
+	// default: 600000 (10 minutes)
+	public static int WeatherRefreshDelay = 600000;
 
+	// Main Stage - where everything goes thing thing
 	public static Stage MainStage;
+	// Scene for Root(control GUI) and Scene for Login - both can be places in MainStage.
 	public static Scene Sroot, SLogin;
-	
+
 	// Root Window Stuff
 	public static TextArea Console;
-	public static Label calendar, town, weathericonlabel;
+	public static Label calendar, town, weathericonlabel, User_Logout;
 	public static Slider Music_Slider;
 	public static ImageView Light_Head, Music_Head;
 	public static ImageView Music_prev, Music_next, Music_pause, Music_play;
@@ -85,8 +99,10 @@ public class Main extends Application{
 	public static Text Light1_Text, Light_HeadText, Light2_Text, Light3_Text, Music_Title, Music_HeadText, Console_ButtonText;
 	public static String currenttitle = "Feting Title...";
 	public static String volume;
+	// Login thingy for later
 	public static String ActiveUser = "Root";
-	private static Timer MpcRefreshTimer;
+	// Login thingy for later
+	private static Timer MpcRefreshTimer, WeatherRefreshTimer;
 	public static boolean Light1_Lockstate = false, Light2_Lockstate = false, Light3_Lockstate = false, Door1_Lock = false, Door2_Lock = false;
 	public static int Light1_State = 0, Light2_State = 0, Light3_State = 0, Door1_State = 0, Door2_State = 0;
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
@@ -131,20 +147,29 @@ public class Main extends Application{
 		OtherStuff.initDatabase();
 		// Get the weather from thread
 		Thread_GetWeather.StartCheck(City);
-		
+
 		// Create a object, create a Thread, start the Thread
 		server = new Server();
 		Thread_MainServer = new Thread(server);
 		Thread_MainServer.start();
 
 		// build Refresh of music title
-		MpcRefreshTimer = new Timer(2000, new ActionListener()
+		MpcRefreshTimer = new Timer(MpcRefreshDelay, new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
 				RefreshMpc();
 			}
 		});
+		
+		WeatherRefreshTimer = new Timer(WeatherRefreshDelay, new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				refreshweather();
+			}
+		});
+		WeatherRefreshTimer.start();
 
 		if(!Testbuild){
 			// Start Refresh if MPC is enabled
@@ -277,7 +302,20 @@ public class Main extends Application{
 		weathericonlabel.setLayoutY(8);
 		weathericonlabel.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(weathericonlabel);
-
+		
+		
+		// <Username>, Logout
+		User_Logout = new Label(Main.ActiveUser + ", Logout");
+		User_Logout.setLayoutX(880);
+		User_Logout.setLayoutY(20);
+		User_Logout.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		User_Logout.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		User_Logout.getOnMousePressed();
+		User_Logout.getOnMouseReleased();
+		User_Logout.setFont(Font.font(java.awt.Font.SERIF, 22));
+		root.getChildren().add(User_Logout);
+		
+		
 		// Light head bar image
 		Light_Head = new ImageView(new Image("B12.png"));
 		Light_Head.setLayoutX(60);
@@ -317,7 +355,6 @@ public class Main extends Application{
 		Light1_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Light1_Text.getOnMousePressed();
 		Light1_Text.getOnMouseReleased();
-		Light1_Text.getOnMousePressed();
 		Light1_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
 		Light1_Text.setLayoutX(80);
 		Light1_Text.setLayoutY(150);
@@ -396,7 +433,6 @@ public class Main extends Application{
 		Light2_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Light2_Text.getOnMousePressed();
 		Light2_Text.getOnMouseReleased();
-		Light2_Text.getOnMousePressed();
 		Light2_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
 		Light2_Text.setLayoutX(80);
 		Light2_Text.setLayoutY(200);
@@ -472,7 +508,6 @@ public class Main extends Application{
 		Light3_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Light3_Text.getOnMousePressed();
 		Light3_Text.getOnMouseReleased();
-		Light3_Text.getOnMousePressed();
 		Light3_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
 		Light3_Text.setLayoutX(80);
 		Light3_Text.setLayoutY(250);
@@ -536,7 +571,7 @@ public class Main extends Application{
 		Console.setEditable(false);
 		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
 		root.getChildren().add(Console);
-		
+
 		// Permanently scroll down for new text
 		Console.textProperty().addListener(new ChangeListener<Object>() {
 			@Override
@@ -570,7 +605,6 @@ public class Main extends Application{
 		Console_ButtonText.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Console_ButtonText.getOnMousePressed();
 		Console_ButtonText.getOnMouseReleased();
-		Console_ButtonText.getOnMousePressed();
 		Console_ButtonText.setFont(Font.font(java.awt.Font.SERIF, 18));
 		Console_ButtonText.setLayoutX(675);
 		Console_ButtonText.setLayoutY(105);
@@ -612,10 +646,12 @@ public class Main extends Application{
 			public void changed(ObservableValue<? extends Number> ov,
 					Number old_val, Number new_val) {
 				int volume = (int) Math.floor(new_val.doubleValue());
-				try {
-					Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " volume " + volume});
-				} catch (IOException e) {
-					e.printStackTrace();
+				if(!Testbuild && MPCEnabled){
+					try {
+						Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " volume " + volume});
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		});
@@ -766,7 +802,7 @@ public class Main extends Application{
 			Login.getChildren().add(Login_LoginButton6);
 			Login_SparkPos[5][0] = Login_LoginButton6.getLayoutX();
 			Login_SparkPos[5][1] = Login_LoginButton6.getLayoutY();
-			
+
 			// Set up sparks (flying around the buttons)
 			for(int i=0;i<6;i++){
 				Login_Spark[i] = new ImageView(new Image("spark.png"));
@@ -800,7 +836,7 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
-	
+
 	// Complete handeling for the login screen and the code .. ps: secret code :p
 	public static void LoginChecker(Object e){
 		if(e == Login_LoginButton1){
@@ -900,7 +936,7 @@ public class Main extends Application{
 			}
 		}
 	}
-	
+
 	// Let the sparks fly and work the Queues
 	protected void update() {
 		if(MainStage.getScene() == SLogin){
@@ -989,7 +1025,7 @@ public class Main extends Application{
 		// Get le time
 		calendar.setText(OtherStuff.TheNormalTime());	
 		if(Thread_GetWeather.weathericon != null && !Weatherinit){
-			resetweather();
+			refreshweather();
 			Weatherinit = true;
 		}
 		try {
@@ -998,9 +1034,11 @@ public class Main extends Application{
 			e.printStackTrace();
 		}
 	}
-	
+
 	// Resets the weater, obviously
-	public void resetweather(){
+	public static void refreshweather(){
+		System.out.println("Refreshed the Weather");
+		Thread_GetWeather.StartCheck(City);
 		weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
 		town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
 	}
@@ -1026,7 +1064,7 @@ public class Main extends Application{
 
 	// Switches from Main to Login Scene
 	public static void SwitchToMainScene(){
-		Login_LoginButton1 = null;
+		/*Login_LoginButton1 = null;
 		Login_LoginButton2 = null;
 		Login_LoginButton3 = null;
 		Login_LoginButton4 = null;
@@ -1034,10 +1072,20 @@ public class Main extends Application{
 		Login_LoginButton6 = null;
 		for(int i = 0; i<6; i++){
 			Login_Spark[i] = null;
-		}
+		}*/
+		Login_LoginButton1_State = 0;
+		Login_LoginButton2_State = 0;
+		Login_LoginButton3_State = 0;
+		Login_LoginButton4_State = 0;
+		Login_LoginButton5_State = 0;
+		Login_LoginButton6_State = 0;
 		MainStage.setScene(Sroot);
-		Login_Background = null;
-		SLogin = null;
+		//Login_Background = null;
+		//SLogin = null;
+	}
+	
+	public static void SwitchToLoginScene(){
+		MainStage.setScene(SLogin);
 	}
 
 	// Refresh of music title
@@ -1113,7 +1161,7 @@ public class Main extends Application{
 					Light1_Text.setLayoutY(Light1_Text.getLayoutY()+10);
 				}
 			}
-			if(e.getSource() == Light1_Lock || e.getSource() == Light1_Lockcross){
+			else if(e.getSource() == Light1_Lock || e.getSource() == Light1_Lockcross){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Light1_Lockcross.isVisible()){
 						Light1_Lockcross.setVisible(true);
@@ -1124,7 +1172,7 @@ public class Main extends Application{
 					}
 				}
 			}
-			if(e.getSource() == Light2_Button1 || e.getSource() == Light2_Text){
+			else if(e.getSource() == Light2_Button1 || e.getSource() == Light2_Text){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Light2_Button");
 					Light2_Button2.setVisible(false);
@@ -1158,7 +1206,7 @@ public class Main extends Application{
 					Light2_Text.setLayoutY(Light2_Text.getLayoutY()+10);
 				}
 			}
-			if(e.getSource() == Light2_Lock || e.getSource() == Light2_Lockcross){
+			else if(e.getSource() == Light2_Lock || e.getSource() == Light2_Lockcross){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Light2_Lockcross.isVisible()){
 						Light2_Lockcross.setVisible(true);
@@ -1169,7 +1217,7 @@ public class Main extends Application{
 					}
 				}
 			}
-			if(e.getSource() == Light3_Button1 || e.getSource() == Light3_Text){
+			else if(e.getSource() == Light3_Button1 || e.getSource() == Light3_Text){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Light3_Button");
 					Light3_Button2.setVisible(false);
@@ -1203,7 +1251,7 @@ public class Main extends Application{
 					Light3_Text.setLayoutY(Light3_Text.getLayoutY()+10);
 				}
 			}
-			if(e.getSource() == Light3_Lock || e.getSource() == Light3_Lockcross){
+			else if(e.getSource() == Light3_Lock || e.getSource() == Light3_Lockcross){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Light3_Lockcross.isVisible()){
 						Light3_Lockcross.setVisible(true);
@@ -1214,7 +1262,7 @@ public class Main extends Application{
 					}
 				}
 			}
-			if(e.getSource() == Music_next){
+			else if(e.getSource() == Music_next){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_next.setOpacity(1);
 					if(!Testbuild && MPCEnabled){
@@ -1248,7 +1296,7 @@ public class Main extends Application{
 					Music_next.setOpacity(0.5);
 				}
 			}
-			if(e.getSource() == Music_prev){
+			else if(e.getSource() == Music_prev){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_prev.setOpacity(1);
 					if(!Testbuild && MPCEnabled){
@@ -1283,7 +1331,7 @@ public class Main extends Application{
 					Music_prev.setOpacity(0.5);
 				}
 			}
-			if(e.getSource() == Music_pause){
+			else if(e.getSource() == Music_pause){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_pause.setOpacity(1);
 					if(!Testbuild && MPCEnabled){
@@ -1317,7 +1365,7 @@ public class Main extends Application{
 					Music_pause.setOpacity(0.5);
 				}
 			}
-			if(e.getSource() == Music_play){
+			else if(e.getSource() == Music_play){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					Music_play.setOpacity(1);
 					if(!Testbuild && MPCEnabled){
@@ -1351,7 +1399,7 @@ public class Main extends Application{
 					Music_play.setOpacity(0.5);
 				}
 			}
-			if(e.getSource() == Console_Button1 || e.getSource() == Console_ButtonText){
+			else if(e.getSource() == Console_Button1 || e.getSource() == Console_ButtonText){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Console Toggle");
 					Console_Button2.setVisible(false);
@@ -1373,12 +1421,26 @@ public class Main extends Application{
 			}
 
 			// Login Stuff
-			if(e.getSource() == Login_LoginButton1 || e.getSource() == Login_LoginButton2 || e.getSource() == Login_LoginButton3 || e.getSource() == Login_LoginButton4 || e.getSource() == Login_LoginButton5 || e.getSource() == Login_LoginButton6){
+			else if(e.getSource() == Login_LoginButton1 || e.getSource() == Login_LoginButton2 || e.getSource() == Login_LoginButton3 || e.getSource() == Login_LoginButton4 || e.getSource() == Login_LoginButton5 || e.getSource() == Login_LoginButton6){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					((Node) e.getSource()).setOpacity(1);
 					LoginChecker(e.getSource());
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					((Node) e.getSource()).setOpacity(0.5);
+				}
+			}
+			else if(e.getSource() == User_Logout){
+				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
+					User_Logout.setLayoutX(User_Logout.getLayoutX()+12);
+					User_Logout.setLayoutY(User_Logout.getLayoutY()-10);
+					User_Logout.setTextFill(Color.web("#000000"));
+					if(StartWithLoginScreen){
+						SwitchToLoginScene();
+					}
+				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
+					User_Logout.setLayoutX(User_Logout.getLayoutX()-12);
+					User_Logout.setLayoutY(User_Logout.getLayoutY()+10);
+					User_Logout.setTextFill(Color.web("#FF0000"));
 				}
 			}
 		}

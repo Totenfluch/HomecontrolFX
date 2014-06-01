@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+
 public class Thread_GetWeather implements Runnable {
 	
 	public static String City = "Fetching..";
