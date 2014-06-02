@@ -53,12 +53,12 @@ public class Main extends Application{
 	//
 	//
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
-	public static boolean Testbuild = true;
+	public static boolean Testbuild = false;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
 	//
 	// Enable MPC ( Internet Radio [Requires extern Server])
-	public static boolean MPCEnabled = false;
+	public static boolean MPCEnabled = true;
 	//
 	// Delay to refresh MPC in ms
 	// default: 2000 (2s)
@@ -126,7 +126,7 @@ public class Main extends Application{
 	public static ImageView Login_Spark[] = new ImageView[6];
 	public static double Login_SparkPos[][] = new double[6][2];
 	public static int Login_SparkSeq[] = new int[6];
-	private static ImageView Login_Background;
+	//private static ImageView Login_Background;
 
 
 	// Setup Piface instances
@@ -172,10 +172,6 @@ public class Main extends Application{
 		WeatherRefreshTimer.start();
 
 		if(!Testbuild){
-			// Start Refresh if MPC is enabled
-			if(MPCEnabled){
-				MpcRefreshTimer.start();
-			}
 
 			gpio = GpioFactory.getInstance();
 			gpioProvider = new PiFaceGpioProvider(PiFaceGpioProvider.DEFAULT_ADDRESS,Spi.CHANNEL_0);
@@ -198,7 +194,7 @@ public class Main extends Application{
 			gpio.addListener(new GpioPinListenerDigital() {
 				@Override
 				public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-					System.out.println(OtherStuff.TheSimpleNormalTime() + " Input Pin changed: " + event.getPin() + " = "
+					OtherStuff.addToPrintQueue(" Input Pin changed: " + event.getPin() + " = "
 							+ event.getState());
 				}
 			}, myInputs);
@@ -228,6 +224,10 @@ public class Main extends Application{
 					gpio.shutdown();
 				}
 			}); 
+		}
+		// Start Refresh if MPC is enabled
+		if(MPCEnabled){
+			MpcRefreshTimer.start();
 		}
 		// start GUI
 		System.out.println("Starting [2]: GUI");
@@ -714,10 +714,10 @@ public class Main extends Application{
 		if(StartWithLoginScreen){
 			Pane Login = new Pane();
 
-			Login_Background = new ImageView(new Image("loginb.gif"));
+			/*Login_Background = new ImageView(new Image("loginb.gif"));
 			Login_Background.setFitHeight(630);
 			Login_Background.setFitWidth(1050);
-			Login.getChildren().add(Login_Background);
+			Login.getChildren().add(Login_Background);*/
 
 			Login_LoginButton1 = new ImageView(new Image("tapbutton.png"));
 			Login_LoginButton1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -1014,6 +1014,12 @@ public class Main extends Application{
 					if(temp[1].equals("Console")){
 						OtherStuff.addToPrintQueue(temp[2]);
 					}
+				}else if(temp[0].equals("Set")){
+					if(temp[1].equals("Music_Slider")){
+						Music_Slider.setValue(Double.parseDouble(temp[2]));
+					}else if(temp[1].equals("Music_Title")){
+						Music_Title.setText(temp[2]);
+					}
 				}else{
 					System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
 				}
@@ -1091,6 +1097,7 @@ public class Main extends Application{
 	// Refresh of music title
 	public static void RefreshMpc(){
 		try {
+			OtherStuff.addToPrintQueue("Trigger");
 			String[] commands = {"bash","-c","mpc -h "+ MPCServerIP};
 			Runtime rt = Runtime.getRuntime();
 			Process proc = rt.exec(commands);
@@ -1104,12 +1111,24 @@ public class Main extends Application{
 			while ((linestring = stdInput.readLine()) != null) {
 				if(line == 0){
 					currenttitle = linestring;
-					Music_Title.setText(currenttitle);
+					if(Music_Title != null){
+						//Music_Title.setText(currenttitle);
+						OtherStuff.addToCmdQueue("Set@Music_Title@"+ currenttitle);
+					}
 				}else if (line == 2){
 					////////////////////////////////////////////
 					// Needs more formating to work correctly //
 					////////////////////////////////////////////
 					volume = linestring;
+					String[] temp = volume.split(" ");
+					volume = temp[1];
+					volume = volume.replace("%", "");
+					volume = volume.replace(" ", "");
+					if(Music_Slider != null){
+						//Music_Slider.setValue(Double.parseDouble(volume));
+						OtherStuff.addToCmdQueue("Set@Music_Slider@" + volume);
+					}
+					OtherStuff.addToPrintQueue(volume);
 					////////////////////////////////////////////
 					// Needs more formating to work correctly //
 					////////////////////////////////////////////
