@@ -30,6 +30,7 @@ public class Thread_GetWeather implements Runnable {
 		        	String temp;
 		        	temp = line;
 		        	temp = temp.substring(22, 26);
+		        	temp = temp.replace("\"", "");
 		        	Double tempdouble = Double.parseDouble(temp);
 		        	tempdouble = tempdouble + 0.5;
 		        	tempdouble = Math.floor(tempdouble);

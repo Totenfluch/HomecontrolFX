@@ -1,5 +1,6 @@
 package me.Christian.other;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Hashtable;
@@ -64,6 +65,10 @@ public class OtherStuff {
 			a += randomChar;
 		}
 		return a;
+	}
+	
+	public static File jarlocation(){
+		return new File(OtherStuff.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 	}
 
 }

@@ -2,7 +2,6 @@ package me.Christian.pack;
 
 
 
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,6 +24,7 @@ import com.pi4j.wiringpi.Spi;
 
 import me.Christian.networking.Server;
 import me.Christian.other.ChangeOutStream;
+import me.Christian.other.ConfigFileStuff;
 import me.Christian.other.OtherStuff;
 import me.Christian.threads.Thread_GetWeather;
 import javafx.animation.AnimationTimer;
@@ -53,12 +53,12 @@ public class Main extends Application{
 	//
 	//
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
-	public static boolean Testbuild = false;
+	public static boolean Testbuild = true;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
 	//
 	// Enable MPC ( Internet Radio [Requires extern Server])
-	public static boolean MPCEnabled = true;
+	public static boolean MPCEnabled = false;
 	//
 	// Delay to refresh MPC in ms
 	// default: 2000 (2s)
@@ -71,10 +71,10 @@ public class Main extends Application{
 	public static int portz = 9977;
 	//
 	// START WITH LOGIN SCREEN ??
-	public static boolean StartWithLoginScreen = true;
+	public static boolean StartWithLoginScreen = false;
 	//
 	// THE CITY WE ARE LIVING IN
-	public static final String City = "Schweinfurt";
+	public static String City = "Schweinfurt";
 	//
 	// Delay to refresh the weather in ms
 	// default: 600000 (10 minutes)
@@ -133,8 +133,15 @@ public class Main extends Application{
 	public static GpioController gpio;
 	public static PiFaceGpioProvider gpioProvider;
 	public static PiFace piface;
+	
 
 	public static void main(String[] args) throws IOException{
+		System.out.println("|> checking config file <|");
+		// Create config file if empty, load if it's there
+		System.out.println("Config File location: " + OtherStuff.jarlocation() + "\\config.properties");
+		ConfigFileStuff.startup();
+		System.out.println("|< config file checked >|");
+		
 		// Make both queues empty
 		for(int i = 999; i>-1; i--){
 			todoprint[i] = "";
@@ -156,16 +163,16 @@ public class Main extends Application{
 		// build Refresh of music title
 		MpcRefreshTimer = new Timer(MpcRefreshDelay, new ActionListener()
 		{
-			public void actionPerformed(ActionEvent e)
-			{
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent arg0) {
 				RefreshMpc();
 			}
 		});
 		
 		WeatherRefreshTimer = new Timer(WeatherRefreshDelay, new ActionListener()
 		{
-			public void actionPerformed(ActionEvent e)
-			{
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent arg0) {
 				refreshweather();
 			}
 		});
@@ -252,7 +259,8 @@ public class Main extends Application{
 			}
 		});;
 		Pane root = new Pane();
-
+		Sroot = new Scene(root, 1024, 600);
+		
 		// Background
 		ImageView imgView = null;
 		// Watermark for Testbuild
@@ -274,7 +282,7 @@ public class Main extends Application{
 		}
 
 		System.out.println("Loading: 20%");
-		// Refresh timer for labels ect.
+		// Refresh timer for anything
 		new AnimationTimer() {
 			@Override
 			public void handle(long now) {
@@ -708,7 +716,6 @@ public class Main extends Application{
 
 		System.out.println("Loading: 100%");
 		System.out.println("Launching GUI Now!!!");
-		Sroot = new Scene(root, 1024, 600);
 		//primaryStage.setScene(Sroot);
 
 		if(StartWithLoginScreen){
@@ -836,6 +843,7 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
+	
 
 	// Complete handeling for the login screen and the code .. ps: secret code :p
 	public static void LoginChecker(Object e){
@@ -1097,7 +1105,6 @@ public class Main extends Application{
 	// Refresh of music title
 	public static void RefreshMpc(){
 		try {
-			OtherStuff.addToPrintQueue("Trigger");
 			String[] commands = {"bash","-c","mpc -h "+ MPCServerIP};
 			Runtime rt = Runtime.getRuntime();
 			Process proc = rt.exec(commands);
@@ -1112,13 +1119,9 @@ public class Main extends Application{
 				if(line == 0){
 					currenttitle = linestring;
 					if(Music_Title != null){
-						//Music_Title.setText(currenttitle);
 						OtherStuff.addToCmdQueue("Set@Music_Title@"+ currenttitle);
 					}
 				}else if (line == 2){
-					////////////////////////////////////////////
-					// Needs more formating to work correctly //
-					////////////////////////////////////////////
 					volume = linestring;
 					String[] temp = volume.split(" ");
 					volume = temp[1];
@@ -1128,10 +1131,6 @@ public class Main extends Application{
 						//Music_Slider.setValue(Double.parseDouble(volume));
 						OtherStuff.addToCmdQueue("Set@Music_Slider@" + volume);
 					}
-					OtherStuff.addToPrintQueue(volume);
-					////////////////////////////////////////////
-					// Needs more formating to work correctly //
-					////////////////////////////////////////////
 				}
 				line++;
 			}
