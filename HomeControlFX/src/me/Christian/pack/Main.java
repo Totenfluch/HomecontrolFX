@@ -145,6 +145,7 @@ public class Main extends Application{
 
 		System.out.println("|> checking Rss feed file <|");
 		FeedReader.ReadFeedFile();
+		FeedReader.CreateFeedObjects();
 		System.out.println("RssFeeds File location: " + OtherStuff.jarlocation() + "\\RSSFeeds.txt");
 		System.out.println("|> checked Rss feed file <|");
 
@@ -286,7 +287,27 @@ public class Main extends Application{
 			watermark.setFitHeight(625);
 			watermark.setOpacity(0.15);
 			root.getChildren().add(watermark);
+			watermark.setOnMouseEntered(new EventHandler<javafx.scene.input.MouseEvent>() {
+				@Override
+				public void handle(javafx.scene.input.MouseEvent e) {
+					Platform.runLater(new Runnable() {
+		                @Override public void run() {
+		                    FeedReader.RssTextObjectTooltip.setText("");
+		                }
+		            });
+				}
+			});
 		}
+		imgView.setOnMouseEntered(new EventHandler<javafx.scene.input.MouseEvent>() {
+			@Override
+			public void handle(javafx.scene.input.MouseEvent e) {
+				Platform.runLater(new Runnable() {
+	                @Override public void run() {
+	                    FeedReader.RssTextObjectTooltip.setText("");
+	                }
+	            });
+			}
+		});
 
 		System.out.println("Loading: 20%");
 		// Refresh timer for anything
@@ -318,6 +339,12 @@ public class Main extends Application{
 		weathericonlabel.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(weathericonlabel);
 
+		for(int i=0; i<10;i++){
+			root.getChildren().add(FeedReader.RssTextObject[i]);
+		}
+		FeedReader.RssTextObjectTooltip.setX(20);
+		FeedReader.RssTextObjectTooltip.setY(580);
+		root.getChildren().add(FeedReader.RssTextObjectTooltip);
 
 		// <Username>, Logout
 		User_Logout = new Label(Main.ActiveUser + ", Logout");
