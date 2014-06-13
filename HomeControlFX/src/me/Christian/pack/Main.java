@@ -25,6 +25,7 @@ import com.pi4j.wiringpi.Spi;
 import me.Christian.networking.Server;
 import me.Christian.other.ChangeOutStream;
 import me.Christian.other.ConfigFileStuff;
+import me.Christian.other.FeedReader;
 import me.Christian.other.OtherStuff;
 import me.Christian.threads.Thread_GetWeather;
 import javafx.animation.AnimationTimer;
@@ -133,7 +134,7 @@ public class Main extends Application{
 	public static GpioController gpio;
 	public static PiFaceGpioProvider gpioProvider;
 	public static PiFace piface;
-	
+
 
 	public static void main(String[] args) throws IOException{
 		System.out.println("|> checking config file <|");
@@ -141,7 +142,13 @@ public class Main extends Application{
 		System.out.println("Config File location: " + OtherStuff.jarlocation() + "\\config.properties");
 		ConfigFileStuff.startup();
 		System.out.println("|< config file checked >|");
-		
+
+		System.out.println("|> checking Rss feed file <|");
+		FeedReader.ReadFeedFile();
+		System.out.println("RssFeeds File location: " + OtherStuff.jarlocation() + "\\RSSFeeds.txt");
+		System.out.println("|> checked Rss feed file <|");
+
+
 		// Make both queues empty
 		for(int i = 999; i>-1; i--){
 			todoprint[i] = "";
@@ -168,7 +175,7 @@ public class Main extends Application{
 				RefreshMpc();
 			}
 		});
-		
+
 		WeatherRefreshTimer = new Timer(WeatherRefreshDelay, new ActionListener()
 		{
 			@Override
@@ -260,7 +267,7 @@ public class Main extends Application{
 		});;
 		Pane root = new Pane();
 		Sroot = new Scene(root, 1024, 600);
-		
+
 		// Background
 		ImageView imgView = null;
 		// Watermark for Testbuild
@@ -310,8 +317,8 @@ public class Main extends Application{
 		weathericonlabel.setLayoutY(8);
 		weathericonlabel.setFont(Font.font(java.awt.Font.SERIF, 18));
 		root.getChildren().add(weathericonlabel);
-		
-		
+
+
 		// <Username>, Logout
 		User_Logout = new Label(Main.ActiveUser + ", Logout");
 		User_Logout.setLayoutX(880);
@@ -322,8 +329,8 @@ public class Main extends Application{
 		User_Logout.getOnMouseReleased();
 		User_Logout.setFont(Font.font(java.awt.Font.SERIF, 22));
 		root.getChildren().add(User_Logout);
-		
-		
+
+
 		// Light head bar image
 		Light_Head = new ImageView(new Image("B12.png"));
 		Light_Head.setLayoutX(60);
@@ -843,7 +850,7 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
-	
+
 
 	// Complete handeling for the login screen and the code .. ps: secret code :p
 	public static void LoginChecker(Object e){
@@ -1028,6 +1035,12 @@ public class Main extends Application{
 					}else if(temp[1].equals("Music_Title")){
 						Music_Title.setText(temp[2]);
 					}
+				}else if(temp[0].equals("Refresh")){
+					if(temp[1].equals("WeatherTextLabel")){
+						town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
+					}else if(temp[1].equals("WeatherIconLabel")){
+						weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
+					}
 				}else{
 					System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
 				}
@@ -1051,10 +1064,10 @@ public class Main extends Application{
 
 	// Resets the weater, obviously
 	public static void refreshweather(){
-		System.out.println("Refreshed the Weather");
+		OtherStuff.addToPrintQueue("Refreshed the Weather");
 		Thread_GetWeather.StartCheck(City);
-		weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
-		town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
+		OtherStuff.addToCmdQueue("Refresh@WeatherTextLabel");
+		OtherStuff.addToCmdQueue("Refresh@WeatherIconLabel");
 	}
 
 	// to change the icons of the check states // Light/door/window ect.
@@ -1097,7 +1110,7 @@ public class Main extends Application{
 		//Login_Background = null;
 		//SLogin = null;
 	}
-	
+
 	public static void SwitchToLoginScene(){
 		MainStage.setScene(SLogin);
 	}

@@ -14,6 +14,8 @@ public class ChangeOutStream {
 					Main.Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
 					Logger log = Logger.getLogger("");
 					log.info(s);
+				}else{
+					OtherStuff.addToPrintQueue("!INVALID STREAM!-> " + s);
 				}
 			}
 		});
