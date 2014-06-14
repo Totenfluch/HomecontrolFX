@@ -1094,7 +1094,7 @@ public class Main extends Application{
 					}else if(temp[1].equals("RssFeedObject")){
 						FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
 					}else if(temp[1].equals("RssFeedTooltip")){
-						FeedReader.RssTextObjectTooltip.setText(temp[2]);
+						FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
 					}
 				}else if(temp[0].equals("Refresh")){
 					if(temp[1].equals("WeatherTextLabel")){

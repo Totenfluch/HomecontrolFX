@@ -214,14 +214,13 @@ public class FeedReader {
 
 			if(Main.StartupDone){
 				OtherStuff.addToCmdQueue("Set@RssFeedObject@"+transint+"@"+ctemp.toString());
+				OtherStuff.addToCmdQueue("Set@RssFeedTooltip@"+transint+"@"+checkedFeeds[transint][1]);
 			}else{
 				RssTextObject[transint].setText(ctemp.toString());
+				RssTextObject[transint].setId(checkedFeeds[transint][1]);
 			}
-			Platform.runLater(new Runnable() {
-				@Override public void run() {
-					RssTextObject[transint].setId(checkedFeeds[transint][1]);
-				}
-			});
+			
+			if(!Main.StartupDone){
 			RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
 				@Override
 				public void handle(javafx.scene.input.MouseEvent e) {
@@ -245,6 +244,7 @@ public class FeedReader {
 					});
 				}
 			});
+			}
 		}
 		FeedCounter = 0;
 	}
