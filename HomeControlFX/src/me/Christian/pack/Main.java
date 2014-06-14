@@ -130,7 +130,7 @@ public class Main extends Application{
 	public static boolean Weatherinit = false;
 
 	public static boolean StartupDone = false;
-	
+
 	// Login Window Stuff
 	public static ImageView Login_LoginButton1, Login_LoginButton2, Login_LoginButton3, Login_LoginButton4, Login_LoginButton5, Login_LoginButton6;
 	public static ImageView Login_Spark[] = new ImageView[6];
@@ -1101,6 +1101,14 @@ public class Main extends Application{
 						town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
 					}else if(temp[1].equals("WeatherIconLabel")){
 						weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
+					}
+				}else if(temp[0].equals("setParams")){
+					// setParams@Y@<double>@RssTextObject@1
+					//      0    1    2           3       4
+					if(temp[1].equals("Y")){
+						if(temp[3].equals("RssTextObject")){
+							FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
+						}
 					}
 				}else{
 					System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");

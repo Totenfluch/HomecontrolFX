@@ -38,6 +38,7 @@ public class FeedReader {
 	public static Text[] RssTextObject = new Text[10];
 	public static Text RssTextObjectTooltip = new Text("");
 	public static int transint;
+	public static double[] transdouble = new double[10];
 	public static void GetFeed(String feedurl) {
 		boolean ok = false;
 		try {
@@ -147,9 +148,11 @@ public class FeedReader {
 		}
 
 		for(int i = 0; i < 10; i++) {
-			RssTextObject[i] = new Text();
-			RssTextObject[i].prefWidth(100);
-			RssTextObject[i].setX(265);
+			if(!Main.StartupDone){
+				RssTextObject[i] = new Text();
+				RssTextObject[i].prefWidth(100);
+				RssTextObject[i].setX(265);
+			}
 			double n = maxy;
 			if(difnext == 0){
 				n = maxy+17;
@@ -161,8 +164,14 @@ public class FeedReader {
 				n = maxy+57;
 				maxy = maxy+57;
 			}
+			transdouble[i] = n;
+			transint = i;
 
-			RssTextObject[i].setY(n);
+			if(Main.StartupDone){
+				OtherStuff.addToCmdQueue("setParams@Y@"+ transdouble[i] +"@RssTextObject@"+ i);
+			}else{
+				RssTextObject[transint].setY(transdouble[transint]);
+			}
 
 
 			String temp = checkedFeeds[i][0];
@@ -202,13 +211,17 @@ public class FeedReader {
 			}else{
 				difnext = 0;
 			}
-			transint = i;
 
-			RssTextObject[transint].setText(ctemp.toString());
 			if(Main.StartupDone){
 				OtherStuff.addToCmdQueue("Set@RssFeedObject@"+transint+"@"+ctemp.toString());
+			}else{
+				RssTextObject[transint].setText(ctemp.toString());
 			}
-			RssTextObject[i].setId(checkedFeeds[i][1]);
+			Platform.runLater(new Runnable() {
+				@Override public void run() {
+					RssTextObject[transint].setId(checkedFeeds[transint][1]);
+				}
+			});
 			RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
 				@Override
 				public void handle(javafx.scene.input.MouseEvent e) {
