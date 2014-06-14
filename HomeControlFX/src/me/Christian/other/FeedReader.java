@@ -13,9 +13,12 @@ import java.util.List;
 
 
 
+
+import me.Christian.pack.Main;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.text.Text;
+
 
 
 
@@ -34,6 +37,7 @@ public class FeedReader {
 	public static int FeedCounter = 0;
 	public static Text[] RssTextObject = new Text[10];
 	public static Text RssTextObjectTooltip = new Text("");
+	public static int transint;
 	public static void GetFeed(String feedurl) {
 		boolean ok = false;
 		try {
@@ -63,16 +67,10 @@ public class FeedReader {
 				}
 			}
 
-			// Print out for testing purposes
-			/*for(int i = 0; i<10; i++){
-				System.out.println(Feeds[FeedCounter][i][0]);
-				System.out.println(Feeds[FeedCounter][i][1]);
-				System.out.println(Feeds[FeedCounter][i][2]);
-				System.out.println("");
-			}*/
-
 			FeedCounter++;
-			System.out.println("Feed " + FeedCounter + " loaded.");
+			if(!Main.StartupDone){
+				System.out.println("Feed " + FeedCounter + " loaded.");
+			}
 			ok = true;
 		}
 		catch (Exception ex) {
@@ -118,13 +116,15 @@ public class FeedReader {
 				}
 			}
 		}
-		System.out.println("Loaded " + stringArray.length + " Rss Feed(s).");
+		if(!Main.StartupDone){
+			System.out.println("Loaded " + stringArray.length + " Rss Feed(s).");
+		}
 	}
 
 	public static void CreateFeedObjects(){
 		int maxy = 145;
 		int difnext = -1;
-		
+
 		if(FeedCounter == 1){split = new int[]{10};}
 		if(FeedCounter == 2){split = new int[]{5,5};}
 		if(FeedCounter == 3){split = new int[]{4,3,3};}
@@ -135,7 +135,7 @@ public class FeedReader {
 		if(FeedCounter == 8){split = new int[]{2,2,1,1,1,1,1,1};}
 		if(FeedCounter == 9){split = new int[]{2,1,1,1,1,1,1,1,1};}
 		if(FeedCounter == 10){split = new int[]{1,1,1,1,1,1,1,1,1,1};}
-		
+
 		int z = 0;
 		for(int w = 0; w<split.length; w++){
 			for(int q = 0; q<split[w]; q++){
@@ -145,7 +145,7 @@ public class FeedReader {
 				z++;
 			}
 		}
-		
+
 		for(int i = 0; i < 10; i++) {
 			RssTextObject[i] = new Text();
 			RssTextObject[i].prefWidth(100);
@@ -163,8 +163,8 @@ public class FeedReader {
 			}
 
 			RssTextObject[i].setY(n);
-			
-			
+
+
 			String temp = checkedFeeds[i][0];
 			StringBuilder ctemp = new StringBuilder(temp);
 			int csize1 = 30;
@@ -202,7 +202,12 @@ public class FeedReader {
 			}else{
 				difnext = 0;
 			}
-			RssTextObject[i].setText(ctemp.toString());
+			transint = i;
+
+			RssTextObject[transint].setText(ctemp.toString());
+			if(Main.StartupDone){
+				OtherStuff.addToCmdQueue("Set@RssFeedObject@"+transint+"@"+ctemp.toString());
+			}
 			RssTextObject[i].setId(checkedFeeds[i][1]);
 			RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
 				@Override
@@ -228,8 +233,7 @@ public class FeedReader {
 				}
 			});
 		}
-
-
+		FeedCounter = 0;
 	}
 
 

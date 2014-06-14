@@ -86,6 +86,13 @@ public class Main extends Application{
 	// Scene for Root(control GUI) and Scene for Login - both can be places in MainStage.
 	public static Scene Sroot, SLogin;
 
+
+	//Rss Feeds
+	public static boolean RssEnabled = true;
+	//Rss Refresh delay in ms
+	public static int RssRefreshDelay = 15000;
+
+
 	// Root Window Stuff
 	public static TextArea Console;
 	public static Label calendar, town, weathericonlabel, User_Logout;
@@ -103,7 +110,7 @@ public class Main extends Application{
 	// Login thingy for later
 	public static String ActiveUser = "Root";
 	// Login thingy for later
-	private static Timer MpcRefreshTimer, WeatherRefreshTimer;
+	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer;
 	public static boolean Light1_Lockstate = false, Light2_Lockstate = false, Light3_Lockstate = false, Door1_Lock = false, Door2_Lock = false;
 	public static int Light1_State = 0, Light2_State = 0, Light3_State = 0, Door1_State = 0, Door2_State = 0;
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
@@ -122,6 +129,8 @@ public class Main extends Application{
 
 	public static boolean Weatherinit = false;
 
+	public static boolean StartupDone = false;
+	
 	// Login Window Stuff
 	public static ImageView Login_LoginButton1, Login_LoginButton2, Login_LoginButton3, Login_LoginButton4, Login_LoginButton5, Login_LoginButton6;
 	public static ImageView Login_Spark[] = new ImageView[6];
@@ -144,9 +153,25 @@ public class Main extends Application{
 		System.out.println("|< config file checked >|");
 
 		System.out.println("|> checking Rss feed file <|");
-		FeedReader.ReadFeedFile();
-		FeedReader.CreateFeedObjects();
-		System.out.println("RssFeeds File location: " + OtherStuff.jarlocation() + "\\RSSFeeds.txt");
+		if(RssEnabled){
+			FeedReader.ReadFeedFile();
+			FeedReader.CreateFeedObjects();
+			System.out.println("RssFeeds File location: " + OtherStuff.jarlocation() + "\\RSSFeeds.txt");
+			if(RssRefreshDelay > 0){
+				RssRefreshTimer = new Timer(RssRefreshDelay, new ActionListener()
+				{
+					@Override
+					public void actionPerformed(java.awt.event.ActionEvent arg0) {
+						FeedReader.ReadFeedFile();
+						FeedReader.CreateFeedObjects();
+						OtherStuff.addToPrintQueue("Refreshed Rss feeds");
+					}
+				});
+				RssRefreshTimer.start();
+			}
+		}else{
+			System.out.println("Rss is disabled.");
+		}
 		System.out.println("|> checked Rss feed file <|");
 
 
@@ -169,22 +194,26 @@ public class Main extends Application{
 		Thread_MainServer.start();
 
 		// build Refresh of music title
-		MpcRefreshTimer = new Timer(MpcRefreshDelay, new ActionListener()
-		{
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent arg0) {
-				RefreshMpc();
-			}
-		});
+		if(MpcRefreshDelay > 0){
+			MpcRefreshTimer = new Timer(MpcRefreshDelay, new ActionListener()
+			{
+				@Override
+				public void actionPerformed(java.awt.event.ActionEvent arg0) {
+					RefreshMpc();
+				}
+			});
+		}
 
-		WeatherRefreshTimer = new Timer(WeatherRefreshDelay, new ActionListener()
-		{
-			@Override
-			public void actionPerformed(java.awt.event.ActionEvent arg0) {
-				refreshweather();
-			}
-		});
-		WeatherRefreshTimer.start();
+		if(WeatherRefreshDelay > 0){
+			WeatherRefreshTimer = new Timer(WeatherRefreshDelay, new ActionListener()
+			{
+				@Override
+				public void actionPerformed(java.awt.event.ActionEvent arg0) {
+					refreshweather();
+				}
+			});
+			WeatherRefreshTimer.start();
+		}
 
 		if(!Testbuild){
 
@@ -246,6 +275,7 @@ public class Main extends Application{
 		}
 		// start GUI
 		System.out.println("Starting [2]: GUI");
+		StartupDone = true;
 		launch(args);
 	}
 
@@ -291,10 +321,10 @@ public class Main extends Application{
 				@Override
 				public void handle(javafx.scene.input.MouseEvent e) {
 					Platform.runLater(new Runnable() {
-		                @Override public void run() {
-		                    FeedReader.RssTextObjectTooltip.setText("");
-		                }
-		            });
+						@Override public void run() {
+							FeedReader.RssTextObjectTooltip.setText("");
+						}
+					});
 				}
 			});
 		}
@@ -302,10 +332,10 @@ public class Main extends Application{
 			@Override
 			public void handle(javafx.scene.input.MouseEvent e) {
 				Platform.runLater(new Runnable() {
-	                @Override public void run() {
-	                    FeedReader.RssTextObjectTooltip.setText("");
-	                }
-	            });
+					@Override public void run() {
+						FeedReader.RssTextObjectTooltip.setText("");
+					}
+				});
 			}
 		});
 
@@ -1061,6 +1091,10 @@ public class Main extends Application{
 						Music_Slider.setValue(Double.parseDouble(temp[2]));
 					}else if(temp[1].equals("Music_Title")){
 						Music_Title.setText(temp[2]);
+					}else if(temp[1].equals("RssFeedObject")){
+						FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
+					}else if(temp[1].equals("RssFeedTooltip")){
+						FeedReader.RssTextObjectTooltip.setText(temp[2]);
 					}
 				}else if(temp[0].equals("Refresh")){
 					if(temp[1].equals("WeatherTextLabel")){

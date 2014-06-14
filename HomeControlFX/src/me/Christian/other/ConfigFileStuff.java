@@ -22,6 +22,7 @@ public class ConfigFileStuff {
 				output = new FileOutputStream("config.properties");
 
 				// set the properties value
+				prop.setProperty("Version", "1");
 				prop.setProperty("Is_Testbuild", "false");
 				prop.setProperty("Mpc_enabled", "true");
 				prop.setProperty("Mpc_refresh_delay_ms", "2000");
@@ -30,6 +31,8 @@ public class ConfigFileStuff {
 				prop.setProperty("Start_with_login_screen", "true");
 				prop.setProperty("Weather_City", "Schweinfurt");
 				prop.setProperty("Weather_refresh_delay", "600000");
+				prop.setProperty("Rss_enabled", "true");
+				prop.setProperty("Rss_refresh_delay_ms", "850000");
 				// Add more if needed, but make sure to read them afterwards otherwise they are useless
 				
 
@@ -54,7 +57,7 @@ public class ConfigFileStuff {
 			InputStream input = null;
 			try {
 				input = new FileInputStream("config.properties");
-		 
+				
 				// load a properties file
 				prop.load(input);
 		 
@@ -67,10 +70,14 @@ public class ConfigFileStuff {
 				Main.StartWithLoginScreen = Boolean.valueOf(prop.getProperty("Start_with_login_screen"));
 				Main.City = prop.getProperty("Weather_City");
 				Main.WeatherRefreshDelay = Integer.valueOf(prop.getProperty("Weather_refresh_delay"));
+				Main.RssEnabled = Boolean.valueOf(prop.getProperty("Rss_enabled"));
+				Main.RssRefreshDelay = Integer.valueOf(prop.getProperty("Rss_refresh_delay_ms"));
 				
 		 
 			} catch (IOException ex) {
-				ex.printStackTrace();
+				System.out.println("Error in config File! Deleting old one, creating new one.");
+				file.delete();
+				startup();
 			} finally {
 				if (input != null) {
 					try {
