@@ -105,7 +105,9 @@ public class Main extends Application{
 	public static ImageView Light1_Lockcross, Light2_Lockcross, Light3_Lockcross;
 	public static ImageView Light1_State1, Light1_State2, Light1_State3, Light2_State1, Light2_State2, Light2_State3, Light3_State1, Light3_State2, Light3_State3;
 	public static Text Light1_Text, Light_HeadText, Light2_Text, Light3_Text, Music_Title, Music_HeadText, Console_ButtonText;
-	public static String currenttitle = "Feting Title...";
+	public static String currenttitle = "Fetching Title...";
+	double Music_title_size = 19;
+    static final int MUSIC_TITLE_MAX_WIDTH = 235;
 	public static String volume;
 	// Login thingy for later
 	public static String ActiveUser = "Root";
@@ -698,12 +700,17 @@ public class Main extends Application{
 
 
 		Music_Title = new Text();
-		Music_Title.setText(currenttitle);
+		if(MPCEnabled){
+			Music_Title.setText(currenttitle);
+		}else{
+			Music_Title.setText("Mpc is disabled.");
+		}
 		Music_Title.setFont(Font.font(java.awt.Font.SERIF, 14));
-		Music_Title.setLayoutX(800);
+		Music_Title.setLayoutX(790);
 		Music_Title.setLayoutY(135);
 		root.getChildren().add(Music_Title);
-
+		setFontSize();
+		
 		Music_Slider = new Slider();
 		Music_Slider.setMin(0);
 		Music_Slider.setMax(100);
@@ -907,6 +914,21 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
+	
+    private void setFontSize(){
+    	Music_Title.setFont(Font.font ("Arial", Music_title_size));
+        Music_Title.applyCss();
+
+        double width = Music_Title.getLayoutBounds().getWidth();
+
+        if(width > MUSIC_TITLE_MAX_WIDTH){
+            Music_title_size = Music_title_size - 0.25;
+            setFontSize();
+        }else{
+        	Music_title_size = 19;
+        }
+   
+    }
 
 
 	// Complete handeling for the login screen and the code .. ps: secret code :p
@@ -1091,6 +1113,7 @@ public class Main extends Application{
 						Music_Slider.setValue(Double.parseDouble(temp[2]));
 					}else if(temp[1].equals("Music_Title")){
 						Music_Title.setText(temp[2]);
+						setFontSize();
 					}else if(temp[1].equals("RssFeedObject")){
 						FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
 					}else if(temp[1].equals("RssFeedTooltip")){
