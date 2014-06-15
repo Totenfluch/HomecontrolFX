@@ -33,12 +33,16 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.Glow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -118,7 +122,16 @@ public class Main extends Application{
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
 	public static boolean goLeft, goRight;
 	public static int entrypos = 265;
-
+	
+	
+	// Developer in app stuff
+	public static PasswordField Dev_masterpw;
+	public static TextField Dev_printfield, Dev_cmdfield, Dev_console;
+	public static Button Dev_login, Dev_logout, Dev_sendcmd, Dev_sendprint;
+	public static boolean isMasterLoggedIn = false;
+	public static String MasterPassword;
+	public static double masteropacity = 0.0;
+	
 	// print queue
 	public static String[] todoprint = new String[1000];
 	public static int todoprintsize = 0;
@@ -148,8 +161,13 @@ public class Main extends Application{
 	public static PiFaceGpioProvider gpioProvider;
 	public static PiFace piface;
 
-
 	public static void main(String[] args) throws IOException{
+		if(args.length > 0){
+			MasterPassword = args[0];
+		}else{
+			System.out.println(">>> No Master password set. <<<");
+			MasterPassword = OtherStuff.GeneratePrivateKey();
+		}
 		System.out.println("|> checking config file <|");
 		// Create config file if empty, load if it's there
 		System.out.println("Config File location: " + OtherStuff.jarlocation() + "\\config.properties");
@@ -687,6 +705,123 @@ public class Main extends Application{
 		Console_ButtonText.setLayoutY(105);
 		root.getChildren().add(Console_ButtonText);
 		System.out.println("Loading: 90%");
+		
+		
+		Dev_masterpw = new PasswordField();
+		Dev_masterpw.setPromptText("Master Password");
+		Dev_masterpw.setLayoutX(265);
+		Dev_masterpw.setLayoutY(130);
+		Dev_masterpw.setPrefWidth(160);
+		Dev_masterpw.setFont(new Font("Arial", 16));
+		Dev_masterpw.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		root.getChildren().add(Dev_masterpw);
+		
+		Dev_login = new Button("Login");
+		Dev_login.setLayoutX(427);
+		Dev_login.setLayoutY(130);
+		Dev_login.setPrefWidth(58);
+		Dev_login.setPrefHeight(31);
+		Dev_login.setFont(new Font("Arial", 14));
+		Dev_login.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		Dev_login.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				if(Dev_masterpw.getText().equals(MasterPassword)){
+					String xn = "";
+					for(int z=0; z<Dev_masterpw.getText().length(); z++){
+						xn = xn+"T";
+					}
+					Dev_masterpw.setText(xn);
+					setMasterLogin(true);
+				}
+			}
+		});
+		root.getChildren().add(Dev_login);
+		
+		Dev_logout = new Button("Logout");
+		Dev_logout.setLayoutX(427);
+		Dev_logout.setLayoutY(130);
+		Dev_logout.setPrefWidth(58);
+		Dev_logout.setPrefHeight(31);
+		Dev_logout.setFont(new Font("Arial", 12));
+		Dev_logout.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		Dev_logout.setVisible(false);
+		Dev_logout.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				setMasterLogin(false);
+			}
+		});
+		root.getChildren().add(Dev_logout);
+		
+		Dev_cmdfield = new TextField();
+		Dev_cmdfield.setPromptText("Enter Command");
+		Dev_cmdfield.setLayoutX(265);
+		Dev_cmdfield.setLayoutY(170);
+		Dev_cmdfield.setPrefWidth(160);
+		Dev_cmdfield.setPrefHeight(20);
+		Dev_cmdfield.setFont(new Font("Arial", 16));
+		Dev_cmdfield.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		Dev_cmdfield.setDisable(true);
+		root.getChildren().add(Dev_cmdfield);
+		
+		Dev_sendcmd = new Button("Send");
+		Dev_sendcmd.setLayoutX(430);
+		Dev_sendcmd.setLayoutY(173);
+		Dev_sendcmd.setPrefWidth(55);
+		Dev_sendcmd.setFont(new Font("Arial", 14));
+		Dev_sendcmd.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		Dev_sendcmd.setDisable(true);
+		Dev_sendcmd.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				OtherStuff.addToCmdQueue(Dev_cmdfield.getText());
+				Dev_cmdfield.setText("");
+			}
+		});
+		root.getChildren().add(Dev_sendcmd);
+		
+		Dev_printfield = new TextField();
+		Dev_printfield.setPromptText("Enter Message");
+		Dev_printfield.setLayoutX(265);
+		Dev_printfield.setLayoutY(210);
+		Dev_printfield.setPrefWidth(160);
+		Dev_printfield.setPrefHeight(20);
+		Dev_printfield.setFont(new Font("Arial", 16));
+		Dev_printfield.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		Dev_printfield.setDisable(true);
+		root.getChildren().add(Dev_printfield);
+
+		Dev_sendprint = new Button("Send");
+		Dev_sendprint.setLayoutX(430);
+		Dev_sendprint.setLayoutY(213);
+		Dev_sendprint.setPrefWidth(55);
+		Dev_sendprint.setFont(new Font("Arial", 14));
+		Dev_sendprint.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		Dev_sendprint.setDisable(true);
+		Dev_sendprint.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				OtherStuff.addToPrintQueue(Dev_printfield.getText());
+				Dev_printfield.setText("");
+			}
+		});
+		root.getChildren().add(Dev_sendprint);
+		
+		Dev_console = new TextField();
+		Dev_console.setPromptText("Commandline");
+		Dev_console.setLayoutX(265);
+		Dev_console.setLayoutY(250);
+		Dev_console.setPrefWidth(220);
+		Dev_console.setPrefHeight(20);
+		Dev_console.setFont(new Font("Arial", 16));
+		Dev_console.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+		Dev_console.setDisable(true);
+		Dev_console.setOnAction(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				Dev_console.setText("");
+			}
+		});
+		root.getChildren().add(Dev_console);
+		
+		setDevVisibility(false);
+		
 		// Music
 		Music_Head = new ImageView(new Image("iB12.png"));
 		Music_Head.setLayoutX(809);
@@ -892,7 +1027,6 @@ public class Main extends Application{
 				Login.getChildren().add(Login_Spark[i]);
 			}
 
-
 			SLogin = new Scene(Login, 1024, 600);
 			primaryStage.setScene(SLogin);
 		}else{
@@ -916,6 +1050,77 @@ public class Main extends Application{
 		System.out.println("Finished [3]: Final init");
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
+	}
+	
+	private void setDevOpacity(double w){
+		if(!isMasterLoggedIn){
+			Dev_masterpw.setOpacity(w);
+			Dev_logout.setOpacity(w);
+			Dev_login.setOpacity(w);
+			
+			if(!(w < 0.25)){
+				w = 0.25;
+			}
+			
+
+			Dev_cmdfield.setOpacity(w);
+			Dev_printfield.setOpacity(w);
+			Dev_console.setOpacity(w);
+			Dev_sendcmd.setOpacity(w);
+			Dev_sendprint.setOpacity(w);
+		}else{
+			Dev_cmdfield.setOpacity(w);
+			Dev_printfield.setOpacity(w);
+			Dev_console.setOpacity(w);
+			Dev_sendcmd.setOpacity(w);
+			Dev_sendprint.setOpacity(w);
+			Dev_login.setOpacity(w);
+			Dev_logout.setOpacity(w);
+			
+			if(!(w < 0.25)){
+				w = 0.25;
+			}
+			
+			Dev_masterpw.setOpacity(w);
+		}
+	}
+	
+	private void setDevVisibility(boolean l){
+		Dev_masterpw.setVisible(l);
+		Dev_cmdfield.setVisible(l);
+		Dev_printfield.setVisible(l);
+		Dev_console.setVisible(l);
+		Dev_sendcmd.setVisible(l);
+		Dev_sendprint.setVisible(l);
+		if(!isMasterLoggedIn){
+			Dev_login.setVisible(l);
+		}else{
+			Dev_logout.setVisible(l);
+		}
+	}
+	
+	private void setMasterLogin(boolean l){
+		isMasterLoggedIn = l;
+		if(l){
+			Dev_masterpw.setDisable(l);
+			Dev_cmdfield.setDisable(!l);
+			Dev_printfield.setDisable(!l);
+			Dev_console.setDisable(!l);
+			Dev_login.setVisible(!l);
+			Dev_logout.setVisible(l);
+			Dev_sendcmd.setDisable(!l);
+			Dev_sendprint.setDisable(!l);
+		}else{
+			Dev_masterpw.setDisable(l);
+			Dev_cmdfield.setDisable(!l);
+			Dev_printfield.setDisable(!l);
+			Dev_console.setDisable(!l);
+			Dev_login.setVisible(!l);
+			Dev_logout.setVisible(l);
+			Dev_sendcmd.setDisable(!l);
+			Dev_sendprint.setDisable(!l);
+		}
+		setDevOpacity(masteropacity);
 	}
 	
     private void setFontSize(){
@@ -1037,28 +1242,37 @@ public class Main extends Application{
 	// Let the sparks fly and work the Queues
 	protected void update() {
 		if(goLeft){
-			// starts moving away from the textarea
+			// Starts moving away from the console
 			if(entrypos > 265){
 				entrypos = entrypos - 6;
+				masteropacity = masteropacity-0.0316;
+				setDevOpacity(masteropacity);
 				for(int i=0;i<10;i++){
 					FeedReader.RssTextObject[i].setX(entrypos);
 				}
 			}else{
 				goLeft = false;
 				Console.setVisible(true);
+				masteropacity = 0;
+				setDevVisibility(false);
 				// Hits the left side
 			}
 		}else if(goRight){
-			// Starts moving right towards the textarea
+			// Starts moving right towards the console
+			setDevVisibility(true);
 			Console.setVisible(false);
 			if(entrypos < 500){
 				entrypos = entrypos + 6;
+				masteropacity = masteropacity+0.025;
+				setDevOpacity(masteropacity);
 				for(int i=0;i<10;i++){
 					FeedReader.RssTextObject[i].setX(entrypos);
 				}
 			}else{
 				goRight = false;
 				// hits the right side
+				masteropacity = 1;
+				setDevOpacity(masteropacity);
 			}
 		}
 		

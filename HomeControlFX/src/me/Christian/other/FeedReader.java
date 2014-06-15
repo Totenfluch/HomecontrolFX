@@ -231,7 +231,7 @@ public class FeedReader {
 					if(sptemp.length() > csize3){
 						char pos3 = sptemp.charAt(csize3);
 						int x = csize3;
-						while(pos3 != ' '){
+						while(pos3 != ' ' && x < csize3){
 							pos3 = sptemp.charAt(x);
 							x++;
 						}
