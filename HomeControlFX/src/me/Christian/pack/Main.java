@@ -116,6 +116,8 @@ public class Main extends Application{
 	public static boolean Light1_Lockstate = false, Light2_Lockstate = false, Light3_Lockstate = false, Door1_Lock = false, Door2_Lock = false;
 	public static int Light1_State = 0, Light2_State = 0, Light3_State = 0, Door1_State = 0, Door2_State = 0;
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
+	public static boolean goLeft, goRight;
+	public static int entrypos = 265;
 
 	// print queue
 	public static String[] todoprint = new String[1000];
@@ -643,6 +645,7 @@ public class Main extends Application{
 		Console.setLayoutY(130);
 		Console.setWrapText(true);
 		Console.setEditable(false);
+		Console.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
 		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
 		root.getChildren().add(Console);
 
@@ -1033,6 +1036,32 @@ public class Main extends Application{
 
 	// Let the sparks fly and work the Queues
 	protected void update() {
+		if(goLeft){
+			// starts moving away from the textarea
+			if(entrypos > 265){
+				entrypos = entrypos - 6;
+				for(int i=0;i<10;i++){
+					FeedReader.RssTextObject[i].setX(entrypos);
+				}
+			}else{
+				goLeft = false;
+				Console.setVisible(true);
+				// Hits the left side
+			}
+		}else if(goRight){
+			// Starts moving right towards the textarea
+			Console.setVisible(false);
+			if(entrypos < 500){
+				entrypos = entrypos + 6;
+				for(int i=0;i<10;i++){
+					FeedReader.RssTextObject[i].setX(entrypos);
+				}
+			}else{
+				goRight = false;
+				// hits the right side
+			}
+		}
+		
 		if(MainStage.getScene() == SLogin){
 			for(int i = 0; i < 6; i++){
 				Login_Spark[i].setLayoutX(Login_SparkPos[i][0] + 80*Math.cos(Math.toRadians(Login_SparkSeq[i])));
@@ -1527,10 +1556,16 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Console Toggle");
 					Console_Button2.setVisible(false);
 					Console_Button1.setVisible(true);
+
 					if(Console.isVisible()){
-						Console.setVisible(false);
+						goRight = true;
+						goLeft = false;
+					}else if(!Console.isVisible() && goLeft){
+						goRight = true;
+						goLeft = false;
 					}else{
-						Console.setVisible(true);
+						goRight = false;
+						goLeft = true;
 					}
 					Console_ButtonText.setLayoutX(Console_ButtonText.getLayoutX()+12);
 					Console_ButtonText.setLayoutY(Console_ButtonText.getLayoutY()-10);
