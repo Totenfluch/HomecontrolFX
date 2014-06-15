@@ -103,12 +103,12 @@ public class Main extends Application{
 	public static Slider Music_Slider;
 	public static ImageView Light_Head, Music_Head;
 	public static ImageView Music_prev, Music_next, Music_pause, Music_play;
-	public static ImageView Light1_Button1, Light2_Button1, Light3_Button1, Console_Button1;
-	public static ImageView Light1_Button2, Light2_Button2, Light3_Button2, Console_Button2;
-	public static ImageView Light1_Lock, Light2_Lock, Light3_Lock;
-	public static ImageView Light1_Lockcross, Light2_Lockcross, Light3_Lockcross;
-	public static ImageView Light1_State1, Light1_State2, Light1_State3, Light2_State1, Light2_State2, Light2_State3, Light3_State1, Light3_State2, Light3_State3;
-	public static Text Light1_Text, Light_HeadText, Light2_Text, Light3_Text, Music_Title, Music_HeadText, Console_ButtonText;
+	public static ImageView Output1_Button1, Output2_Button1, Output3_Button1, Console_Button1;
+	public static ImageView Output1_Button2, Output2_Button2, Output3_Button2, Console_Button2;
+	public static ImageView Output1_Lock, Output2_Lock, Output3_Lock;
+	public static ImageView Output1_Lockcross, Output2_Lockcross, Output3_Lockcross;
+	public static ImageView Output1_State1, Output1_State2, Output1_State3, Output2_State1, Output2_State2, Output2_State3, Output3_State1, Output3_State2, Output3_State3;
+	public static Text Output1_Text, Light_HeadText, Output2_Text, Output3_Text, Music_Title, Music_HeadText, Console_ButtonText;
 	public static String currenttitle = "Fetching Title...";
 	double Music_title_size = 19;
     static final int MUSIC_TITLE_MAX_WIDTH = 235;
@@ -117,8 +117,8 @@ public class Main extends Application{
 	public static String ActiveUser = "Root";
 	// Login thingy for later
 	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer;
-	public static boolean Light1_Lockstate = false, Light2_Lockstate = false, Light3_Lockstate = false, Door1_Lock = false, Door2_Lock = false;
-	public static int Light1_State = 0, Light2_State = 0, Light3_State = 0, Door1_State = 0, Door2_State = 0;
+	public static boolean Output1_Lockstate = false, Output2_Lockstate = false, Output3_Lockstate = false, Door1_Lock = false, Door2_Lock = false;
+	public static int Output1_State = 0, Output2_State = 0, Output3_State = 0, Door1_State = 0, Door2_State = 0;
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
 	public static boolean goLeft, goRight;
 	public static int entrypos = 265;
@@ -165,12 +165,12 @@ public class Main extends Application{
 		if(args.length > 0){
 			MasterPassword = args[0];
 		}else{
-			System.out.println(">>> No Master password set. <<<");
+			System.out.println(">>> No Master password set <<<");
 			MasterPassword = OtherStuff.GeneratePrivateKey();
 		}
 		System.out.println("|> checking config file <|");
 		// Create config file if empty, load if it's there
-		System.out.println("Config File location: " + OtherStuff.jarlocation() + "\\config.properties");
+		System.out.println("Config File location: " + OtherStuff.jarlocation().toString().replace("/HomeControl.jar", "") + "/config.properties");
 		ConfigFileStuff.startup();
 		System.out.println("|< config file checked >|");
 
@@ -178,7 +178,7 @@ public class Main extends Application{
 		if(RssEnabled){
 			FeedReader.ReadFeedFile();
 			FeedReader.CreateFeedObjects();
-			System.out.println("RssFeeds File location: " + OtherStuff.jarlocation() + "\\RSSFeeds.txt");
+			System.out.println("RssFeeds File location: " + OtherStuff.jarlocation().toString().replace("/HomeControl.jar", "") + "/RSSFeeds.txt");
 			if(RssRefreshDelay > 0){
 				RssRefreshTimer = new Timer(RssRefreshDelay, new ActionListener()
 				{
@@ -392,6 +392,7 @@ public class Main extends Application{
 		root.getChildren().add(weathericonlabel);
 
 		for(int i=0; i<10;i++){
+			if(FeedReader.RssTextObject[i] != null)
 			root.getChildren().add(FeedReader.RssTextObject[i]);
 		}
 		FeedReader.RssTextObjectTooltip.setX(20);
@@ -425,235 +426,235 @@ public class Main extends Application{
 		Light_HeadText.setFont(Font.font(java.awt.Font.SERIF, 20));
 		root.getChildren().add(Light_HeadText);
 
-		// Light1_Button1 unpressed
-		Light1_Button1 = new ImageView(new Image("B12.png"));
-		Light1_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Light1_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light1_Button1.getOnMousePressed();
-		Light1_Button1.getOnMouseReleased();
-		Light1_Button1.setLayoutX(60);
-		Light1_Button1.setLayoutY(125);
-		root.getChildren().add(Light1_Button1);
+		// Output1_Button1 unpressed
+		Output1_Button1 = new ImageView(new Image("B12.png"));
+		Output1_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Output1_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output1_Button1.getOnMousePressed();
+		Output1_Button1.getOnMouseReleased();
+		Output1_Button1.setLayoutX(60);
+		Output1_Button1.setLayoutY(125);
+		root.getChildren().add(Output1_Button1);
 
-		// Light1_Button1 pressed
-		Light1_Button2 = new ImageView(new Image("B3.png"));
-		Light1_Button2.setLayoutX(60);
-		Light1_Button2.setLayoutY(125);
-		Light1_Button2.setVisible(false);
-		root.getChildren().add(Light1_Button2);
+		// Output1_Button1 pressed
+		Output1_Button2 = new ImageView(new Image("B3.png"));
+		Output1_Button2.setLayoutX(60);
+		Output1_Button2.setLayoutY(125);
+		Output1_Button2.setVisible(false);
+		root.getChildren().add(Output1_Button2);
 		System.out.println("Loading: 40%");
-		// Light1_Button1 text
-		Light1_Text = new Text();
-		Light1_Text.setText("Licht I");
-		Light1_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Light1_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light1_Text.getOnMousePressed();
-		Light1_Text.getOnMouseReleased();
-		Light1_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
-		Light1_Text.setLayoutX(80);
-		Light1_Text.setLayoutY(150);
-		root.getChildren().add(Light1_Text);
+		// Output1_Button1 text
+		Output1_Text = new Text();
+		Output1_Text.setText("Licht I");
+		Output1_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Output1_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output1_Text.getOnMousePressed();
+		Output1_Text.getOnMouseReleased();
+		Output1_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output1_Text.setLayoutX(80);
+		Output1_Text.setLayoutY(150);
+		root.getChildren().add(Output1_Text);
 
-		// Light1_Lock quadrat
-		Light1_Lock = new ImageView(new Image("filledquad.png"));
-		Light1_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light1_Lock.getOnMouseReleased();
-		Light1_Lock.setLayoutX(210);
-		Light1_Lock.setLayoutY(135);
-		Light1_Lock.setFitHeight(40);
-		Light1_Lock.setFitWidth(40);
-		root.getChildren().add(Light1_Lock);
+		// Output1_Lock quadrat
+		Output1_Lock = new ImageView(new Image("filledquad.png"));
+		Output1_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output1_Lock.getOnMouseReleased();
+		Output1_Lock.setLayoutX(210);
+		Output1_Lock.setLayoutY(135);
+		Output1_Lock.setFitHeight(40);
+		Output1_Lock.setFitWidth(40);
+		root.getChildren().add(Output1_Lock);
 
-		// Light1_Lock red X
-		Light1_Lockcross = new ImageView(new Image("redcross.png"));
-		Light1_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light1_Lockcross.getOnMouseReleased();
-		Light1_Lockcross.setLayoutX(215);
-		Light1_Lockcross.setLayoutY(140);
-		Light1_Lockcross.setFitHeight(30);
-		Light1_Lockcross.setFitWidth(30);
-		Light1_Lockcross.setVisible(false);
-		root.getChildren().add(Light1_Lockcross);
+		// Output1_Lock red X
+		Output1_Lockcross = new ImageView(new Image("redcross.png"));
+		Output1_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output1_Lockcross.getOnMouseReleased();
+		Output1_Lockcross.setLayoutX(215);
+		Output1_Lockcross.setLayoutY(140);
+		Output1_Lockcross.setFitHeight(30);
+		Output1_Lockcross.setFitWidth(30);
+		Output1_Lockcross.setVisible(false);
+		root.getChildren().add(Output1_Lockcross);
 
-		// Light1 state of it
-		Light1_State1 = new ImageView(new Image("tealorb.png"));
-		Light1_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light1_State1.getOnMouseReleased();
-		Light1_State1.setLayoutX(10);
-		Light1_State1.setLayoutY(125);
-		Light1_State1.setFitHeight(35);
-		Light1_State1.setFitWidth(35);
-		root.getChildren().add(Light1_State1);
+		// Output1 state of it
+		Output1_State1 = new ImageView(new Image("tealorb.png"));
+		Output1_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output1_State1.getOnMouseReleased();
+		Output1_State1.setLayoutX(10);
+		Output1_State1.setLayoutY(125);
+		Output1_State1.setFitHeight(35);
+		Output1_State1.setFitWidth(35);
+		root.getChildren().add(Output1_State1);
 
-		Light1_State2 = new ImageView(new Image("greenorb.png"));
-		Light1_State2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light1_State2.getOnMouseReleased();
-		Light1_State2.setLayoutX(10);
-		Light1_State2.setLayoutY(125);
-		Light1_State2.setFitHeight(35);
-		Light1_State2.setFitWidth(35);
-		Light1_State2.setVisible(false);
-		root.getChildren().add(Light1_State2);
+		Output1_State2 = new ImageView(new Image("greenorb.png"));
+		Output1_State2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output1_State2.getOnMouseReleased();
+		Output1_State2.setLayoutX(10);
+		Output1_State2.setLayoutY(125);
+		Output1_State2.setFitHeight(35);
+		Output1_State2.setFitWidth(35);
+		Output1_State2.setVisible(false);
+		root.getChildren().add(Output1_State2);
 
-		Light1_State3 = new ImageView(new Image("redorb.png"));
-		Light1_State3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light1_State3.getOnMouseReleased();
-		Light1_State3.setLayoutX(10);
-		Light1_State3.setLayoutY(125);
-		Light1_State3.setFitHeight(35);
-		Light1_State3.setFitWidth(35);
-		Light1_State3.setVisible(false);
-		root.getChildren().add(Light1_State3);
+		Output1_State3 = new ImageView(new Image("redorb.png"));
+		Output1_State3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output1_State3.getOnMouseReleased();
+		Output1_State3.setLayoutX(10);
+		Output1_State3.setLayoutY(125);
+		Output1_State3.setFitHeight(35);
+		Output1_State3.setFitWidth(35);
+		Output1_State3.setVisible(false);
+		root.getChildren().add(Output1_State3);
 
 		// Button2
-		Light2_Button1 = new ImageView(new Image("B12.png"));
-		Light2_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Light2_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light2_Button1.getOnMousePressed();
-		Light2_Button1.getOnMouseReleased();
-		Light2_Button1.setLayoutX(60);
-		Light2_Button1.setLayoutY(175);
-		root.getChildren().add(Light2_Button1);
+		Output2_Button1 = new ImageView(new Image("B12.png"));
+		Output2_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Output2_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output2_Button1.getOnMousePressed();
+		Output2_Button1.getOnMouseReleased();
+		Output2_Button1.setLayoutX(60);
+		Output2_Button1.setLayoutY(175);
+		root.getChildren().add(Output2_Button1);
 
-		Light2_Button2 = new ImageView(new Image("B3.png"));
-		Light2_Button2.setLayoutX(60);
-		Light2_Button2.setLayoutY(175);
-		Light2_Button2.setVisible(false);
-		root.getChildren().add(Light2_Button2);
+		Output2_Button2 = new ImageView(new Image("B3.png"));
+		Output2_Button2.setLayoutX(60);
+		Output2_Button2.setLayoutY(175);
+		Output2_Button2.setVisible(false);
+		root.getChildren().add(Output2_Button2);
 		System.out.println("Loading: 50%");
-		Light2_Text = new Text();
-		Light2_Text.setText("Licht II");
-		Light2_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Light2_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light2_Text.getOnMousePressed();
-		Light2_Text.getOnMouseReleased();
-		Light2_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
-		Light2_Text.setLayoutX(80);
-		Light2_Text.setLayoutY(200);
-		root.getChildren().add(Light2_Text);
+		Output2_Text = new Text();
+		Output2_Text.setText("Licht II");
+		Output2_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Output2_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output2_Text.getOnMousePressed();
+		Output2_Text.getOnMouseReleased();
+		Output2_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output2_Text.setLayoutX(80);
+		Output2_Text.setLayoutY(200);
+		root.getChildren().add(Output2_Text);
 
-		Light2_Lock = new ImageView(new Image("filledquad.png"));
-		Light2_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light2_Lock.getOnMouseReleased();
-		Light2_Lock.setLayoutX(210);
-		Light2_Lock.setLayoutY(185);
-		Light2_Lock.setFitHeight(40);
-		Light2_Lock.setFitWidth(40);
-		root.getChildren().add(Light2_Lock);
+		Output2_Lock = new ImageView(new Image("filledquad.png"));
+		Output2_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output2_Lock.getOnMouseReleased();
+		Output2_Lock.setLayoutX(210);
+		Output2_Lock.setLayoutY(185);
+		Output2_Lock.setFitHeight(40);
+		Output2_Lock.setFitWidth(40);
+		root.getChildren().add(Output2_Lock);
 
-		Light2_Lockcross = new ImageView(new Image("redcross.png"));
-		Light2_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light2_Lockcross.getOnMouseReleased();
-		Light2_Lockcross.setLayoutX(215);
-		Light2_Lockcross.setLayoutY(190);
-		Light2_Lockcross.setFitHeight(30);
-		Light2_Lockcross.setFitWidth(30);
-		Light2_Lockcross.setVisible(false);
-		root.getChildren().add(Light2_Lockcross);
+		Output2_Lockcross = new ImageView(new Image("redcross.png"));
+		Output2_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output2_Lockcross.getOnMouseReleased();
+		Output2_Lockcross.setLayoutX(215);
+		Output2_Lockcross.setLayoutY(190);
+		Output2_Lockcross.setFitHeight(30);
+		Output2_Lockcross.setFitWidth(30);
+		Output2_Lockcross.setVisible(false);
+		root.getChildren().add(Output2_Lockcross);
 
-		Light2_State1 = new ImageView(new Image("tealorb.png"));
-		Light2_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light2_State1.getOnMouseReleased();
-		Light2_State1.setLayoutX(10);
-		Light2_State1.setLayoutY(175);
-		Light2_State1.setFitHeight(35);
-		Light2_State1.setFitWidth(35);
-		root.getChildren().add(Light2_State1);
+		Output2_State1 = new ImageView(new Image("tealorb.png"));
+		Output2_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output2_State1.getOnMouseReleased();
+		Output2_State1.setLayoutX(10);
+		Output2_State1.setLayoutY(175);
+		Output2_State1.setFitHeight(35);
+		Output2_State1.setFitWidth(35);
+		root.getChildren().add(Output2_State1);
 		System.out.println("Loading: 60%");
-		Light2_State2 = new ImageView(new Image("greenorb.png"));
-		Light2_State2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light2_State2.getOnMouseReleased();
-		Light2_State2.setLayoutX(10);
-		Light2_State2.setLayoutY(175);
-		Light2_State2.setFitHeight(35);
-		Light2_State2.setFitWidth(35);
-		Light2_State2.setVisible(false);
-		root.getChildren().add(Light2_State2);
+		Output2_State2 = new ImageView(new Image("greenorb.png"));
+		Output2_State2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output2_State2.getOnMouseReleased();
+		Output2_State2.setLayoutX(10);
+		Output2_State2.setLayoutY(175);
+		Output2_State2.setFitHeight(35);
+		Output2_State2.setFitWidth(35);
+		Output2_State2.setVisible(false);
+		root.getChildren().add(Output2_State2);
 
-		Light2_State3 = new ImageView(new Image("redorb.png"));
-		Light2_State3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light2_State3.getOnMouseReleased();
-		Light2_State3.setLayoutX(10);
-		Light2_State3.setLayoutY(175);
-		Light2_State3.setFitHeight(35);
-		Light2_State3.setFitWidth(35);
-		Light2_State3.setVisible(false);
-		root.getChildren().add(Light2_State3);
+		Output2_State3 = new ImageView(new Image("redorb.png"));
+		Output2_State3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output2_State3.getOnMouseReleased();
+		Output2_State3.setLayoutX(10);
+		Output2_State3.setLayoutY(175);
+		Output2_State3.setFitHeight(35);
+		Output2_State3.setFitWidth(35);
+		Output2_State3.setVisible(false);
+		root.getChildren().add(Output2_State3);
 
 		// Button3
-		Light3_Button1 = new ImageView(new Image("B12.png"));
-		Light3_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Light3_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light3_Button1.getOnMousePressed();
-		Light3_Button1.getOnMouseReleased();
-		Light3_Button1.setLayoutX(60);
-		Light3_Button1.setLayoutY(225);
-		root.getChildren().add(Light3_Button1);
+		Output3_Button1 = new ImageView(new Image("B12.png"));
+		Output3_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Output3_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output3_Button1.getOnMousePressed();
+		Output3_Button1.getOnMouseReleased();
+		Output3_Button1.setLayoutX(60);
+		Output3_Button1.setLayoutY(225);
+		root.getChildren().add(Output3_Button1);
 
-		Light3_Button2 = new ImageView(new Image("B3.png"));
-		Light3_Button2.setLayoutX(60);
-		Light3_Button2.setLayoutY(225);
-		Light3_Button2.setVisible(false);
-		root.getChildren().add(Light3_Button2);
+		Output3_Button2 = new ImageView(new Image("B3.png"));
+		Output3_Button2.setLayoutX(60);
+		Output3_Button2.setLayoutY(225);
+		Output3_Button2.setVisible(false);
+		root.getChildren().add(Output3_Button2);
 
-		Light3_Text = new Text();
-		Light3_Text.setText("Licht III");
-		Light3_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Light3_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light3_Text.getOnMousePressed();
-		Light3_Text.getOnMouseReleased();
-		Light3_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
-		Light3_Text.setLayoutX(80);
-		Light3_Text.setLayoutY(250);
-		root.getChildren().add(Light3_Text);
+		Output3_Text = new Text();
+		Output3_Text.setText("Licht III");
+		Output3_Text.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+		Output3_Text.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output3_Text.getOnMousePressed();
+		Output3_Text.getOnMouseReleased();
+		Output3_Text.setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output3_Text.setLayoutX(80);
+		Output3_Text.setLayoutY(250);
+		root.getChildren().add(Output3_Text);
 
-		Light3_Lock = new ImageView(new Image("filledquad.png"));
-		Light3_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light3_Lock.getOnMouseReleased();
-		Light3_Lock.setLayoutX(210);
-		Light3_Lock.setLayoutY(235);
-		Light3_Lock.setFitHeight(40);
-		Light3_Lock.setFitWidth(40);
-		root.getChildren().add(Light3_Lock);
+		Output3_Lock = new ImageView(new Image("filledquad.png"));
+		Output3_Lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output3_Lock.getOnMouseReleased();
+		Output3_Lock.setLayoutX(210);
+		Output3_Lock.setLayoutY(235);
+		Output3_Lock.setFitHeight(40);
+		Output3_Lock.setFitWidth(40);
+		root.getChildren().add(Output3_Lock);
 
-		Light3_Lockcross = new ImageView(new Image("redcross.png"));
-		Light3_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light3_Lockcross.getOnMouseReleased();
-		Light3_Lockcross.setLayoutX(215);
-		Light3_Lockcross.setLayoutY(240);
-		Light3_Lockcross.setFitHeight(30);
-		Light3_Lockcross.setFitWidth(30);
-		Light3_Lockcross.setVisible(false);
-		root.getChildren().add(Light3_Lockcross);
+		Output3_Lockcross = new ImageView(new Image("redcross.png"));
+		Output3_Lockcross.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output3_Lockcross.getOnMouseReleased();
+		Output3_Lockcross.setLayoutX(215);
+		Output3_Lockcross.setLayoutY(240);
+		Output3_Lockcross.setFitHeight(30);
+		Output3_Lockcross.setFitWidth(30);
+		Output3_Lockcross.setVisible(false);
+		root.getChildren().add(Output3_Lockcross);
 
-		Light3_State1 = new ImageView(new Image("tealorb.png"));
-		Light3_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light3_State1.getOnMouseReleased();
-		Light3_State1.setLayoutX(10);
-		Light3_State1.setLayoutY(225);
-		Light3_State1.setFitHeight(35);
-		Light3_State1.setFitWidth(35);
-		root.getChildren().add(Light3_State1);
+		Output3_State1 = new ImageView(new Image("tealorb.png"));
+		Output3_State1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output3_State1.getOnMouseReleased();
+		Output3_State1.setLayoutX(10);
+		Output3_State1.setLayoutY(225);
+		Output3_State1.setFitHeight(35);
+		Output3_State1.setFitWidth(35);
+		root.getChildren().add(Output3_State1);
 
-		Light3_State2 = new ImageView(new Image("greenorb.png"));
-		Light3_State2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light3_State2.getOnMouseReleased();
-		Light3_State2.setLayoutX(10);
-		Light3_State2.setLayoutY(225);
-		Light3_State2.setFitHeight(35);
-		Light3_State2.setFitWidth(35);
-		Light3_State2.setVisible(false);
-		root.getChildren().add(Light3_State2);
+		Output3_State2 = new ImageView(new Image("greenorb.png"));
+		Output3_State2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output3_State2.getOnMouseReleased();
+		Output3_State2.setLayoutX(10);
+		Output3_State2.setLayoutY(225);
+		Output3_State2.setFitHeight(35);
+		Output3_State2.setFitWidth(35);
+		Output3_State2.setVisible(false);
+		root.getChildren().add(Output3_State2);
 
-		Light3_State3 = new ImageView(new Image("redorb.png"));
-		Light3_State3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Light3_State3.getOnMouseReleased();
-		Light3_State3.setLayoutX(10);
-		Light3_State3.setLayoutY(225);
-		Light3_State3.setFitHeight(35);
-		Light3_State3.setFitWidth(35);
-		Light3_State3.setVisible(false);
-		root.getChildren().add(Light3_State3);
+		Output3_State3 = new ImageView(new Image("redorb.png"));
+		Output3_State3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+		Output3_State3.getOnMouseReleased();
+		Output3_State3.setLayoutX(10);
+		Output3_State3.setLayoutY(225);
+		Output3_State3.setFitHeight(35);
+		Output3_State3.setFitWidth(35);
+		Output3_State3.setVisible(false);
+		root.getChildren().add(Output3_State3);
 		System.out.println("Loading: 70%");
 
 		// Console
@@ -1248,7 +1249,9 @@ public class Main extends Application{
 				masteropacity = masteropacity-0.0316;
 				setDevOpacity(masteropacity);
 				for(int i=0;i<10;i++){
-					FeedReader.RssTextObject[i].setX(entrypos);
+					if(FeedReader.RssTextObject[i] != null){
+						FeedReader.RssTextObject[i].setX(entrypos);
+					}
 				}
 			}else{
 				goLeft = false;
@@ -1266,7 +1269,9 @@ public class Main extends Application{
 				masteropacity = masteropacity+0.025;
 				setDevOpacity(masteropacity);
 				for(int i=0;i<10;i++){
-					FeedReader.RssTextObject[i].setX(entrypos);
+					if(FeedReader.RssTextObject[i] != null){
+						FeedReader.RssTextObject[i].setX(entrypos);
+					}
 				}
 			}else{
 				goRight = false;
@@ -1302,45 +1307,45 @@ public class Main extends Application{
 				// USAGE:
 				// CMD:-> * On * Off * Toggle *  Add + @
 				// Item: -> Full Item name + @
-				// List of Items: Light1, Light2, Light3, Console
+				// List of Items: Output1, Output2, Output3, Console
 				// params: -> special things, text
-				// example: On@Light1, Toggle@Light2, Toggle@Door1, Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
+				// example: On@Output1, Toggle@Output2, Toggle@Door1, Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
 
 				String temp[] = todocmd[y].split("@");
 				if(temp[0].equals("On")){
-					if(temp[1].equals("Light1")){
-						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
+					if(temp[1].equals("Output1")){
+						SetState(Output1_State1, Output1_State2, Output1_State3, 1);
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
 					}
-					if(temp[1].equals("Light2")){
-						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
+					if(temp[1].equals("Output2")){
+						SetState(Output2_State1, Output2_State2, Output2_State3, 1);
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
 					}
-					if(temp[1].equals("Light3")){
-						SetState(Light3_State1, Light1_State3, Light1_State3, 1);
+					if(temp[1].equals("Output3")){
+						SetState(Output3_State1, Output1_State3, Output1_State3, 1);
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
 						}
 					}
 				}else if(temp[0].equals("Off")){
-					if(temp[1].equals("Light1")){
-						SetState(Light1_State1, Light1_State2, Light1_State3, 2);
+					if(temp[1].equals("Output1")){
+						SetState(Output1_State1, Output1_State2, Output1_State3, 2);
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).off();
 						}
 					}
-					if(temp[1].equals("Light2")){
-						SetState(Light2_State1, Light2_State2, Light2_State3, 2);
+					if(temp[1].equals("Output2")){
+						SetState(Output2_State1, Output2_State2, Output2_State3, 2);
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).off();
 						}
 					}
-					if(temp[1].equals("Light3")){
-						SetState(Light3_State1, Light1_State3, Light1_State3, 2);
+					if(temp[1].equals("Output3")){
+						SetState(Output3_State1, Output1_State3, Output1_State3, 2);
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).off();
 						}
@@ -1493,138 +1498,138 @@ public class Main extends Application{
 		@Override
 		public void handle(MouseEvent e) {
 			// Buttons pressed, set state to pressed and change icon & do smth.
-			if(e.getSource() == Light1_Button1 || e.getSource() == Light1_Text){
+			if(e.getSource() == Output1_Button1 || e.getSource() == Output1_Text){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
-					System.out.println("Released & Triggered Light1_Button");
-					Light1_Button2.setVisible(false);
-					Light1_Button1.setVisible(true);
-					Light1_Text.setLayoutX(Light1_Text.getLayoutX()-12);
-					Light1_Text.setLayoutY(Light1_Text.getLayoutY()-10);
-					if(Light1_State == 0){
+					System.out.println("Released & Triggered Output1_Button");
+					Output1_Button2.setVisible(false);
+					Output1_Button1.setVisible(true);
+					Output1_Text.setLayoutX(Output1_Text.getLayoutX()-12);
+					Output1_Text.setLayoutY(Output1_Text.getLayoutY()-10);
+					if(Output1_State == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
-						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
-						Light1_State = 1;
-					}else if(Light1_State == 1){
+						SetState(Output1_State1, Output1_State2, Output1_State3, 1);
+						Output1_State = 1;
+					}else if(Output1_State == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).off();
 						}
-						SetState(Light1_State1, Light1_State2, Light1_State3, 2);
-						Light1_State = 2;
-					}else if(Light1_State == 2){
+						SetState(Output1_State1, Output1_State2, Output1_State3, 2);
+						Output1_State = 2;
+					}else if(Output1_State == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
-						SetState(Light1_State1, Light1_State2, Light1_State3, 1);
-						Light1_State = 1;
+						SetState(Output1_State1, Output1_State2, Output1_State3, 1);
+						Output1_State = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
-					System.out.println("Pressed Light1_Button");
-					Light1_Button1.setVisible(false);
-					Light1_Button2.setVisible(true);
-					Light1_Text.setLayoutX(Light1_Text.getLayoutX()+12);
-					Light1_Text.setLayoutY(Light1_Text.getLayoutY()+10);
+					System.out.println("Pressed Output1_Button");
+					Output1_Button1.setVisible(false);
+					Output1_Button2.setVisible(true);
+					Output1_Text.setLayoutX(Output1_Text.getLayoutX()+12);
+					Output1_Text.setLayoutY(Output1_Text.getLayoutY()+10);
 				}
 			}
-			else if(e.getSource() == Light1_Lock || e.getSource() == Light1_Lockcross){
+			else if(e.getSource() == Output1_Lock || e.getSource() == Output1_Lockcross){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
-					if(!Light1_Lockcross.isVisible()){
-						Light1_Lockcross.setVisible(true);
-						System.out.println("Locked Light1");
-					}else if(Light1_Lockcross.isVisible()){
-						Light1_Lockcross.setVisible(false);
-						System.out.println("Unlocked Light1");
+					if(!Output1_Lockcross.isVisible()){
+						Output1_Lockcross.setVisible(true);
+						System.out.println("Locked Output1");
+					}else if(Output1_Lockcross.isVisible()){
+						Output1_Lockcross.setVisible(false);
+						System.out.println("Unlocked Output1");
 					}
 				}
 			}
-			else if(e.getSource() == Light2_Button1 || e.getSource() == Light2_Text){
+			else if(e.getSource() == Output2_Button1 || e.getSource() == Output2_Text){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
-					System.out.println("Released & Triggered Light2_Button");
-					Light2_Button2.setVisible(false);
-					Light2_Button1.setVisible(true);
-					Light2_Text.setLayoutX(Light2_Text.getLayoutX()-12);
-					Light2_Text.setLayoutY(Light2_Text.getLayoutY()-10);
-					if(Light2_State == 0){
+					System.out.println("Released & Triggered Output2_Button");
+					Output2_Button2.setVisible(false);
+					Output2_Button1.setVisible(true);
+					Output2_Text.setLayoutX(Output2_Text.getLayoutX()-12);
+					Output2_Text.setLayoutY(Output2_Text.getLayoutY()-10);
+					if(Output2_State == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
-						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
-						Light2_State = 1;
-					}else if(Light2_State == 1){
+						SetState(Output2_State1, Output2_State2, Output2_State3, 1);
+						Output2_State = 1;
+					}else if(Output2_State == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).off();
 						}
-						SetState(Light2_State1, Light2_State2, Light2_State3, 2);
-						Light2_State = 2;
-					}else if(Light2_State == 2){
+						SetState(Output2_State1, Output2_State2, Output2_State3, 2);
+						Output2_State = 2;
+					}else if(Output2_State == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
-						SetState(Light2_State1, Light2_State2, Light2_State3, 1);
-						Light2_State = 1;
+						SetState(Output2_State1, Output2_State2, Output2_State3, 1);
+						Output2_State = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
-					System.out.println("Pressed Light2_Button");
-					Light2_Button1.setVisible(false);
-					Light2_Button2.setVisible(true);
-					Light2_Text.setLayoutX(Light2_Text.getLayoutX()+12);
-					Light2_Text.setLayoutY(Light2_Text.getLayoutY()+10);
+					System.out.println("Pressed Output2_Button");
+					Output2_Button1.setVisible(false);
+					Output2_Button2.setVisible(true);
+					Output2_Text.setLayoutX(Output2_Text.getLayoutX()+12);
+					Output2_Text.setLayoutY(Output2_Text.getLayoutY()+10);
 				}
 			}
-			else if(e.getSource() == Light2_Lock || e.getSource() == Light2_Lockcross){
+			else if(e.getSource() == Output2_Lock || e.getSource() == Output2_Lockcross){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
-					if(!Light2_Lockcross.isVisible()){
-						Light2_Lockcross.setVisible(true);
-						System.out.println("Locked Light2");
-					}else if(Light2_Lockcross.isVisible()){
-						Light2_Lockcross.setVisible(false);
-						System.out.println("Unlocked Light2");
+					if(!Output2_Lockcross.isVisible()){
+						Output2_Lockcross.setVisible(true);
+						System.out.println("Locked Output2");
+					}else if(Output2_Lockcross.isVisible()){
+						Output2_Lockcross.setVisible(false);
+						System.out.println("Unlocked Output2");
 					}
 				}
 			}
-			else if(e.getSource() == Light3_Button1 || e.getSource() == Light3_Text){
+			else if(e.getSource() == Output3_Button1 || e.getSource() == Output3_Text){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
-					System.out.println("Released & Triggered Light3_Button");
-					Light3_Button2.setVisible(false);
-					Light3_Button1.setVisible(true);
-					Light3_Text.setLayoutX(Light3_Text.getLayoutX()-12);
-					Light3_Text.setLayoutY(Light3_Text.getLayoutY()-10);
-					if(Light3_State == 0){
+					System.out.println("Released & Triggered Output3_Button");
+					Output3_Button2.setVisible(false);
+					Output3_Button1.setVisible(true);
+					Output3_Text.setLayoutX(Output3_Text.getLayoutX()-12);
+					Output3_Text.setLayoutY(Output3_Text.getLayoutY()-10);
+					if(Output3_State == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
 						}
-						SetState(Light3_State1, Light3_State2, Light3_State3, 1);
-						Light3_State = 1;
-					}else if(Light3_State == 1){
+						SetState(Output3_State1, Output3_State2, Output3_State3, 1);
+						Output3_State = 1;
+					}else if(Output3_State == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).off();
 						}
-						SetState(Light3_State1, Light3_State2, Light3_State3, 2);
-						Light3_State = 2;
-					}else if(Light3_State == 2){
+						SetState(Output3_State1, Output3_State2, Output3_State3, 2);
+						Output3_State = 2;
+					}else if(Output3_State == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
 						}
-						SetState(Light3_State1, Light3_State2, Light3_State3, 1);
-						Light3_State = 1;
+						SetState(Output3_State1, Output3_State2, Output3_State3, 1);
+						Output3_State = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
-					System.out.println("Pressed Light3_Button");
-					Light3_Button1.setVisible(false);
-					Light3_Button2.setVisible(true);
-					Light3_Text.setLayoutX(Light3_Text.getLayoutX()+12);
-					Light3_Text.setLayoutY(Light3_Text.getLayoutY()+10);
+					System.out.println("Pressed Output3_Button");
+					Output3_Button1.setVisible(false);
+					Output3_Button2.setVisible(true);
+					Output3_Text.setLayoutX(Output3_Text.getLayoutX()+12);
+					Output3_Text.setLayoutY(Output3_Text.getLayoutY()+10);
 				}
 			}
-			else if(e.getSource() == Light3_Lock || e.getSource() == Light3_Lockcross){
+			else if(e.getSource() == Output3_Lock || e.getSource() == Output3_Lockcross){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
-					if(!Light3_Lockcross.isVisible()){
-						Light3_Lockcross.setVisible(true);
-						System.out.println("Locked Light3");
-					}else if(Light3_Lockcross.isVisible()){
-						Light3_Lockcross.setVisible(false);
-						System.out.println("Unlocked Light3");
+					if(!Output3_Lockcross.isVisible()){
+						Output3_Lockcross.setVisible(true);
+						System.out.println("Locked Output3");
+					}else if(Output3_Lockcross.isVisible()){
+						Output3_Lockcross.setVisible(false);
+						System.out.println("Unlocked Output3");
 					}
 				}
 			}

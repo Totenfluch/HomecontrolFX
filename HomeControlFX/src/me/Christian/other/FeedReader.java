@@ -80,7 +80,7 @@ public class FeedReader {
 		}
 
 		if (!ok) {
-			System.out.println("FeedReader:: Feed:" + FeedCounter + " is INVALID!");
+			System.out.println("FeedReader:: Feed: " + FeedCounter + " is INVALID!");
 		}
 	}
 
@@ -108,7 +108,7 @@ public class FeedReader {
 		}
 		for(int m = 0; m<stringArray.length;m++){
 			if(!stringArray[m].equals("") && !stringArray[m].equals(" ")){
-				if(stringArray[m].contains("rss") || stringArray[m].contains("xml") || stringArray[m].contains("atom")){
+				if(stringArray[m].contains("rss") || stringArray[m].contains("xml") || stringArray[m].contains("atom") || stringArray[m].contains("RSS") || stringArray[m].contains("XML") || stringArray[m].contains("ATOM")){
 					if(m<10){
 						GetFeed(stringArray[m]);
 					}
@@ -125,7 +125,8 @@ public class FeedReader {
 	public static void CreateFeedObjects(){
 		int maxy = 145;
 		int difnext = -1;
-
+		if(FeedCounter ==0){return;}
+		if(FeedCounter == 0){split = new int[]{0};}
 		if(FeedCounter == 1){split = new int[]{10};}
 		if(FeedCounter == 2){split = new int[]{5,5};}
 		if(FeedCounter == 3){split = new int[]{4,3,3};}
