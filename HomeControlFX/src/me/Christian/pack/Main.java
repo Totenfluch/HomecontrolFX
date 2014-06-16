@@ -57,6 +57,10 @@ import javafx.stage.WindowEvent;
 public class Main extends Application{
 	//
 	//
+	public static final int MainVersion = 1;
+	public static final int cfgVersion = 2; 
+	public static final int ncfgVersion = 1;
+	//
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	public static boolean Testbuild = true;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
@@ -84,18 +88,22 @@ public class Main extends Application{
 	// Delay to refresh the weather in ms
 	// default: 600000 (10 minutes)
 	public static int WeatherRefreshDelay = 600000;
-
+	//
 	// Main Stage - where everything goes thing thing
 	public static Stage MainStage;
 	// Scene for Root(control GUI) and Scene for Login - both can be places in MainStage.
 	public static Scene Sroot, SLogin;
-
-
+	//
 	//Rss Feeds
 	public static boolean RssEnabled = true;
 	//Rss Refresh delay in ms
 	public static int RssRefreshDelay = 15000;
-
+	//
+	// Dev prompt
+	public static boolean dev_promt_enabled = true;
+	//
+	// Dev console
+	public static boolean dev_console_enabled = true;
 
 	// Root Window Stuff
 	public static TextArea Console;
@@ -104,7 +112,6 @@ public class Main extends Application{
 	public static ImageView Music_Head, Music_prev, Music_next, Music_pause, Music_play;
 	public static ImageView Console_Button1, Console_Button2;
 	public static Text Music_Title, Music_HeadText, Console_ButtonText;
-
 
 	public static ImageView[] Head_Image = new ImageView[3];
 	public static Text[] Head_Text = new Text[3];
@@ -119,7 +126,6 @@ public class Main extends Application{
 	public static String[] Output_Name = new String[8];
 	public static String[] Head_Name = new String[3];
 
-
 	public static String currenttitle = "Fetching Title...";
 	double Music_title_size = 19;
 	static final int MUSIC_TITLE_MAX_WIDTH = 235;
@@ -131,7 +137,6 @@ public class Main extends Application{
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
 	public static boolean goLeft, goRight;
 	public static int entrypos = 265;
-
 
 	// Developer in app stuff
 	public static PasswordField Dev_masterpw;
@@ -162,8 +167,7 @@ public class Main extends Application{
 	public static ImageView Login_Spark[] = new ImageView[6];
 	public static double Login_SparkPos[][] = new double[6][2];
 	public static int Login_SparkSeq[] = new int[6];
-	//private static ImageView Login_Background;
-
+	public static boolean[] Output_isLocked = new boolean[8];
 
 	// Setup Piface instances
 	public static GpioController gpio;
@@ -998,7 +1002,7 @@ public class Main extends Application{
 		Output_State[6][2].setFitWidth(35);
 		Output_State[6][2].setVisible(false);
 		root.getChildren().add(Output_State[6][2]);
-		
+
 		// Button8
 		Output_Button[7][0] = new ImageView(new Image("iB12.png"));
 		Output_Button[7][0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -1074,171 +1078,217 @@ public class Main extends Application{
 		Output_State[7][2].setVisible(false);
 		root.getChildren().add(Output_State[7][2]);
 
-		// Console
-		Console = new TextArea();
-		Console.setPrefSize(250, 400);
-		Console.setLayoutX(500);
-		Console.setLayoutY(130);
-		Console.setWrapText(true);
-		Console.setEditable(false);
-		Console.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Console.setFont(Font.font(java.awt.Font.SERIF, 13));
-		root.getChildren().add(Console);
+		for(int i=0; i<8; i++){
+			Output_Lockcross[i].setDisable(true);
+			Output_Lockquad[i].setDisable(true);
+		}
+		if(dev_console_enabled){
+			// Console
+			Console = new TextArea();
+			Console.setPrefSize(250, 400);
+			Console.setLayoutX(500);
+			Console.setLayoutY(130);
+			Console.setWrapText(true);
+			Console.setEditable(false);
+			Console.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Console.setFont(Font.font(java.awt.Font.SERIF, 13));
+			root.getChildren().add(Console);
 
-		// Permanently scroll down for new text
-		Console.textProperty().addListener(new ChangeListener<Object>() {
-			@Override
-			public void changed(ObservableValue<?> observable, Object oldValue,
-					Object newValue) {
-				Console.setScrollTop(Double.MIN_VALUE);
-			}
-		});
+			// Permanently scroll down for new text
+			Console.textProperty().addListener(new ChangeListener<Object>() {
+				@Override
+				public void changed(ObservableValue<?> observable, Object oldValue,
+						Object newValue) {
+					Console.setScrollTop(Double.MIN_VALUE);
+				}
+			});
+		}
 
 		System.out.println("Loading: 80%");
 
-		// Console Toggle
-		Console_Button1 = new ImageView(new Image("iB12.png"));
-		Console_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Console_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Console_Button1.getOnMousePressed();
-		Console_Button1.getOnMouseReleased();
-		Console_Button1.setLayoutX(585);
-		Console_Button1.setLayoutY(80);
-		root.getChildren().add(Console_Button1);
+		if(dev_console_enabled && dev_promt_enabled){
 
-		Console_Button2 = new ImageView(new Image("iB3.png"));
-		Console_Button2.setLayoutX(585);
-		Console_Button2.setLayoutY(80);
-		Console_Button2.setVisible(false);
-		root.getChildren().add(Console_Button2);
+			// Console Toggle
+			Console_Button1 = new ImageView(new Image("iB12.png"));
+			Console_Button1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Console_Button1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Console_Button1.getOnMousePressed();
+			Console_Button1.getOnMouseReleased();
+			Console_Button1.setLayoutX(585);
+			Console_Button1.setLayoutY(80);
+			root.getChildren().add(Console_Button1);
 
-		Console_ButtonText = new Text();
-		Console_ButtonText.setText("Toggle");
-		Console_ButtonText.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		Console_ButtonText.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		Console_ButtonText.getOnMousePressed();
-		Console_ButtonText.getOnMouseReleased();
-		Console_ButtonText.setFont(Font.font(java.awt.Font.SERIF, 18));
-		Console_ButtonText.setLayoutX(675);
-		Console_ButtonText.setLayoutY(105);
-		root.getChildren().add(Console_ButtonText);
-		System.out.println("Loading: 90%");
+			Console_Button2 = new ImageView(new Image("iB3.png"));
+			Console_Button2.setLayoutX(585);
+			Console_Button2.setLayoutY(80);
+			Console_Button2.setVisible(false);
+			root.getChildren().add(Console_Button2);
 
+			Console_ButtonText = new Text();
+			Console_ButtonText.setText("Toggle");
+			Console_ButtonText.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Console_ButtonText.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Console_ButtonText.getOnMousePressed();
+			Console_ButtonText.getOnMouseReleased();
+			Console_ButtonText.setFont(Font.font(java.awt.Font.SERIF, 18));
+			Console_ButtonText.setLayoutX(675);
+			Console_ButtonText.setLayoutY(105);
+			root.getChildren().add(Console_ButtonText);
+			System.out.println("Loading: 90%");
+		}
 
-		Dev_masterpw = new PasswordField();
-		Dev_masterpw.setPromptText("Master Password");
-		Dev_masterpw.setLayoutX(265);
-		Dev_masterpw.setLayoutY(130);
-		Dev_masterpw.setPrefWidth(160);
-		Dev_masterpw.setFont(new Font("Arial", 16));
-		Dev_masterpw.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		root.getChildren().add(Dev_masterpw);
+		if(dev_promt_enabled){
+			Dev_masterpw = new PasswordField();
+			Dev_masterpw.setPromptText("Master Password");
+			Dev_masterpw.setLayoutX(265);
+			Dev_masterpw.setLayoutY(130);
+			Dev_masterpw.setPrefWidth(160);
+			Dev_masterpw.setFont(new Font("Arial", 16));
+			Dev_masterpw.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			root.getChildren().add(Dev_masterpw);
 
-		Dev_login = new Button("Login");
-		Dev_login.setLayoutX(427);
-		Dev_login.setLayoutY(130);
-		Dev_login.setPrefWidth(58);
-		Dev_login.setPrefHeight(31);
-		Dev_login.setFont(new Font("Arial", 14));
-		Dev_login.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Dev_login.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent e) {
-				if(Dev_masterpw.getText().equals(MasterPassword)){
-					String xn = "";
-					for(int z=0; z<Dev_masterpw.getText().length(); z++){
-						xn = xn+"T";
+			Dev_login = new Button("Login");
+			Dev_login.setLayoutX(427);
+			Dev_login.setLayoutY(130);
+			Dev_login.setPrefWidth(58);
+			Dev_login.setPrefHeight(31);
+			Dev_login.setFont(new Font("Arial", 14));
+			Dev_login.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Dev_login.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent e) {
+					if(Dev_masterpw.getText().equals(MasterPassword)){
+						String xn = "";
+						for(int z=0; z<Dev_masterpw.getText().length(); z++){
+							xn = xn+"T";
+						}
+						Dev_masterpw.setText(xn);
+						setMasterLogin(true);
 					}
-					Dev_masterpw.setText(xn);
-					setMasterLogin(true);
 				}
+			});
+			root.getChildren().add(Dev_login);
+
+			Dev_logout = new Button("Logout");
+			Dev_logout.setLayoutX(427);
+			Dev_logout.setLayoutY(130);
+			Dev_logout.setPrefWidth(58);
+			Dev_logout.setPrefHeight(31);
+			Dev_logout.setFont(new Font("Arial", 12));
+			Dev_logout.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Dev_logout.setVisible(false);
+			Dev_logout.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent e) {
+					setMasterLogin(false);
+					Dev_masterpw.setText("");
+				}
+			});
+			root.getChildren().add(Dev_logout);
+
+			Dev_cmdfield = new TextField();
+			Dev_cmdfield.setPromptText("Enter Command");
+			Dev_cmdfield.setLayoutX(265);
+			Dev_cmdfield.setLayoutY(170);
+			Dev_cmdfield.setPrefWidth(160);
+			Dev_cmdfield.setPrefHeight(20);
+			Dev_cmdfield.setFont(new Font("Arial", 16));
+			Dev_cmdfield.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Dev_cmdfield.setDisable(true);
+			root.getChildren().add(Dev_cmdfield);
+
+			Dev_sendcmd = new Button("Send");
+			Dev_sendcmd.setLayoutX(430);
+			Dev_sendcmd.setLayoutY(173);
+			Dev_sendcmd.setPrefWidth(55);
+			Dev_sendcmd.setFont(new Font("Arial", 14));
+			Dev_sendcmd.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Dev_sendcmd.setDisable(true);
+			Dev_sendcmd.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent e) {
+					OtherStuff.addToCmdQueue(Dev_cmdfield.getText());
+					Dev_cmdfield.setText("");
+				}
+			});
+			root.getChildren().add(Dev_sendcmd);
+
+			Dev_printfield = new TextField();
+			Dev_printfield.setPromptText("Enter Message");
+			Dev_printfield.setLayoutX(265);
+			Dev_printfield.setLayoutY(210);
+			Dev_printfield.setPrefWidth(160);
+			Dev_printfield.setPrefHeight(20);
+			Dev_printfield.setFont(new Font("Arial", 16));
+			Dev_printfield.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Dev_printfield.setDisable(true);
+			root.getChildren().add(Dev_printfield);
+
+			Dev_sendprint = new Button("Send");
+			Dev_sendprint.setLayoutX(430);
+			Dev_sendprint.setLayoutY(213);
+			Dev_sendprint.setPrefWidth(55);
+			Dev_sendprint.setFont(new Font("Arial", 14));
+			Dev_sendprint.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Dev_sendprint.setDisable(true);
+			Dev_sendprint.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent e) {
+					OtherStuff.addToPrintQueue(Dev_printfield.getText());
+					Dev_printfield.setText("");
+				}
+			});
+			root.getChildren().add(Dev_sendprint);
+
+			Dev_console = new TextField();
+			Dev_console.setPromptText("Commandline");
+			Dev_console.setLayoutX(265);
+			Dev_console.setLayoutY(250);
+			Dev_console.setPrefWidth(220);
+			Dev_console.setPrefHeight(20);
+			Dev_console.setFont(new Font("Arial", 16));
+			Dev_console.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
+			Dev_console.setDisable(true);
+			Dev_console.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent e) {
+					if(Dev_console.getText().equals("lock all")){
+						for(int i=0; i<8; i++){
+							Output_isLocked[i] = true;
+							Output_Lockcross[i].setVisible(true);
+						}
+					}else if(Dev_console.getText().equals("unlock all")){
+						for(int i=0; i<8; i++){
+							Output_isLocked[i] = false;
+							Output_Lockcross[i].setVisible(false);
+						}	
+					}else if(Dev_console.getText().equals("enable all")){
+						for(int i=0; i<8; i++){
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1);
+							if(!Testbuild){
+								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+									piface.getLed(index).on();
+								}
+							}
+						}	
+					}else if(Dev_console.getText().equals("disable all")){
+						for(int i=0; i<8; i++){
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
+							if(!Testbuild){
+								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+									piface.getLed(index).off();
+								}
+							}
+						}	
+					}
+					Dev_console.setText("");
+				}
+			});
+			root.getChildren().add(Dev_console);
+
+			setDevVisibility(false);
+		}
+		
+		if(!dev_console_enabled){
+			for(int i=0;i<10;i++){
+				FeedReader.RssTextObject[i].setX(500);
 			}
-		});
-		root.getChildren().add(Dev_login);
-
-		Dev_logout = new Button("Logout");
-		Dev_logout.setLayoutX(427);
-		Dev_logout.setLayoutY(130);
-		Dev_logout.setPrefWidth(58);
-		Dev_logout.setPrefHeight(31);
-		Dev_logout.setFont(new Font("Arial", 12));
-		Dev_logout.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Dev_logout.setVisible(false);
-		Dev_logout.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent e) {
-				setMasterLogin(false);
-			}
-		});
-		root.getChildren().add(Dev_logout);
-
-		Dev_cmdfield = new TextField();
-		Dev_cmdfield.setPromptText("Enter Command");
-		Dev_cmdfield.setLayoutX(265);
-		Dev_cmdfield.setLayoutY(170);
-		Dev_cmdfield.setPrefWidth(160);
-		Dev_cmdfield.setPrefHeight(20);
-		Dev_cmdfield.setFont(new Font("Arial", 16));
-		Dev_cmdfield.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Dev_cmdfield.setDisable(true);
-		root.getChildren().add(Dev_cmdfield);
-
-		Dev_sendcmd = new Button("Send");
-		Dev_sendcmd.setLayoutX(430);
-		Dev_sendcmd.setLayoutY(173);
-		Dev_sendcmd.setPrefWidth(55);
-		Dev_sendcmd.setFont(new Font("Arial", 14));
-		Dev_sendcmd.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Dev_sendcmd.setDisable(true);
-		Dev_sendcmd.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent e) {
-				OtherStuff.addToCmdQueue(Dev_cmdfield.getText());
-				Dev_cmdfield.setText("");
-			}
-		});
-		root.getChildren().add(Dev_sendcmd);
-
-		Dev_printfield = new TextField();
-		Dev_printfield.setPromptText("Enter Message");
-		Dev_printfield.setLayoutX(265);
-		Dev_printfield.setLayoutY(210);
-		Dev_printfield.setPrefWidth(160);
-		Dev_printfield.setPrefHeight(20);
-		Dev_printfield.setFont(new Font("Arial", 16));
-		Dev_printfield.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Dev_printfield.setDisable(true);
-		root.getChildren().add(Dev_printfield);
-
-		Dev_sendprint = new Button("Send");
-		Dev_sendprint.setLayoutX(430);
-		Dev_sendprint.setLayoutY(213);
-		Dev_sendprint.setPrefWidth(55);
-		Dev_sendprint.setFont(new Font("Arial", 14));
-		Dev_sendprint.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Dev_sendprint.setDisable(true);
-		Dev_sendprint.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent e) {
-				OtherStuff.addToPrintQueue(Dev_printfield.getText());
-				Dev_printfield.setText("");
-			}
-		});
-		root.getChildren().add(Dev_sendprint);
-
-		Dev_console = new TextField();
-		Dev_console.setPromptText("Commandline");
-		Dev_console.setLayoutX(265);
-		Dev_console.setLayoutY(250);
-		Dev_console.setPrefWidth(220);
-		Dev_console.setPrefHeight(20);
-		Dev_console.setFont(new Font("Arial", 16));
-		Dev_console.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-		Dev_console.setDisable(true);
-		Dev_console.setOnAction(new EventHandler<ActionEvent>() {
-			@Override public void handle(ActionEvent e) {
-				Dev_console.setText("");
-			}
-		});
-		root.getChildren().add(Dev_console);
-
-		setDevVisibility(false);
+		}
 
 		// Music
 		Music_Head = new ImageView(new Image("iB12.png"));
@@ -1275,8 +1325,12 @@ public class Main extends Application{
 		Music_Slider.setMajorTickUnit(25);
 		Music_Slider.setMinorTickCount(5);
 		Music_Slider.setBlockIncrement(10);
-		Music_Slider.setLayoutX(860);
-		Music_Slider.setLayoutY(200);
+		Music_Slider.setLayoutX(840);
+		Music_Slider.setLayoutY(210);
+		Music_Slider.setShowTickLabels(true);
+		Music_Slider.setScaleX(1.5);
+		Music_Slider.setScaleY(1.25);
+		Music_Slider.setShowTickMarks(true);
 		Music_Slider.valueProperty().addListener(new ChangeListener<Number>() {
 			public void changed(ObservableValue<? extends Number> ov,
 					Number old_val, Number new_val) {
@@ -1297,10 +1351,10 @@ public class Main extends Application{
 		Music_prev.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_prev.getOnMouseReleased();
 		Music_prev.getOnMousePressed();
-		Music_prev.setLayoutX(850);
+		Music_prev.setLayoutX(820);
 		Music_prev.setLayoutY(150);
-		Music_prev.setFitHeight(35);
-		Music_prev.setFitWidth(35);
+		Music_prev.setFitHeight(40);
+		Music_prev.setFitWidth(40);
 		Music_prev.setVisible(true);
 		root.getChildren().add(Music_prev);
 
@@ -1309,10 +1363,10 @@ public class Main extends Application{
 		Music_pause.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_pause.getOnMouseReleased();
 		Music_pause.getOnMousePressed();
-		Music_pause.setLayoutX(890);
+		Music_pause.setLayoutX(865);
 		Music_pause.setLayoutY(150);
-		Music_pause.setFitHeight(35);
-		Music_pause.setFitWidth(35);
+		Music_pause.setFitHeight(40);
+		Music_pause.setFitWidth(40);
 		Music_pause.setVisible(true);
 		root.getChildren().add(Music_pause);
 
@@ -1321,10 +1375,10 @@ public class Main extends Application{
 		Music_play.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_play.getOnMouseReleased();
 		Music_play.getOnMousePressed();
-		Music_play.setLayoutX(930);
+		Music_play.setLayoutX(910);
 		Music_play.setLayoutY(150);
-		Music_play.setFitHeight(35);
-		Music_play.setFitWidth(35);
+		Music_play.setFitHeight(40);
+		Music_play.setFitWidth(40);
 		Music_play.setVisible(true);
 		root.getChildren().add(Music_play);
 
@@ -1333,10 +1387,10 @@ public class Main extends Application{
 		Music_next.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Music_next.getOnMouseReleased();
 		Music_next.getOnMousePressed();
-		Music_next.setLayoutX(970);
+		Music_next.setLayoutX(955);
 		Music_next.setLayoutY(150);
-		Music_next.setFitHeight(35);
-		Music_next.setFitWidth(35);
+		Music_next.setFitHeight(40);
+		Music_next.setFitWidth(40);
 		Music_next.setVisible(true);
 		root.getChildren().add(Music_next);
 
@@ -1480,7 +1534,6 @@ public class Main extends Application{
 				w = 0.25;
 			}
 
-
 			Dev_cmdfield.setOpacity(w);
 			Dev_printfield.setOpacity(w);
 			Dev_console.setOpacity(w);
@@ -1528,6 +1581,10 @@ public class Main extends Application{
 			Dev_logout.setVisible(l);
 			Dev_sendcmd.setDisable(!l);
 			Dev_sendprint.setDisable(!l);
+			for(int i=0; i<8; i++){
+				Output_Lockcross[i].setDisable(!l);
+				Output_Lockquad[i].setDisable(!l);
+			}
 		}else{
 			Dev_masterpw.setDisable(l);
 			Dev_cmdfield.setDisable(!l);
@@ -1537,6 +1594,10 @@ public class Main extends Application{
 			Dev_logout.setVisible(l);
 			Dev_sendcmd.setDisable(!l);
 			Dev_sendprint.setDisable(!l);
+			for(int i=0; i<8; i++){
+				Output_Lockcross[i].setDisable(!l);
+				Output_Lockquad[i].setDisable(!l);
+			}
 		}
 		setDevOpacity(masteropacity);
 	}
@@ -1975,7 +2036,7 @@ public class Main extends Application{
 		@Override
 		public void handle(MouseEvent e) {
 			// Buttons pressed, set state to pressed and change icon & do smth.
-			if(e.getSource() == Output_Button[0][0] || e.getSource() == Output_Text[0]){
+			if((e.getSource() == Output_Button[0][0] || e.getSource() == Output_Text[0]) && !Output_isLocked[0]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output1_Button");
 					Output_Button[0][1].setVisible(false);
@@ -2013,14 +2074,16 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Output_Lockcross[0].isVisible()){
 						Output_Lockcross[0].setVisible(true);
+						Output_isLocked[0] = true;
 						System.out.println("Locked Output1");
 					}else if(Output_Lockcross[0].isVisible()){
 						Output_Lockcross[0].setVisible(false);
+						Output_isLocked[0] = false;
 						System.out.println("Unlocked Output1");
 					}
 				}
 			}
-			else if(e.getSource() == Output_Button[1][0] || e.getSource() == Output_Text[1]){
+			else if((e.getSource() == Output_Button[1][0] || e.getSource() == Output_Text[1]) && !Output_isLocked[1]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output2_Button");
 					Output_Button[1][1].setVisible(false);
@@ -2058,14 +2121,16 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Output_Lockcross[1].isVisible()){
 						Output_Lockcross[1].setVisible(true);
+						Output_isLocked[1] = true;
 						System.out.println("Locked Output2");
 					}else if(Output_Lockcross[1].isVisible()){
 						Output_Lockcross[1].setVisible(false);
+						Output_isLocked[1] = false;
 						System.out.println("Unlocked Output2");
 					}
 				}
 			}
-			else if(e.getSource() == Output_Button[2][0] || e.getSource() == Output_Text[2]){
+			else if((e.getSource() == Output_Button[2][0] || e.getSource() == Output_Text[2]) && !Output_isLocked[2]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output3_Button");
 					Output_Button[2][1].setVisible(false);
@@ -2103,14 +2168,16 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Output_Lockcross[2].isVisible()){
 						Output_Lockcross[2].setVisible(true);
+						Output_isLocked[2] = true;
 						System.out.println("Locked Output3");
 					}else if(Output_Lockcross[2].isVisible()){
 						Output_Lockcross[2].setVisible(false);
+						Output_isLocked[2] = false;
 						System.out.println("Unlocked Output3");
 					}
 				}
 			}
-			else if(e.getSource() == Output_Button[3][0] || e.getSource() == Output_Text[3]){
+			else if((e.getSource() == Output_Button[3][0] || e.getSource() == Output_Text[3]) && !Output_isLocked[3]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output4_Button");
 					Output_Button[3][1].setVisible(false);
@@ -2148,14 +2215,16 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Output_Lockcross[3].isVisible()){
 						Output_Lockcross[3].setVisible(true);
+						Output_isLocked[3] = true;
 						System.out.println("Locked Output4");
 					}else if(Output_Lockcross[3].isVisible()){
 						Output_Lockcross[3].setVisible(false);
+						Output_isLocked[3] = false;
 						System.out.println("Unlocked Output4");
 					}
 				}
 			}
-			else if(e.getSource() == Output_Button[4][0] || e.getSource() == Output_Text[4]){
+			else if((e.getSource() == Output_Button[4][0] || e.getSource() == Output_Text[4]) && !Output_isLocked[4]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output5_Button");
 					Output_Button[4][1].setVisible(false);
@@ -2193,14 +2262,16 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Output_Lockcross[4].isVisible()){
 						Output_Lockcross[4].setVisible(true);
+						Output_isLocked[4] = true;
 						System.out.println("Locked Output5");
 					}else if(Output_Lockcross[4].isVisible()){
 						Output_Lockcross[4].setVisible(false);
+						Output_isLocked[4] = false;
 						System.out.println("Unlocked Output5");
 					}
 				}
 			}
-			else if(e.getSource() == Output_Button[5][0] || e.getSource() == Output_Text[5]){
+			else if((e.getSource() == Output_Button[5][0] || e.getSource() == Output_Text[5]) && !Output_isLocked[5]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output6_Button");
 					Output_Button[5][1].setVisible(false);
@@ -2239,13 +2310,15 @@ public class Main extends Application{
 					if(!Output_Lockcross[5].isVisible()){
 						Output_Lockcross[5].setVisible(true);
 						System.out.println("Locked Output6");
+						Output_isLocked[5] = true;
 					}else if(Output_Lockcross[5].isVisible()){
 						Output_Lockcross[5].setVisible(false);
 						System.out.println("Unlocked Output6");
+						Output_isLocked[5] = false;
 					}
 				}
 			}
-			else if(e.getSource() == Output_Button[6][0] || e.getSource() == Output_Text[6]){
+			else if((e.getSource() == Output_Button[6][0] || e.getSource() == Output_Text[6]) && !Output_isLocked[6]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output7_Button");
 					Output_Button[6][1].setVisible(false);
@@ -2284,13 +2357,15 @@ public class Main extends Application{
 					if(!Output_Lockcross[6].isVisible()){
 						Output_Lockcross[6].setVisible(true);
 						System.out.println("Locked Output7");
+						Output_isLocked[6] = true;
 					}else if(Output_Lockcross[6].isVisible()){
 						Output_Lockcross[6].setVisible(false);
 						System.out.println("Unlocked Outpu7");
+						Output_isLocked[6] = false;
 					}
 				}
 			}
-			else if(e.getSource() == Output_Button[7][0] || e.getSource() == Output_Text[7]){
+			else if((e.getSource() == Output_Button[7][0] || e.getSource() == Output_Text[7]) && !Output_isLocked[7]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output8_Button");
 					Output_Button[7][1].setVisible(false);
@@ -2328,9 +2403,11 @@ public class Main extends Application{
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					if(!Output_Lockcross[7].isVisible()){
 						Output_Lockcross[7].setVisible(true);
+						Output_isLocked[7] = true;
 						System.out.println("Locked Output8");
 					}else if(Output_Lockcross[7].isVisible()){
 						Output_Lockcross[7].setVisible(false);
+						Output_isLocked[7] = false;
 						System.out.println("Unlocked Outpu8");
 					}
 				}
@@ -2477,7 +2554,7 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Console Toggle");
 					Console_Button2.setVisible(false);
 					Console_Button1.setVisible(true);
-
+					
 					if(Console.isVisible()){
 						goRight = true;
 						goLeft = false;

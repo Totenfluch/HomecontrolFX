@@ -22,7 +22,7 @@ public class ConfigFileStuff {
 				output = new FileOutputStream("config.properties");
 
 				// set the properties value
-				prop.setProperty("Version", "1");
+				prop.setProperty("Version", "2");
 				prop.setProperty("Is_Testbuild", "false");
 				prop.setProperty("Mpc_enabled", "true");
 				prop.setProperty("Mpc_refresh_delay_ms", "2000");
@@ -33,6 +33,8 @@ public class ConfigFileStuff {
 				prop.setProperty("Weather_refresh_delay", "600000");
 				prop.setProperty("Rss_enabled", "true");
 				prop.setProperty("Rss_refresh_delay_ms", "850000");
+				prop.setProperty("Dev_prompt_enabled", "true");
+				prop.setProperty("Dev_console_enabled", "true");
 				// Add more if needed, but make sure to read them afterwards otherwise they are useless
 				
 				// save properties to project root folder
@@ -71,6 +73,8 @@ public class ConfigFileStuff {
 				Main.WeatherRefreshDelay = Integer.valueOf(prop.getProperty("Weather_refresh_delay"));
 				Main.RssEnabled = Boolean.valueOf(prop.getProperty("Rss_enabled"));
 				Main.RssRefreshDelay = Integer.valueOf(prop.getProperty("Rss_refresh_delay_ms"));
+				Main.dev_promt_enabled = Boolean.valueOf(prop.getProperty("Dev_prompt_enabled"));
+				Main.dev_console_enabled = Boolean.valueOf(prop.getProperty("Dev_console_enabled"));
 				
 		 
 			} catch (IOException ex) {

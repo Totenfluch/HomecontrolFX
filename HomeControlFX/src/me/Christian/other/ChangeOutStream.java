@@ -11,9 +11,14 @@ public class ChangeOutStream {
 		System.setOut(new PrintStream(System.out) {
 			public void println(String s) {
 				if(Platform.isFxApplicationThread()){
-					Main.Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
-					Logger log = Logger.getLogger("");
-					log.info(s);
+					if(Main.dev_console_enabled){
+						Main.Console.appendText(OtherStuff.TheSimpleNormalTime() + ": "+ s+"\n");
+						Logger log = Logger.getLogger("");
+						log.info(s);
+					}else{
+						Logger log = Logger.getLogger("");
+						log.info(s);
+					}
 				}else{
 					OtherStuff.addToPrintQueue("!INVALID STREAM!-> " + s);
 				}
