@@ -14,10 +14,13 @@ import java.util.List;
 
 
 
+
 import me.Christian.pack.Main;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+
 
 
 
@@ -240,7 +243,9 @@ public class FeedReader {
 					}
 					Platform.runLater(new Runnable() {
 						@Override public void run() {
+							FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 12));
 							RssTextObjectTooltip.setText(sptemp.toString());
+							Main.isClicked = true;
 						}
 					});
 				}

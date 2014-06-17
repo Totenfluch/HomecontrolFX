@@ -16,7 +16,7 @@ public class OtherStuff {
 	public static String TheNormalTime(){
 		Calendar cal = Calendar.getInstance();
 		cal.getTime();
-		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy - HH:mm:ss - ");
+		SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy | HH:mm:ss | ");
 		String time = sdf.format(cal.getTime());
 		String currenttime =  time ;
 		return currenttime;
@@ -55,6 +55,9 @@ public class OtherStuff {
 		
 		UserCredicalsDatabase.put("Soulrescuer", "s321C");
 		UserPermissionsDatabase.put("Soulrescuer", 1000);
+		
+		UserCredicalsDatabase.put("root", Main.MasterPassword);
+		UserPermissionsDatabase.put("root", 1000);
 	}
 
 	public static String GeneratePrivateKey(){

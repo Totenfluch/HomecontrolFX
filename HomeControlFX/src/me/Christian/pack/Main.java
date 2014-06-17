@@ -48,8 +48,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -107,10 +107,10 @@ public class Main extends Application{
 
 	// Root Window Stuff
 	public static TextArea Console;
-	public static Label calendar, town, weathericonlabel, User_Logout;
+	public static Label calendar, town;
 	public static Slider Music_Slider;
 	public static ImageView Music_Head, Music_prev, Music_next, Music_pause, Music_play;
-	public static ImageView Console_Button1, Console_Button2;
+	public static ImageView Console_Button1, Console_Button2, weathericonlabel, screen_lock;
 	public static Text Music_Title, Music_HeadText, Console_ButtonText;
 
 	public static ImageView[] Head_Image = new ImageView[3];
@@ -126,14 +126,17 @@ public class Main extends Application{
 	public static String[] Output_Name = new String[8];
 	public static String[] Head_Name = new String[3];
 
+	// MPC Stuff
 	public static String currenttitle = "Fetching Title...";
 	double Music_title_size = 19;
 	static final int MUSIC_TITLE_MAX_WIDTH = 235;
 	public static String volume;
+
 	// Login thingy for later
 	public static String ActiveUser = "Root";
 	// Login thingy for later
-	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer;
+
+	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer, stats_refreshtimer;
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
 	public static boolean goLeft, goRight;
 	public static int entrypos = 265;
@@ -173,6 +176,12 @@ public class Main extends Application{
 	public static GpioController gpio;
 	public static PiFaceGpioProvider gpioProvider;
 	public static PiFace piface;
+
+	// Stats info stuff
+	public static String stats_string;
+	public static int[] uptime = new int[4];
+	public static String stats_serverstatus = "";
+	public static boolean isClicked = false;
 
 	public static void main(String[] args) throws IOException{
 		if(args.length > 0){
@@ -226,7 +235,12 @@ public class Main extends Application{
 		Thread_GetWeather.StartCheck(City);
 
 		// Create a object, create a Thread, start the Thread
-		server = new Server();
+		try{
+			server = new Server();
+			stats_serverstatus = "ONLINE";
+		}catch (Exception e){
+			stats_serverstatus = "OFFLINE";
+		}
 		Thread_MainServer = new Thread(server);
 		Thread_MainServer.start();
 
@@ -240,6 +254,40 @@ public class Main extends Application{
 				}
 			});
 		}
+
+		stats_refreshtimer = new Timer(1000, new ActionListener()
+		{
+			@Override
+			public void actionPerformed(java.awt.event.ActionEvent arg0) {
+				uptime[0]++;
+				if(uptime[0] >= 60){
+					uptime[0] = 0;
+					uptime[1]++;
+				}
+				if(uptime[1] >= 60){
+					uptime[1] = 0;
+					uptime[2]++;
+				}
+				if(uptime[2] >= 24){
+					uptime[2] = 0;
+					uptime[3]++;
+				}
+				stats_string = "Serverstatus: " + stats_serverstatus;
+				if(stats_serverstatus.equals("ONLINE")){
+					stats_string += " seit " + uptime[3] + "d "+ uptime[2] + "h " + uptime[1] + "m " + uptime[0] + "s. ";
+					stats_string += " verbundene Nutzer: " + Server.outputStreams.size();
+				}
+				Platform.runLater(new Runnable() {
+					@Override public void run() {
+						if(!isClicked){
+							FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 16));
+							FeedReader.RssTextObjectTooltip.setText(stats_string);
+						}
+					}
+				});
+			}
+		});
+		stats_refreshtimer.start();
 
 		if(WeatherRefreshDelay > 0){
 			WeatherRefreshTimer = new Timer(WeatherRefreshDelay, new ActionListener()
@@ -317,6 +365,7 @@ public class Main extends Application{
 	}
 
 	public void start(Stage primaryStage) {
+		System.out.println("initializing GUI");
 		// define the window, so we can handle it later
 		MainStage = primaryStage;
 		// multiple threads possible?
@@ -325,7 +374,6 @@ public class Main extends Application{
 		primaryStage.setTitle("Homecontrol");
 		//No resize for you sir!
 		primaryStage.setResizable(false);
-		System.out.println("Loading: 10%");
 		// Exit the programm on window close
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
@@ -340,12 +388,12 @@ public class Main extends Application{
 		ImageView imgView = null;
 		// Watermark for Testbuild
 		if(!Testbuild){
-			imgView = new ImageView(new Image("MainBackground.jpg"));
+			imgView = new ImageView(new Image("background2.jpg"));
 			imgView.setFitWidth(1100);
 			imgView.setFitHeight(625);
 			root.getChildren().add(imgView);
 		}else{
-			imgView = new ImageView(new Image("MainBackground.jpg"));
+			imgView = new ImageView(new Image("background2.jpg"));
 			imgView.setFitWidth(1100);
 			imgView.setFitHeight(625);
 			root.getChildren().add(imgView);
@@ -359,7 +407,9 @@ public class Main extends Application{
 				public void handle(javafx.scene.input.MouseEvent e) {
 					Platform.runLater(new Runnable() {
 						@Override public void run() {
-							FeedReader.RssTextObjectTooltip.setText("");
+							FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 16));
+							FeedReader.RssTextObjectTooltip.setText(stats_string);
+							isClicked = false;
 						}
 					});
 				}
@@ -370,13 +420,15 @@ public class Main extends Application{
 			public void handle(javafx.scene.input.MouseEvent e) {
 				Platform.runLater(new Runnable() {
 					@Override public void run() {
-						FeedReader.RssTextObjectTooltip.setText("");
+						FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 16));
+						FeedReader.RssTextObjectTooltip.setText(stats_string);
+						isClicked = false;
 					}
 				});
 			}
 		});
 
-		System.out.println("Loading: 20%");
+
 		// Refresh timer for anything
 		new AnimationTimer() {
 			@Override
@@ -384,26 +436,29 @@ public class Main extends Application{
 				update();
 			}
 		}.start();
+		System.out.println("Gui objects loaded: 10%");
 
 		// Date & time
 		calendar = new Label(OtherStuff.TheNormalTime());
 		calendar.setLayoutX(20);
 		calendar.setLayoutY(20);
-		calendar.setFont(Font.font(java.awt.Font.SERIF, 18));
+		calendar.setFont(Font.font("Futura", 18));
+		calendar.setFont(Font.font("Futura", FontWeight.BOLD, 18));
 		root.getChildren().add(calendar);
 
 		// State and weather degrees
 		town = new Label(Main.City + ", " + Thread_GetWeather.degree + "°C");
-		town.setLayoutX(198);
+		town.setLayoutX(220);
 		town.setLayoutY(20);
-		town.setFont(Font.font(java.awt.Font.SERIF, 18));
+		town.setFont(Font.font("Futura", FontWeight.BOLD, 18));
 		root.getChildren().add(town);
-		System.out.println("Loading: 30%");
+
 		// Icon for weather
-		weathericonlabel = new Label("");
-		weathericonlabel.setLayoutX(330);
-		weathericonlabel.setLayoutY(8);
-		weathericonlabel.setFont(Font.font(java.awt.Font.SERIF, 18));
+		weathericonlabel = new ImageView();
+		weathericonlabel.setLayoutX(370);
+		weathericonlabel.setLayoutY(4);
+		weathericonlabel.setFitHeight(60);
+		weathericonlabel.setFitWidth(60);
 		root.getChildren().add(weathericonlabel);
 
 		for(int i=0; i<10;i++){
@@ -413,19 +468,9 @@ public class Main extends Application{
 		FeedReader.RssTextObjectTooltip.setX(20);
 		FeedReader.RssTextObjectTooltip.setY(580);
 		root.getChildren().add(FeedReader.RssTextObjectTooltip);
+		FeedReader.RssTextObjectTooltip.setText(stats_string);
 
-		// <Username>, Logout
-		User_Logout = new Label(Main.ActiveUser + ", Logout");
-		User_Logout.setLayoutX(880);
-		User_Logout.setLayoutY(20);
-		User_Logout.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-		User_Logout.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-		User_Logout.getOnMousePressed();
-		User_Logout.getOnMouseReleased();
-		User_Logout.setFont(Font.font(java.awt.Font.SERIF, 22));
-		root.getChildren().add(User_Logout);
-
-
+		System.out.println("Gui objects loaded: 20%");
 		// Head1 bar image
 		Head_Image[0] = new ImageView(new Image("B12.png"));
 		Head_Image[0].setLayoutX(60);
@@ -438,7 +483,7 @@ public class Main extends Application{
 		Head_Text[0].setText(Head_Name[0]);
 		Head_Text[0].setLayoutX(41);
 		Head_Text[0].setLayoutY(99);
-		Head_Text[0].setFont(Font.font(java.awt.Font.SERIF, 20));
+		Head_Text[0].setFont(Font.font("Futura", 20));
 		root.getChildren().add(Head_Text[0]);
 
 		// Head2 bar image
@@ -453,7 +498,7 @@ public class Main extends Application{
 		Head_Text[1].setText(Head_Name[1]);
 		Head_Text[1].setLayoutX(41);
 		Head_Text[1].setLayoutY(337);
-		Head_Text[1].setFont(Font.font(java.awt.Font.SERIF, 20));
+		Head_Text[1].setFont(Font.font("Futura", 20));
 		root.getChildren().add(Head_Text[1]);
 
 		// Head2 bar image
@@ -468,9 +513,11 @@ public class Main extends Application{
 		Head_Text[2].setText(Head_Name[2]);
 		Head_Text[2].setLayoutX(860);
 		Head_Text[2].setLayoutY(287);
-		Head_Text[2].setFont(Font.font(java.awt.Font.SERIF, 20));
+		Head_Text[2].setFont(Font.font("Futura", 20));
 		root.getChildren().add(Head_Text[2]);
-
+		
+		System.out.println("Gui objects loaded: 30%");
+		
 		// Output_Button[0][0] unpressed
 		Output_Button[0][0] = new ImageView(new Image("B12.png"));
 		Output_Button[0][0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -487,7 +534,7 @@ public class Main extends Application{
 		Output_Button[0][1].setLayoutY(125);
 		Output_Button[0][1].setVisible(false);
 		root.getChildren().add(Output_Button[0][1]);
-		System.out.println("Loading: 40%");
+
 		// Output_Button[0][0] text
 		Output_Text[0] = new Text();
 		Output_Text[0].setText(Output_Name[0]);
@@ -495,7 +542,7 @@ public class Main extends Application{
 		Output_Text[0].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[0].getOnMousePressed();
 		Output_Text[0].getOnMouseReleased();
-		Output_Text[0].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[0].setFont(Font.font("Futura", 18));
 		Output_Text[0].setLayoutX(80);
 		Output_Text[0].setLayoutY(150);
 		root.getChildren().add(Output_Text[0]);
@@ -566,14 +613,14 @@ public class Main extends Application{
 		Output_Button[1][1].setLayoutY(175);
 		Output_Button[1][1].setVisible(false);
 		root.getChildren().add(Output_Button[1][1]);
-		System.out.println("Loading: 50%");
+
 		Output_Text[1] = new Text();
 		Output_Text[1].setText(Output_Name[1]);
 		Output_Text[1].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Output_Text[1].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[1].getOnMousePressed();
 		Output_Text[1].getOnMouseReleased();
-		Output_Text[1].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[1].setFont(Font.font("Futura", 18));
 		Output_Text[1].setLayoutX(80);
 		Output_Text[1].setLayoutY(200);
 		root.getChildren().add(Output_Text[1]);
@@ -605,7 +652,7 @@ public class Main extends Application{
 		Output_State[1][0].setFitHeight(35);
 		Output_State[1][0].setFitWidth(35);
 		root.getChildren().add(Output_State[1][0]);
-		System.out.println("Loading: 60%");
+
 		Output_State[1][1] = new ImageView(new Image("greenorb.png"));
 		Output_State[1][1].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_State[1][1].getOnMouseReleased();
@@ -642,14 +689,14 @@ public class Main extends Application{
 		Output_Button[2][1].setLayoutY(225);
 		Output_Button[2][1].setVisible(false);
 		root.getChildren().add(Output_Button[2][1]);
-
+		
 		Output_Text[2] = new Text();
 		Output_Text[2].setText(Output_Name[2]);
 		Output_Text[2].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
 		Output_Text[2].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[2].getOnMousePressed();
 		Output_Text[2].getOnMouseReleased();
-		Output_Text[2].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[2].setFont(Font.font("Futura", 18));
 		Output_Text[2].setLayoutX(80);
 		Output_Text[2].setLayoutY(250);
 		root.getChildren().add(Output_Text[2]);
@@ -701,7 +748,8 @@ public class Main extends Application{
 		Output_State[2][2].setFitWidth(35);
 		Output_State[2][2].setVisible(false);
 		root.getChildren().add(Output_State[2][2]);
-		System.out.println("Loading: 70%");
+		
+		System.out.println("Gui objects loaded: 40%");
 
 		// Button4
 		Output_Button[3][0] = new ImageView(new Image("B12.png"));
@@ -725,7 +773,7 @@ public class Main extends Application{
 		Output_Text[3].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[3].getOnMousePressed();
 		Output_Text[3].getOnMouseReleased();
-		Output_Text[3].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[3].setFont(Font.font("Futura", 18));
 		Output_Text[3].setLayoutX(80);
 		Output_Text[3].setLayoutY(388);
 		root.getChildren().add(Output_Text[3]);
@@ -800,7 +848,7 @@ public class Main extends Application{
 		Output_Text[4].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[4].getOnMousePressed();
 		Output_Text[4].getOnMouseReleased();
-		Output_Text[4].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[4].setFont(Font.font("Futura", 18));
 		Output_Text[4].setLayoutX(80);
 		Output_Text[4].setLayoutY(438);
 		root.getChildren().add(Output_Text[4]);
@@ -875,7 +923,7 @@ public class Main extends Application{
 		Output_Text[5].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[5].getOnMousePressed();
 		Output_Text[5].getOnMouseReleased();
-		Output_Text[5].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[5].setFont(Font.font("Futura", 18));
 		Output_Text[5].setLayoutX(895);
 		Output_Text[5].setLayoutY(338);
 		root.getChildren().add(Output_Text[5]);
@@ -927,7 +975,9 @@ public class Main extends Application{
 		Output_State[5][2].setFitWidth(35);
 		Output_State[5][2].setVisible(false);
 		root.getChildren().add(Output_State[5][2]);
-
+		
+		System.out.println("Gui objects loaded: 50%");
+		
 		// Button7
 		Output_Button[6][0] = new ImageView(new Image("iB12.png"));
 		Output_Button[6][0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -950,7 +1000,7 @@ public class Main extends Application{
 		Output_Text[6].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[6].getOnMousePressed();
 		Output_Text[6].getOnMouseReleased();
-		Output_Text[6].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[6].setFont(Font.font("Futura", 18));
 		Output_Text[6].setLayoutX(895);
 		Output_Text[6].setLayoutY(388);
 		root.getChildren().add(Output_Text[6]);
@@ -1002,7 +1052,9 @@ public class Main extends Application{
 		Output_State[6][2].setFitWidth(35);
 		Output_State[6][2].setVisible(false);
 		root.getChildren().add(Output_State[6][2]);
-
+		
+		System.out.println("Gui objects loaded: 60%");
+		
 		// Button8
 		Output_Button[7][0] = new ImageView(new Image("iB12.png"));
 		Output_Button[7][0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -1025,7 +1077,7 @@ public class Main extends Application{
 		Output_Text[7].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 		Output_Text[7].getOnMousePressed();
 		Output_Text[7].getOnMouseReleased();
-		Output_Text[7].setFont(Font.font(java.awt.Font.SERIF, 18));
+		Output_Text[7].setFont(Font.font("Futura", 18));
 		Output_Text[7].setLayoutX(895);
 		Output_Text[7].setLayoutY(438);
 		root.getChildren().add(Output_Text[7]);
@@ -1077,7 +1129,9 @@ public class Main extends Application{
 		Output_State[7][2].setFitWidth(35);
 		Output_State[7][2].setVisible(false);
 		root.getChildren().add(Output_State[7][2]);
-
+		
+		System.out.println("Gui objects loaded: 70%");
+		
 		for(int i=0; i<8; i++){
 			Output_Lockcross[i].setDisable(true);
 			Output_Lockquad[i].setDisable(true);
@@ -1091,7 +1145,7 @@ public class Main extends Application{
 			Console.setWrapText(true);
 			Console.setEditable(false);
 			Console.setStyle("-fx-background-color: #000000; -fx-text-fill: #9400d3;" );
-			Console.setFont(Font.font(java.awt.Font.SERIF, 13));
+			Console.setFont(Font.font("Futura", 13));
 			root.getChildren().add(Console);
 
 			// Permanently scroll down for new text
@@ -1104,8 +1158,7 @@ public class Main extends Application{
 			});
 		}
 
-		System.out.println("Loading: 80%");
-
+		
 		if(dev_console_enabled && dev_promt_enabled){
 
 			// Console Toggle
@@ -1130,13 +1183,15 @@ public class Main extends Application{
 			Console_ButtonText.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
 			Console_ButtonText.getOnMousePressed();
 			Console_ButtonText.getOnMouseReleased();
-			Console_ButtonText.setFont(Font.font(java.awt.Font.SERIF, 18));
+			Console_ButtonText.setFont(Font.font("Futura", 18));
 			Console_ButtonText.setLayoutX(675);
 			Console_ButtonText.setLayoutY(105);
 			root.getChildren().add(Console_ButtonText);
-			System.out.println("Loading: 90%");
-		}
 
+		}
+		
+		System.out.println("Gui objects loaded: 80%");
+		
 		if(dev_promt_enabled){
 			Dev_masterpw = new PasswordField();
 			Dev_masterpw.setPromptText("Master Password");
@@ -1283,13 +1338,15 @@ public class Main extends Application{
 
 			setDevVisibility(false);
 		}
-		
+
 		if(!dev_console_enabled){
 			for(int i=0;i<10;i++){
 				FeedReader.RssTextObject[i].setX(500);
 			}
 		}
-
+		
+		System.out.println("Gui objects loaded: 90%");
+		
 		// Music
 		Music_Head = new ImageView(new Image("iB12.png"));
 		Music_Head.setLayoutX(809);
@@ -1301,7 +1358,7 @@ public class Main extends Application{
 		Music_HeadText.setText("Musiksteuerung");
 		Music_HeadText.setLayoutX(860);
 		Music_HeadText.setLayoutY(99);
-		Music_HeadText.setFont(Font.font(java.awt.Font.SERIF, 20));
+		Music_HeadText.setFont(Font.font("Futura", 20));
 		root.getChildren().add(Music_HeadText);
 
 
@@ -1311,7 +1368,7 @@ public class Main extends Application{
 		}else{
 			Music_Title.setText("Mpc is disabled.");
 		}
-		Music_Title.setFont(Font.font(java.awt.Font.SERIF, 14));
+		Music_Title.setFont(Font.font("Futura", 14));
 		Music_Title.setLayoutX(790);
 		Music_Title.setLayoutY(135);
 		root.getChildren().add(Music_Title);
@@ -1395,17 +1452,26 @@ public class Main extends Application{
 		root.getChildren().add(Music_next);
 
 
-		System.out.println("Loading: 100%");
-		System.out.println("Launching GUI Now!!!");
+		System.out.println("Gui objects loaded: 100%");
 		//primaryStage.setScene(Sroot);
-
+		
+		
 		if(StartWithLoginScreen){
+			System.out.println("Loading Objects of Login GUI");
 			Pane Login = new Pane();
 
-			/*Login_Background = new ImageView(new Image("loginb.gif"));
-			Login_Background.setFitHeight(630);
-			Login_Background.setFitWidth(1050);
-			Login.getChildren().add(Login_Background);*/
+			screen_lock = new ImageView("lock.png");
+			screen_lock.setLayoutX(970);
+			screen_lock.setLayoutY(15);
+			screen_lock.setFitHeight(50);
+			screen_lock.setFitWidth(50);
+			screen_lock.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			screen_lock.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			screen_lock.getOnMousePressed();
+			screen_lock.getOnMouseReleased();
+			root.getChildren().add(screen_lock);
+			
+			Login.setStyle("-fx-background-color: #000000");
 
 			Login_LoginButton1 = new ImageView(new Image("tapbutton.png"));
 			Login_LoginButton1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -1501,15 +1567,17 @@ public class Main extends Application{
 
 			SLogin = new Scene(Login, 1024, 600);
 			primaryStage.setScene(SLogin);
+			System.out.println("Finished loading Objects of Login GUI");
 		}else{
 			primaryStage.setScene(Sroot);
 		}
-
+		System.out.println("Launching GUI Now!!!");
+		
 		primaryStage.show();
 		System.out.println("Finished [2]: GUI");
 		System.out.println("Starting [3]: Final init");
 		FinalInit();
-		System.out.println("--- finished loading ---");
+		System.out.println("|>--- finished loading ---<|");
 	}
 
 	public void FinalInit(){
@@ -1518,6 +1586,9 @@ public class Main extends Application{
 			for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
 				piface.getLed(index).off();
 			}
+		}
+		for(int i=0;i<8;i++){
+			SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
 		}
 		System.out.println("Finished [3]: Final init");
 		new ChangeOutStream();
@@ -1603,7 +1674,7 @@ public class Main extends Application{
 	}
 
 	private void setFontSize(){
-		Music_Title.setFont(Font.font ("Arial", Music_title_size));
+		Music_Title.setFont(Font.font ("Futura", Music_title_size));
 		Music_Title.applyCss();
 
 		double width = Music_Title.getLayoutBounds().getWidth();
@@ -1720,45 +1791,6 @@ public class Main extends Application{
 
 	// Let the sparks fly and work the Queues
 	protected void update() {
-		if(goLeft){
-			// Starts moving away from the console
-			if(entrypos > 265){
-				entrypos = entrypos - 6;
-				masteropacity = masteropacity-0.0316;
-				setDevOpacity(masteropacity);
-				for(int i=0;i<10;i++){
-					if(FeedReader.RssTextObject[i] != null){
-						FeedReader.RssTextObject[i].setX(entrypos);
-					}
-				}
-			}else{
-				goLeft = false;
-				Console.setVisible(true);
-				masteropacity = 0;
-				setDevVisibility(false);
-				// Hits the left side
-			}
-		}else if(goRight){
-			// Starts moving right towards the console
-			setDevVisibility(true);
-			Console.setVisible(false);
-			if(entrypos < 500){
-				entrypos = entrypos + 6;
-				masteropacity = masteropacity+0.025;
-				setDevOpacity(masteropacity);
-				for(int i=0;i<10;i++){
-					if(FeedReader.RssTextObject[i] != null){
-						FeedReader.RssTextObject[i].setX(entrypos);
-					}
-				}
-			}else{
-				goRight = false;
-				// hits the right side
-				masteropacity = 1;
-				setDevOpacity(masteropacity);
-			}
-		}
-
 		if(MainStage.getScene() == SLogin){
 			for(int i = 0; i < 6; i++){
 				Login_Spark[i].setLayoutX(Login_SparkPos[i][0] + 80*Math.cos(Math.toRadians(Login_SparkSeq[i])));
@@ -1770,173 +1802,213 @@ public class Main extends Application{
 					Login_SparkSeq[i] = 0;
 				}
 			}
-		}
-		// Print queue
-		if(todoprint[0] != ""){
-			for(int x = todoprintsize; x > -1; x--){
-				System.out.println(todoprint[x]);
-				todoprint[x] = "";
-				todoprintsize--;
-			}
-		}
-		// Cmd queue
-		if(todocmd[0] != ""){
-			for(int y = todocmdsize; y > -1; y--){
-				// USAGE:
-				// CMD:-> * On * Off * Toggle *  Add + @
-				// Item: -> Full Item name + @
-				// List of Items: Output1, Output2, Output3, Console
-				// params: -> special things, text
-				// example: On@Output1, Toggle@Output2, Toggle@Door1, Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
-
-				String temp[] = todocmd[y].split("@");
-				if(temp[0].equals("On")){
-					if(temp[1].equals("Output1")){
-						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED0.getIndex()).on();
-						}
-					}
-					else if(temp[1].equals("Output2")){
-						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED1.getIndex()).on();
-						}
-					}
-					else if(temp[1].equals("Output3")){
-						SetState(Output_State[2][0], Output_State[2][2], Output_State[2][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED2.getIndex()).on();
-						}
-					}
-					else if(temp[1].equals("Output4")){
-						SetState(Output_State[3][0], Output_State[3][2], Output_State[3][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED3.getIndex()).on();
-						}
-					}
-					else if(temp[1].equals("Output5")){
-						SetState(Output_State[4][0], Output_State[4][2], Output_State[4][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED4.getIndex()).on();
-						}
-					}
-					else if(temp[1].equals("Output6")){
-						SetState(Output_State[5][0], Output_State[5][2], Output_State[5][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED5.getIndex()).on();
-						}
-					}
-					else if(temp[1].equals("Output7")){
-						SetState(Output_State[6][0], Output_State[6][2], Output_State[6][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED6.getIndex()).on();
-						}
-					}
-					else if(temp[1].equals("Output8")){
-						SetState(Output_State[7][0], Output_State[7][2], Output_State[7][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED7.getIndex()).on();
-						}
-					}
-				}else if(temp[0].equals("Off")){
-					if(temp[1].equals("Output1")){
-						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 2);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED0.getIndex()).off();
-						}
-					}
-					else if(temp[1].equals("Output2")){
-						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 2);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED1.getIndex()).off();
-						}
-					}
-					else if(temp[1].equals("Output3")){
-						SetState(Output_State[2][0], Output_State[0][2], Output_State[0][2], 2);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED2.getIndex()).off();
-						}
-					}
-					else if(temp[1].equals("Output4")){
-						SetState(Output_State[3][0], Output_State[3][2], Output_State[3][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED3.getIndex()).off();
-						}
-					}
-					else if(temp[1].equals("Output5")){
-						SetState(Output_State[4][0], Output_State[4][2], Output_State[4][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED4.getIndex()).off();
-						}
-					}
-					else if(temp[1].equals("Output6")){
-						SetState(Output_State[5][0], Output_State[5][2], Output_State[5][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED5.getIndex()).off();
-						}
-					}
-					else if(temp[1].equals("Output7")){
-						SetState(Output_State[6][0], Output_State[6][2], Output_State[6][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED6.getIndex()).off();
-						}
-					}
-					else if(temp[1].equals("Output8")){
-						SetState(Output_State[7][0], Output_State[7][2], Output_State[7][2], 1);
-						if(!Testbuild){
-							piface.getLed(PiFaceLed.LED7.getIndex()).off();
-						}
-					}
-				}else if(temp[0].equals("Toggle")){
-					// Todo
-				}else if(temp[0].equals("Add")){
-					if(temp[1].equals("Console")){
-						OtherStuff.addToPrintQueue(temp[2]);
-					}
-				}else if(temp[0].equals("Set")){
-					if(temp[1].equals("Music_Slider")){
-						Music_Slider.setValue(Double.parseDouble(temp[2]));
-					}else if(temp[1].equals("Music_Title")){
-						Music_Title.setText(temp[2]);
-						setFontSize();
-					}else if(temp[1].equals("RssFeedObject")){
-						FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
-					}else if(temp[1].equals("RssFeedTooltip")){
-						FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
-					}
-				}else if(temp[0].equals("Refresh")){
-					if(temp[1].equals("WeatherTextLabel")){
-						town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
-					}else if(temp[1].equals("WeatherIconLabel")){
-						weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
-					}
-				}else if(temp[0].equals("setParams")){
-					// setParams@Y@<double>@RssTextObject@1
-					//      0    1    2           3       4
-					if(temp[1].equals("Y")){
-						if(temp[3].equals("RssTextObject")){
-							FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
+		}else{
+			if(goLeft){
+				// Starts moving away from the console
+				if(entrypos > 265){
+					entrypos = entrypos - 6;
+					masteropacity = masteropacity-0.0316;
+					setDevOpacity(masteropacity);
+					for(int i=0;i<10;i++){
+						if(FeedReader.RssTextObject[i] != null){
+							FeedReader.RssTextObject[i].setX(entrypos);
 						}
 					}
 				}else{
-					System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
+					goLeft = false;
+					Console.setVisible(true);
+					masteropacity = 0;
+					setDevVisibility(false);
+					// Hits the left side
 				}
-
-				todocmd[y] = "";
-				todocmdsize--;
+			}else if(goRight){
+				// Starts moving right towards the console
+				setDevVisibility(true);
+				Console.setVisible(false);
+				if(entrypos < 500){
+					entrypos = entrypos + 6;
+					masteropacity = masteropacity+0.025;
+					setDevOpacity(masteropacity);
+					for(int i=0;i<10;i++){
+						if(FeedReader.RssTextObject[i] != null){
+							FeedReader.RssTextObject[i].setX(entrypos);
+						}
+					}
+				}else{
+					goRight = false;
+					// hits the right side
+					masteropacity = 1;
+					setDevOpacity(masteropacity);
+				}
 			}
-		}
-		// Get le time
-		calendar.setText(OtherStuff.TheNormalTime());	
-		if(Thread_GetWeather.weathericon != null && !Weatherinit){
-			refreshweather();
-			Weatherinit = true;
-		}
-		try {
-			Thread.sleep(33);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+
+			// Print queue
+			if(todoprint[0] != ""){
+				for(int x = todoprintsize; x > -1; x--){
+					System.out.println(todoprint[x]);
+					todoprint[x] = "";
+					todoprintsize--;
+				}
+			}
+			// Cmd queue
+			if(todocmd[0] != ""){
+				for(int y = todocmdsize; y > -1; y--){
+					// USAGE:
+					// CMD:-> * On * Off * Toggle *  Add + @
+					// Item: -> Full Item name + @
+					// List of Items: Output1, Output2, Output3, Console
+					// params: -> special things, text
+					// example: On@Output1, Toggle@Output2, Toggle@Door1, Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
+
+					String temp[] = todocmd[y].split("@");
+					if(temp[0].equals("On")){
+						if(temp[1].equals("Output1")){
+							SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED0.getIndex()).on();
+							}
+						}
+						else if(temp[1].equals("Output2")){
+							SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED1.getIndex()).on();
+							}
+						}
+						else if(temp[1].equals("Output3")){
+							SetState(Output_State[2][0], Output_State[2][2], Output_State[2][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED2.getIndex()).on();
+							}
+						}
+						else if(temp[1].equals("Output4")){
+							SetState(Output_State[3][0], Output_State[3][2], Output_State[3][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED3.getIndex()).on();
+							}
+						}
+						else if(temp[1].equals("Output5")){
+							SetState(Output_State[4][0], Output_State[4][2], Output_State[4][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED4.getIndex()).on();
+							}
+						}
+						else if(temp[1].equals("Output6")){
+							SetState(Output_State[5][0], Output_State[5][2], Output_State[5][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED5.getIndex()).on();
+							}
+						}
+						else if(temp[1].equals("Output7")){
+							SetState(Output_State[6][0], Output_State[6][2], Output_State[6][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED6.getIndex()).on();
+							}
+						}
+						else if(temp[1].equals("Output8")){
+							SetState(Output_State[7][0], Output_State[7][2], Output_State[7][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED7.getIndex()).on();
+							}
+						}
+					}else if(temp[0].equals("Off")){
+						if(temp[1].equals("Output1")){
+							SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 2);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED0.getIndex()).off();
+							}
+						}
+						else if(temp[1].equals("Output2")){
+							SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 2);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED1.getIndex()).off();
+							}
+						}
+						else if(temp[1].equals("Output3")){
+							SetState(Output_State[2][0], Output_State[0][2], Output_State[0][2], 2);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED2.getIndex()).off();
+							}
+						}
+						else if(temp[1].equals("Output4")){
+							SetState(Output_State[3][0], Output_State[3][2], Output_State[3][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED3.getIndex()).off();
+							}
+						}
+						else if(temp[1].equals("Output5")){
+							SetState(Output_State[4][0], Output_State[4][2], Output_State[4][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED4.getIndex()).off();
+							}
+						}
+						else if(temp[1].equals("Output6")){
+							SetState(Output_State[5][0], Output_State[5][2], Output_State[5][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED5.getIndex()).off();
+							}
+						}
+						else if(temp[1].equals("Output7")){
+							SetState(Output_State[6][0], Output_State[6][2], Output_State[6][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED6.getIndex()).off();
+							}
+						}
+						else if(temp[1].equals("Output8")){
+							SetState(Output_State[7][0], Output_State[7][2], Output_State[7][2], 1);
+							if(!Testbuild){
+								piface.getLed(PiFaceLed.LED7.getIndex()).off();
+							}
+						}
+					}else if(temp[0].equals("Toggle")){
+						// Todo
+					}else if(temp[0].equals("Add")){
+						if(temp[1].equals("Console")){
+							OtherStuff.addToPrintQueue(temp[2]);
+						}
+					}else if(temp[0].equals("Set")){
+						if(temp[1].equals("Music_Slider")){
+							Music_Slider.setValue(Double.parseDouble(temp[2]));
+						}else if(temp[1].equals("Music_Title")){
+							Music_Title.setText(temp[2]);
+							setFontSize();
+						}else if(temp[1].equals("RssFeedObject")){
+							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
+						}else if(temp[1].equals("RssFeedTooltip")){
+							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
+						}
+					}else if(temp[0].equals("Refresh")){
+						if(temp[1].equals("WeatherTextLabel")){
+							town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
+						}else if(temp[1].equals("WeatherIconLabel")){
+							//weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
+							weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						}
+					}else if(temp[0].equals("setParams")){
+						// setParams@Y@<double>@RssTextObject@1
+						//      0    1    2           3       4
+						if(temp[1].equals("Y")){
+							if(temp[3].equals("RssTextObject")){
+								FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
+							}
+						}
+					}else{
+						System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
+					}
+
+					todocmd[y] = "";
+					todocmdsize--;
+				}
+			}
+			// Get le time
+			calendar.setText(OtherStuff.TheNormalTime());	
+			if(Thread_GetWeather.weathericon != null && !Weatherinit){
+				refreshweather();
+				Weatherinit = true;
+			}
+			try {
+				Thread.sleep(33);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -1969,24 +2041,10 @@ public class Main extends Application{
 
 	// Switches from Main to Login Scene
 	public static void SwitchToMainScene(){
-		/*Login_LoginButton1 = null;
-		Login_LoginButton2 = null;
-		Login_LoginButton3 = null;
-		Login_LoginButton4 = null;
-		Login_LoginButton5 = null;
-		Login_LoginButton6 = null;
-		for(int i = 0; i<6; i++){
-			Login_Spark[i] = null;
-		}*/
-		Login_LoginButton1_State = 0;
-		Login_LoginButton2_State = 0;
-		Login_LoginButton3_State = 0;
-		Login_LoginButton4_State = 0;
-		Login_LoginButton5_State = 0;
-		Login_LoginButton6_State = 0;
 		MainStage.setScene(Sroot);
-		//Login_Background = null;
-		//SLogin = null;
+		for(int i=0;i<6;i++){
+			Login_Spark[i].setEffect(new Glow(0.0));
+		}
 	}
 
 	public static void SwitchToLoginScene(){
@@ -2554,7 +2612,7 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Console Toggle");
 					Console_Button2.setVisible(false);
 					Console_Button1.setVisible(true);
-					
+
 					if(Console.isVisible()){
 						goRight = true;
 						goLeft = false;
@@ -2580,23 +2638,19 @@ public class Main extends Application{
 			else if(e.getSource() == Login_LoginButton1 || e.getSource() == Login_LoginButton2 || e.getSource() == Login_LoginButton3 || e.getSource() == Login_LoginButton4 || e.getSource() == Login_LoginButton5 || e.getSource() == Login_LoginButton6){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					((Node) e.getSource()).setOpacity(1);
-					LoginChecker(e.getSource());
+					LoginChecker(e.getSource());	
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					((Node) e.getSource()).setOpacity(0.5);
 				}
 			}
-			else if(e.getSource() == User_Logout){
+			else if(e.getSource() == screen_lock){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
-					User_Logout.setLayoutX(User_Logout.getLayoutX()+12);
-					User_Logout.setLayoutY(User_Logout.getLayoutY()-10);
-					User_Logout.setTextFill(Color.web("#000000"));
+					((Node) e.getSource()).setOpacity(1);
 					if(StartWithLoginScreen){
 						SwitchToLoginScene();
 					}
 				}else if(e.getEventType() == MouseEvent.MOUSE_PRESSED){
-					User_Logout.setLayoutX(User_Logout.getLayoutX()-12);
-					User_Logout.setLayoutY(User_Logout.getLayoutY()+10);
-					User_Logout.setTextFill(Color.web("#FF0000"));
+					((Node) e.getSource()).setOpacity(0.5);
 				}
 			}
 		}
