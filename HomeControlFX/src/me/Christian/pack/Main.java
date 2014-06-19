@@ -136,7 +136,7 @@ public class Main extends Application{
 	public static String ActiveUser = "Root";
 	// Login thingy for later
 
-	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer, stats_refreshtimer;
+	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer, stats_refreshtimer, sync_timer;
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
 	public static boolean goLeft, goRight;
 	public static int entrypos = 265;
@@ -253,6 +253,32 @@ public class Main extends Application{
 					RefreshMpc();
 				}
 			});
+		}
+
+		if(!Testbuild){
+			sync_timer = new Timer(30000, new ActionListener()
+			{
+				@Override
+				public void actionPerformed(java.awt.event.ActionEvent arg0) {
+					try {
+						String[] commands = {"bash","-c","sync"};
+						Runtime rt = Runtime.getRuntime();
+						Process proc = rt.exec(commands);
+						BufferedReader stdInput = new BufferedReader(new 
+								InputStreamReader(proc.getInputStream()));
+
+						BufferedReader stdError = new BufferedReader(new 
+								InputStreamReader(proc.getErrorStream()));
+						String s = null;
+						while ((s = stdInput.readLine()) != null) {System.out.println(s);}
+						while ((s = stdError.readLine()) != null) {System.out.println(s);}
+
+					} catch (IOException e2) {
+						e2.printStackTrace();
+					}
+				}
+			});
+			sync_timer.start();
 		}
 
 		stats_refreshtimer = new Timer(1000, new ActionListener()
@@ -397,7 +423,7 @@ public class Main extends Application{
 			imgView.setFitWidth(1100);
 			imgView.setFitHeight(625);
 			root.getChildren().add(imgView);
-			ImageView watermark = new ImageView(new Image("watermark.png"));
+			/*ImageView watermark = new ImageView(new Image("watermark.png"));
 			watermark.setFitWidth(1100);
 			watermark.setFitHeight(625);
 			watermark.setOpacity(0.15);
@@ -413,7 +439,7 @@ public class Main extends Application{
 						}
 					});
 				}
-			});
+			});*/
 		}
 		imgView.setOnMouseEntered(new EventHandler<javafx.scene.input.MouseEvent>() {
 			@Override
@@ -515,9 +541,9 @@ public class Main extends Application{
 		Head_Text[2].setLayoutY(287);
 		Head_Text[2].setFont(Font.font("Futura", 20));
 		root.getChildren().add(Head_Text[2]);
-		
+
 		System.out.println("Gui objects loaded: 30%");
-		
+
 		// Output_Button[0][0] unpressed
 		Output_Button[0][0] = new ImageView(new Image("B12.png"));
 		Output_Button[0][0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -689,7 +715,7 @@ public class Main extends Application{
 		Output_Button[2][1].setLayoutY(225);
 		Output_Button[2][1].setVisible(false);
 		root.getChildren().add(Output_Button[2][1]);
-		
+
 		Output_Text[2] = new Text();
 		Output_Text[2].setText(Output_Name[2]);
 		Output_Text[2].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -748,7 +774,7 @@ public class Main extends Application{
 		Output_State[2][2].setFitWidth(35);
 		Output_State[2][2].setVisible(false);
 		root.getChildren().add(Output_State[2][2]);
-		
+
 		System.out.println("Gui objects loaded: 40%");
 
 		// Button4
@@ -975,9 +1001,9 @@ public class Main extends Application{
 		Output_State[5][2].setFitWidth(35);
 		Output_State[5][2].setVisible(false);
 		root.getChildren().add(Output_State[5][2]);
-		
+
 		System.out.println("Gui objects loaded: 50%");
-		
+
 		// Button7
 		Output_Button[6][0] = new ImageView(new Image("iB12.png"));
 		Output_Button[6][0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -1052,9 +1078,9 @@ public class Main extends Application{
 		Output_State[6][2].setFitWidth(35);
 		Output_State[6][2].setVisible(false);
 		root.getChildren().add(Output_State[6][2]);
-		
+
 		System.out.println("Gui objects loaded: 60%");
-		
+
 		// Button8
 		Output_Button[7][0] = new ImageView(new Image("iB12.png"));
 		Output_Button[7][0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
@@ -1129,9 +1155,9 @@ public class Main extends Application{
 		Output_State[7][2].setFitWidth(35);
 		Output_State[7][2].setVisible(false);
 		root.getChildren().add(Output_State[7][2]);
-		
+
 		System.out.println("Gui objects loaded: 70%");
-		
+
 		for(int i=0; i<8; i++){
 			Output_Lockcross[i].setDisable(true);
 			Output_Lockquad[i].setDisable(true);
@@ -1158,7 +1184,7 @@ public class Main extends Application{
 			});
 		}
 
-		
+
 		if(dev_console_enabled && dev_promt_enabled){
 
 			// Console Toggle
@@ -1189,9 +1215,9 @@ public class Main extends Application{
 			root.getChildren().add(Console_ButtonText);
 
 		}
-		
+
 		System.out.println("Gui objects loaded: 80%");
-		
+
 		if(dev_promt_enabled){
 			Dev_masterpw = new PasswordField();
 			Dev_masterpw.setPromptText("Master Password");
@@ -1344,9 +1370,9 @@ public class Main extends Application{
 				FeedReader.RssTextObject[i].setX(500);
 			}
 		}
-		
+
 		System.out.println("Gui objects loaded: 90%");
-		
+
 		// Music
 		Music_Head = new ImageView(new Image("iB12.png"));
 		Music_Head.setLayoutX(809);
@@ -1454,8 +1480,8 @@ public class Main extends Application{
 
 		System.out.println("Gui objects loaded: 100%");
 		//primaryStage.setScene(Sroot);
-		
-		
+
+
 		if(StartWithLoginScreen){
 			System.out.println("Loading Objects of Login GUI");
 			Pane Login = new Pane();
@@ -1470,7 +1496,7 @@ public class Main extends Application{
 			screen_lock.getOnMousePressed();
 			screen_lock.getOnMouseReleased();
 			root.getChildren().add(screen_lock);
-			
+
 			Login.setStyle("-fx-background-color: #000000");
 
 			Login_LoginButton1 = new ImageView(new Image("tapbutton.png"));
@@ -1572,7 +1598,7 @@ public class Main extends Application{
 			primaryStage.setScene(Sroot);
 		}
 		System.out.println("Launching GUI Now!!!");
-		
+
 		primaryStage.show();
 		System.out.println("Finished [2]: GUI");
 		System.out.println("Starting [3]: Final init");

@@ -7,19 +7,9 @@ import me.Christian.other.OtherStuff;
 
 public class ServerThread implements Runnable
 {
-
+	
 	private Server server;
 	private Socket socket;
-
-	public Socket checkip(String ip){
-		Socket sp = null;
-		if(socket.toString().contains(ip)){
-			sp = socket;
-		}else{
-			sp = null;
-		}
-		return sp;
-	}
 
 	public ServerThread( Server server, Socket socket ) {
 		this.server = server;
@@ -29,7 +19,6 @@ public class ServerThread implements Runnable
 	public void run(){
 		try {
 			DataInputStream din = new DataInputStream( socket.getInputStream() );
-
 			while (true) {
 				String message = din.readUTF();
 				if(message.contains("/")){
@@ -139,14 +128,10 @@ public class ServerThread implements Runnable
 					}else{
 						OtherStuff.addToPrintQueue("Message from "+ socket.getInetAddress().toString() + "is too long or too short!");
 					}
-
 					CheckMessage.forcmd(socket, user, cmd, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
-
 				}else{
 					OtherStuff.addToPrintQueue("Invalid Message from: " + socket.getInetAddress().toString() + " Message: " + message);
 				}
-
-
 			}
 		} catch( EOFException ie ) {
 		} catch( IOException ie ) {
