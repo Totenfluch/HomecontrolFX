@@ -171,6 +171,7 @@ public class FeedReader {
 			transdouble[i] = n;
 			transint = i;
 
+
 			if(Main.StartupDone){
 				OtherStuff.addToCmdQueue("setParams@Y@"+ transdouble[i] +"@RssTextObject@"+ i);
 			}else{
@@ -215,41 +216,50 @@ public class FeedReader {
 			}else{
 				difnext = 0;
 			}
-
-			if(Main.StartupDone){
-				OtherStuff.addToCmdQueue("Set@RssFeedObject@"+transint+"@"+ctemp.toString());
-				OtherStuff.addToCmdQueue("Set@RssFeedTooltip@"+transint+"@"+checkedFeeds[transint][1]);
-			}else{
-				RssTextObject[transint].setText(ctemp.toString());
-				RssTextObject[transint].setId(checkedFeeds[transint][1]);
-			}
-			
-			if(!Main.StartupDone){
-			RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
-				@Override
-				public void handle(javafx.scene.input.MouseEvent e) {
-					String[] temp = e.getTarget().toString().split(",");
-					String sp = temp[0].replace("Text[id=", "");
-					StringBuilder sptemp = new StringBuilder(sp);
-					int csize3 = 175;
-					if(sptemp.length() > csize3){
-						char pos3 = sptemp.charAt(csize3);
-						int x = csize3;
-						while(pos3 != ' ' && x < csize3){
-							pos3 = sptemp.charAt(x);
-							x++;
-						}
-						sptemp.insert(x, "\n");
-					}
-					Platform.runLater(new Runnable() {
-						@Override public void run() {
-							FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 12));
-							RssTextObjectTooltip.setText(sptemp.toString());
-							Main.isClicked = true;
-						}
-					});
+			if(transdouble[i] < 510){
+				if(Main.StartupDone){
+					OtherStuff.addToCmdQueue("Set@RssFeedObject@"+transint+"@"+ctemp.toString());
+					OtherStuff.addToCmdQueue("Set@RssFeedTooltip@"+transint+"@"+checkedFeeds[transint][1]);
+				}else{
+					RssTextObject[transint].setText(ctemp.toString());
+					RssTextObject[transint].setId(checkedFeeds[transint][1]);
 				}
-			});
+			}else{
+				if(Main.StartupDone){
+					OtherStuff.addToCmdQueue("Set@RssFeedObject@"+transint+"@...");
+					OtherStuff.addToCmdQueue("Set@RssFeedTooltip@"+transint+"@...");
+				}else{
+					RssTextObject[transint].setText("...");
+					RssTextObject[transint].setId("...");
+				}
+			}
+
+			if(!Main.StartupDone){
+				RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
+					@Override
+					public void handle(javafx.scene.input.MouseEvent e) {
+						String[] temp = e.getTarget().toString().split(",");
+						String sp = temp[0].replace("Text[id=", "");
+						StringBuilder sptemp = new StringBuilder(sp);
+						int csize3 = 175;
+						if(sptemp.length() > csize3){
+							char pos3 = sptemp.charAt(csize3);
+							int x = csize3;
+							while(pos3 != ' ' && x < csize3){
+								pos3 = sptemp.charAt(x);
+								x++;
+							}
+							sptemp.insert(x, "\n");
+						}
+						Platform.runLater(new Runnable() {
+							@Override public void run() {
+								FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 12));
+								RssTextObjectTooltip.setText(sptemp.toString());
+								Main.isClicked = true;
+							}
+						});
+					}
+				});
 			}
 		}
 		FeedCounter = 0;

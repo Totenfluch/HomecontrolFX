@@ -38,7 +38,6 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TextArea;
@@ -107,7 +106,7 @@ public class Main extends Application{
 
 	// Root Window Stuff
 	public static TextArea Console;
-	public static Label calendar, town;
+	public static Text GeneralInformation;
 	public static Slider Music_Slider;
 	public static ImageView Music_Head, Music_prev, Music_next, Music_pause, Music_play;
 	public static ImageView Console_Button1, Console_Button2, weathericonlabel, screen_lock;
@@ -128,8 +127,8 @@ public class Main extends Application{
 
 	// MPC Stuff
 	public static String currenttitle = "Fetching Title...";
-	double Music_title_size = 19;
-	static final int MUSIC_TITLE_MAX_WIDTH = 235;
+	//double Music_title_size = 19;
+	//static final int MUSIC_TITLE_MAX_WIDTH = 235;
 	public static String volume;
 
 	// Login thingy for later
@@ -463,29 +462,23 @@ public class Main extends Application{
 			}
 		}.start();
 		System.out.println("Gui objects loaded: 10%");
-
-		// Date & time
-		calendar = new Label(OtherStuff.TheNormalTime());
-		calendar.setLayoutX(20);
-		calendar.setLayoutY(20);
-		calendar.setFont(Font.font("Futura", 18));
-		calendar.setFont(Font.font("Futura", FontWeight.BOLD, 18));
-		root.getChildren().add(calendar);
-
-		// State and weather degrees
-		town = new Label(Main.City + ", " + Thread_GetWeather.degree + "°C");
-		town.setLayoutX(220);
-		town.setLayoutY(20);
-		town.setFont(Font.font("Futura", FontWeight.BOLD, 18));
-		root.getChildren().add(town);
-
+		
+		GeneralInformation = new Text(OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C");
+		GeneralInformation.setLayoutX(20);
+		GeneralInformation.setLayoutY(40);
+		GeneralInformation.setFont(Font.font("Futura", FontWeight.BOLD, 18));
+		root.getChildren().add(GeneralInformation);
+		System.out.println(GeneralInformation.getLayoutBounds().getWidth());
+		
 		// Icon for weather
 		weathericonlabel = new ImageView();
-		weathericonlabel.setLayoutX(370);
+		weathericonlabel.setLayoutX(GeneralInformation.getLayoutBounds().getWidth()+30);
 		weathericonlabel.setLayoutY(4);
 		weathericonlabel.setFitHeight(60);
 		weathericonlabel.setFitWidth(60);
 		root.getChildren().add(weathericonlabel);
+		System.out.println(weathericonlabel.getLayoutBounds().getWidth());
+		System.out.println(weathericonlabel.getLayoutX());
 
 		for(int i=0; i<10;i++){
 			if(FeedReader.RssTextObject[i] != null)
@@ -1155,6 +1148,13 @@ public class Main extends Application{
 		Output_State[7][2].setFitWidth(35);
 		Output_State[7][2].setVisible(false);
 		root.getChildren().add(Output_State[7][2]);
+		
+		for(int i=0;i<8;i++){
+			MatchSize(Output_Text[i], 63, Output_Text[i].getFont().getSize());
+			if(i<3){
+				MatchSize(Head_Text[i], 150, Head_Text[i].getFont().getSize());
+			}
+		}
 
 		System.out.println("Gui objects loaded: 70%");
 
@@ -1398,7 +1398,7 @@ public class Main extends Application{
 		Music_Title.setLayoutX(790);
 		Music_Title.setLayoutY(135);
 		root.getChildren().add(Music_Title);
-		setFontSize();
+		MatchSize(Music_Title, 235, 19);
 
 		Music_Slider = new Slider();
 		Music_Slider.setMin(0);
@@ -1699,17 +1699,17 @@ public class Main extends Application{
 		setDevOpacity(masteropacity);
 	}
 
-	private void setFontSize(){
-		Music_Title.setFont(Font.font ("Futura", Music_title_size));
-		Music_Title.applyCss();
+	private void MatchSize(Text item, int maxwidth, double startsize){
+		item.setFont(Font.font ("Futura", startsize));
+		item.applyCss();
 
-		double width = Music_Title.getLayoutBounds().getWidth();
+		double width = item.getLayoutBounds().getWidth();
 
-		if(width > MUSIC_TITLE_MAX_WIDTH){
-			Music_title_size = Music_title_size - 0.25;
-			setFontSize();
+		if(width > maxwidth){
+			startsize = startsize - 0.25;
+			MatchSize(item, maxwidth, startsize);
 		}else{
-			Music_title_size = 19;
+			startsize = 19;
 		}
 
 	}
@@ -1996,7 +1996,7 @@ public class Main extends Application{
 							Music_Slider.setValue(Double.parseDouble(temp[2]));
 						}else if(temp[1].equals("Music_Title")){
 							Music_Title.setText(temp[2]);
-							setFontSize();
+							MatchSize(Music_Title, 235, 19);
 						}else if(temp[1].equals("RssFeedObject")){
 							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
 						}else if(temp[1].equals("RssFeedTooltip")){
@@ -2004,10 +2004,11 @@ public class Main extends Application{
 						}
 					}else if(temp[0].equals("Refresh")){
 						if(temp[1].equals("WeatherTextLabel")){
-							town.setText((Main.City + ", " + Thread_GetWeather.degree + "°C"));
+							GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
 						}else if(temp[1].equals("WeatherIconLabel")){
-							//weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
-							weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						}
+								//weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
+								weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						
+							}
 					}else if(temp[0].equals("setParams")){
 						// setParams@Y@<double>@RssTextObject@1
 						//      0    1    2           3       4
@@ -2025,7 +2026,7 @@ public class Main extends Application{
 				}
 			}
 			// Get le time
-			calendar.setText(OtherStuff.TheNormalTime());	
+			GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
 			if(Thread_GetWeather.weathericon != null && !Weatherinit){
 				refreshweather();
 				Weatherinit = true;
