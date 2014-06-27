@@ -422,7 +422,7 @@ public class Main extends Application{
 			imgView.setFitWidth(1100);
 			imgView.setFitHeight(625);
 			root.getChildren().add(imgView);
-			/*ImageView watermark = new ImageView(new Image("watermark.png"));
+			ImageView watermark = new ImageView(new Image("watermark.png"));
 			watermark.setFitWidth(1100);
 			watermark.setFitHeight(625);
 			watermark.setOpacity(0.15);
@@ -438,7 +438,7 @@ public class Main extends Application{
 						}
 					});
 				}
-			});*/
+			});
 		}
 		imgView.setOnMouseEntered(new EventHandler<javafx.scene.input.MouseEvent>() {
 			@Override
