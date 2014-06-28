@@ -2071,75 +2071,124 @@ public class Main extends Application{
 							}else{
 								OtherStuff.addToPrintQueue("AuthAction Failed:: Toggle: Invalid Output value");
 							}
-						}else if(temp[0].equals("Add")){
-							// Add@Console@Thisiscooltext
-							if(temp[1].equals("Console")){
-								OtherStuff.addToPrintQueue(temp[2]);
+						}
+					}else if(temp[0].equals("Add")){
+						// Add@Console@Thisiscooltext
+						if(temp[1].equals("Console")){
+							OtherStuff.addToPrintQueue(temp[2]);
+						}
+					}else if(temp[0].equals("Set")){
+						if(temp[1].equals("Music_Slider")){
+							// Set@Music_Slider@32.5
+							Music_Slider.setValue(Double.parseDouble(temp[2]));
+						}else if(temp[1].equals("Music_Title")){
+							// Set@Music_Title@Bangerang-Skriller
+							Music_Title.setText(temp[2]);
+							MatchSize(Music_Title, 235, 19);
+						}else if(temp[1].equals("RssFeedObject")){
+							// Set@RssFeedObject@1@objecttextlol
+							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
+						}else if(temp[1].equals("RssFeedTooltip")){
+							// Set@RssFeedTooltip@1@objecttooltiplol
+							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
+						}
+					}else if(temp[0].equals("Refresh")){
+						if(temp[1].equals("WeatherTextLabel")){
+							// Refresh@WeatherTextLabel
+							GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
+						}else if(temp[1].equals("WeatherIconLabel")){
+							// Refresh@WeatherIconLabel
+							weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						
+						}
+					}else if(temp[0].equals("setParams")){
+						// setParams@Y@<double>@RssTextObject@1
+						//      0    1    2           3       4
+						if(temp[1].equals("Y")){
+							if(temp[3].equals("RssTextObject")){
+								FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
 							}
-						}else if(temp[0].equals("Set")){
-							if(temp[1].equals("Music_Slider")){
-								// Set@Music_Slider@32.5
-								Music_Slider.setValue(Double.parseDouble(temp[2]));
-							}else if(temp[1].equals("Music_Title")){
-								// Set@Music_Title@Bangerang-Skriller
-								Music_Title.setText(temp[2]);
-								MatchSize(Music_Title, 235, 19);
-							}else if(temp[1].equals("RssFeedObject")){
-								// Set@RssFeedObject@1@objecttextlol
-								FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
-							}else if(temp[1].equals("RssFeedTooltip")){
-								// Set@RssFeedTooltip@1@objecttooltiplol
-								FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
-							}
-						}else if(temp[0].equals("Refresh")){
-							if(temp[1].equals("WeatherTextLabel")){
-								// Refresh@WeatherTextLabel
-								GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
-							}else if(temp[1].equals("WeatherIconLabel")){
-								// Refresh@WeatherIconLabel
-								weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						
-							}
-						}else if(temp[0].equals("setParams")){
-							// setParams@Y@<double>@RssTextObject@1
-							//      0    1    2           3       4
-							if(temp[1].equals("Y")){
-								if(temp[3].equals("RssTextObject")){
-									FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
-								}
-							}
-						}else if(temp[0].equals("lock all")){
-							for(int i = 0; i<8; i++){
-								Output_isLocked[i] = true;
-								Output_Lockcross[i].setVisible(true);
-							}
-						}else if(temp[0].equals("unlock all")){
-							for(int i = 0; i<8; i++){
-								Output_isLocked[i] = false;
-								Output_Lockcross[i].setVisible(false);
-							}
-						}else if(temp[0].equals("enable all")){
-							for(int i=0; i<8; i++){
-								SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1);
-								if(PiBuild){
-									for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-										piface.getLed(index).on();
-									}
-								}
-							}
-						}else if(temp[0].equals("disable all")){
-							for(int i=0; i<8; i++){
-								SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
-								if(PiBuild){
-									for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-										piface.getLed(index).off();
-									}
+						}
+					}else if(temp[0].equals("lock all")){
+						for(int i = 0; i<8; i++){
+							Output_isLocked[i] = true;
+							Output_Lockcross[i].setVisible(true);
+						}
+					}else if(temp[0].equals("unlock all")){
+						for(int i = 0; i<8; i++){
+							Output_isLocked[i] = false;
+							Output_Lockcross[i].setVisible(false);
+						}
+					}else if(temp[0].equals("enable all")){
+						for(int i=0; i<8; i++){
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1);
+							if(PiBuild){
+								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+									piface.getLed(index).on();
 								}
 							}
 						}
-					}else{
-						System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
+					}else if(temp[0].equals("disable all")){
+						for(int i=0; i<8; i++){
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
+							if(PiBuild){
+								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+									piface.getLed(index).off();
+								}
+							}
+						}
+
+					}else if(temp[0].equals("Lock")){
+						try{
+							Output_isLocked[Integer.valueOf(temp[1])] = true;
+							Output_Lockcross[Integer.valueOf(temp[1])].setVisible(true);
+						}catch(Exception e){
+							OtherStuff.addToPrintQueue("Error in Lock cmd int");
+						}
+					}else if(temp[0].equals("Unlock")){
+						try{
+							Output_isLocked[Integer.valueOf(temp[1])] = false;
+							Output_Lockcross[Integer.valueOf(temp[1])].setVisible(false);
+						}catch(Exception e){
+							OtherStuff.addToPrintQueue("Error in unlock cmd int");
+						}
+					}else if(temp[0].equals("Music")){
+						if(MPCEnabled){
+							if(temp[1].equals("prev")){
+								try {
+									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " prev"});
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						}else if(temp[1].equals("next")){
+							if(MPCEnabled){
+								try {
+									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " next"});
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						}else if(temp[1].equals("pause")){
+							if(MPCEnabled){
+								try {
+									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " pause"});
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						}else if(temp[1].equals("play")){
+							if(MPCEnabled){
+								try {
+									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " play"});
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}
+						}
+					}else{	
+						System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!: " + todocmd[y]);
 					}
-					
+
 					todocmd[y] = "";
 					todocmdsize--;
 				}

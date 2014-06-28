@@ -37,6 +37,15 @@ Commands available thru socker server:
             * <DOUBLE VALUE>
                 * RssTextObject
                     * <rID>
+    * Lock
+    	* <ID>
+   	* Unlock
+   		* <ID>
+   	* Music
+   		* prev
+   		* next
+   		* pause
+   		* play
     * lock all
     * unlock all
     * enable all
@@ -53,6 +62,8 @@ EXAMPLES:
     - Set@Music_Title@Bangeranz Skriller
     - Refresh@WeatherTextLabel
     - setParams@Y@90@RssTextObject@1
+    - Lock@2
+    - Unlock@7
     - lock all
     - disable all
     
