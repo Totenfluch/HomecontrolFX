@@ -15,11 +15,14 @@ import java.util.List;
 
 
 
+
 import me.Christian.pack.Main;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+
 
 
 
@@ -238,22 +241,31 @@ public class FeedReader {
 				RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
 					@Override
 					public void handle(javafx.scene.input.MouseEvent e) {
+						boolean back = false;
 						String[] temp = e.getTarget().toString().split(",");
 						String sp = temp[0].replace("Text[id=", "");
 						StringBuilder sptemp = new StringBuilder(sp);
-						int csize3 = 175;
+						int csize3 = 125;
 						if(sptemp.length() > csize3){
 							char pos3 = sptemp.charAt(csize3);
 							int x = csize3;
-							while(pos3 != ' ' && x < csize3){
+							while(pos3 != ' ' && x < sptemp.length()-1){
 								pos3 = sptemp.charAt(x);
-								x++;
+								if(pos3 == ' '){
+									sptemp.insert(x, "\n");
+								}
+								if(x < 130 && !back){
+									x++;
+								}else{
+									back = true;
+									x--;
+								}
 							}
-							sptemp.insert(x, "\n");
+
 						}
 						Platform.runLater(new Runnable() {
 							@Override public void run() {
-								FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 12));
+								FeedReader.RssTextObjectTooltip.setFont(Font.font("Futura", FontWeight.BOLD, 16));
 								RssTextObjectTooltip.setText(sptemp.toString());
 								Main.isClicked = true;
 							}

@@ -64,6 +64,8 @@ public class Main extends Application{
 	public static boolean Testbuild = true;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
+	// New variable to split testbuild
+	public static boolean PiBuild = false;
 	//
 	// Enable MPC ( Internet Radio [Requires extern Server])
 	public static boolean MPCEnabled = false;
@@ -149,11 +151,11 @@ public class Main extends Application{
 	public static double masteropacity = 0.0;
 
 	// print queue
-	public static String[] todoprint = new String[1000];
+	public static String[] todoprint = new String[10000];
 	public static int todoprintsize = 0;
 
 	// cmd queue
-	public static String[] todocmd = new String[1000];
+	public static String[] todocmd = new String[10000];
 	public static int todocmdsize = 0;
 
 	// Server and it's thread
@@ -305,7 +307,7 @@ public class Main extends Application{
 				Platform.runLater(new Runnable() {
 					@Override public void run() {
 						if(!isClicked){
-							FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 16));
+							FeedReader.RssTextObjectTooltip.setFont(Font.font("System Regular", FontWeight.BOLD, 16));
 							FeedReader.RssTextObjectTooltip.setText(stats_string);
 						}
 					}
@@ -432,7 +434,7 @@ public class Main extends Application{
 				public void handle(javafx.scene.input.MouseEvent e) {
 					Platform.runLater(new Runnable() {
 						@Override public void run() {
-							FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 16));
+							FeedReader.RssTextObjectTooltip.setFont(Font.font("System Regular", FontWeight.BOLD, 16));
 							FeedReader.RssTextObjectTooltip.setText(stats_string);
 							isClicked = false;
 						}
@@ -445,7 +447,7 @@ public class Main extends Application{
 			public void handle(javafx.scene.input.MouseEvent e) {
 				Platform.runLater(new Runnable() {
 					@Override public void run() {
-						FeedReader.RssTextObjectTooltip.setFont(new Font("System Regular", 16));
+						FeedReader.RssTextObjectTooltip.setFont(Font.font("System Regular", FontWeight.BOLD, 16));
 						FeedReader.RssTextObjectTooltip.setText(stats_string);
 						isClicked = false;
 					}
@@ -462,14 +464,14 @@ public class Main extends Application{
 			}
 		}.start();
 		System.out.println("Gui objects loaded: 10%");
-		
+
 		GeneralInformation = new Text(OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C");
 		GeneralInformation.setLayoutX(20);
 		GeneralInformation.setLayoutY(40);
 		GeneralInformation.setFont(Font.font("Futura", FontWeight.BOLD, 18));
 		root.getChildren().add(GeneralInformation);
 		System.out.println(GeneralInformation.getLayoutBounds().getWidth());
-		
+
 		// Icon for weather
 		weathericonlabel = new ImageView();
 		weathericonlabel.setLayoutX(GeneralInformation.getLayoutBounds().getWidth()+30);
@@ -1148,7 +1150,7 @@ public class Main extends Application{
 		Output_State[7][2].setFitWidth(35);
 		Output_State[7][2].setVisible(false);
 		root.getChildren().add(Output_State[7][2]);
-		
+
 		for(int i=0;i<8;i++){
 			MatchSize(Output_Text[i], 63, Output_Text[i].getFont().getSize());
 			if(i<3){
@@ -1884,143 +1886,260 @@ public class Main extends Application{
 					// Item: -> Full Item name + @
 					// List of Items: Output1, Output2, Output3, Console
 					// params: -> special things, text
-					// example: On@Output1, Toggle@Output2, Toggle@Door1, Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
+					// example: On@Output@1 Off@Output@2 Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
 
 					String temp[] = todocmd[y].split("@");
 					if(temp[0].equals("On")){
-						if(temp[1].equals("Output1")){
-							SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED0.getIndex()).on();
+						if(temp[1].equals("Output")){
+							int l = -1;
+							try{
+								l = Integer.valueOf(temp[2]);
+							}catch(Exception e){
+								System.out.println("Invalid Cmd: " + todocmd[y]);
 							}
-						}
-						else if(temp[1].equals("Output2")){
-							SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED1.getIndex()).on();
-							}
-						}
-						else if(temp[1].equals("Output3")){
-							SetState(Output_State[2][0], Output_State[2][2], Output_State[2][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED2.getIndex()).on();
-							}
-						}
-						else if(temp[1].equals("Output4")){
-							SetState(Output_State[3][0], Output_State[3][2], Output_State[3][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED3.getIndex()).on();
-							}
-						}
-						else if(temp[1].equals("Output5")){
-							SetState(Output_State[4][0], Output_State[4][2], Output_State[4][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED4.getIndex()).on();
-							}
-						}
-						else if(temp[1].equals("Output6")){
-							SetState(Output_State[5][0], Output_State[5][2], Output_State[5][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED5.getIndex()).on();
-							}
-						}
-						else if(temp[1].equals("Output7")){
-							SetState(Output_State[6][0], Output_State[6][2], Output_State[6][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED6.getIndex()).on();
-							}
-						}
-						else if(temp[1].equals("Output8")){
-							SetState(Output_State[7][0], Output_State[7][2], Output_State[7][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED7.getIndex()).on();
+							if(l >= 0 && l <= 7){
+								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 1);
+								if(temp[2].equals("0")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED0.getIndex()).on();
+									}
+								}else if(temp[2].equals("1")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED1.getIndex()).on();
+									}
+								}else if(temp[2].equals("2")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED2.getIndex()).on();
+									}
+								}else if(temp[2].equals("3")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED3.getIndex()).on();
+									}
+								}else if(temp[2].equals("4")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED4.getIndex()).on();
+									}
+								}else if(temp[2].equals("5")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED5.getIndex()).on();
+									}
+								}else if(temp[2].equals("6")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED6.getIndex()).on();
+									}
+								}else if(temp[2].equals("7")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED7.getIndex()).on();
+									}
+								}
+							}else{
+								OtherStuff.addToPrintQueue("AuthAction Failed:: On: Invalid Output value");
 							}
 						}
 					}else if(temp[0].equals("Off")){
-						if(temp[1].equals("Output1")){
-							SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 2);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED0.getIndex()).off();
+						if(temp[1].equals("Output")){
+							int l = -1;
+							try{
+								l = Integer.valueOf(temp[2]);
+							}catch(Exception e){
+								System.out.println("Invalid Cmd: " + todocmd[y]);
 							}
-						}
-						else if(temp[1].equals("Output2")){
-							SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 2);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED1.getIndex()).off();
-							}
-						}
-						else if(temp[1].equals("Output3")){
-							SetState(Output_State[2][0], Output_State[0][2], Output_State[0][2], 2);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED2.getIndex()).off();
-							}
-						}
-						else if(temp[1].equals("Output4")){
-							SetState(Output_State[3][0], Output_State[3][2], Output_State[3][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED3.getIndex()).off();
-							}
-						}
-						else if(temp[1].equals("Output5")){
-							SetState(Output_State[4][0], Output_State[4][2], Output_State[4][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED4.getIndex()).off();
-							}
-						}
-						else if(temp[1].equals("Output6")){
-							SetState(Output_State[5][0], Output_State[5][2], Output_State[5][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED5.getIndex()).off();
-							}
-						}
-						else if(temp[1].equals("Output7")){
-							SetState(Output_State[6][0], Output_State[6][2], Output_State[6][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED6.getIndex()).off();
-							}
-						}
-						else if(temp[1].equals("Output8")){
-							SetState(Output_State[7][0], Output_State[7][2], Output_State[7][2], 1);
-							if(!Testbuild){
-								piface.getLed(PiFaceLed.LED7.getIndex()).off();
+							if(l >= 0 && l <= 7){
+								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 2);
+								if(temp[2].equals("0")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED0.getIndex()).off();
+									}
+								}else if(temp[2].equals("1")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED1.getIndex()).off();
+									}
+								}else if(temp[2].equals("2")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED2.getIndex()).off();
+									}
+								}else if(temp[2].equals("3")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED3.getIndex()).off();
+									}
+								}else if(temp[2].equals("4")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED4.getIndex()).off();
+									}
+								}else if(temp[2].equals("5")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED5.getIndex()).off();
+									}
+								}else if(temp[2].equals("6")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED6.getIndex()).off();
+									}
+								}else if(temp[2].equals("7")){
+									if(PiBuild){
+										piface.getLed(PiFaceLed.LED7.getIndex()).off();
+									}
+								}
+							}else{
+								OtherStuff.addToPrintQueue("AuthAction Failed:: Off: Invalid Output value");
 							}
 						}
 					}else if(temp[0].equals("Toggle")){
-						// Todo
-					}else if(temp[0].equals("Add")){
-						if(temp[1].equals("Console")){
-							OtherStuff.addToPrintQueue(temp[2]);
-						}
-					}else if(temp[0].equals("Set")){
-						if(temp[1].equals("Music_Slider")){
-							Music_Slider.setValue(Double.parseDouble(temp[2]));
-						}else if(temp[1].equals("Music_Title")){
-							Music_Title.setText(temp[2]);
-							MatchSize(Music_Title, 235, 19);
-						}else if(temp[1].equals("RssFeedObject")){
-							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
-						}else if(temp[1].equals("RssFeedTooltip")){
-							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
-						}
-					}else if(temp[0].equals("Refresh")){
-						if(temp[1].equals("WeatherTextLabel")){
-							GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
-						}else if(temp[1].equals("WeatherIconLabel")){
-								//weathericonlabel.setGraphic(new ImageView(new Image(Thread_GetWeather.weathericon + ".png")));
+						if(temp[1].equals("Output")){
+							// Toggle@Output@1
+							int l = -1;
+							try{
+								l = Integer.valueOf(temp[2]);
+							}catch(Exception e){
+								System.out.println("Invalid Cmd: " + todocmd[y]);
+								l = -1;
+							}
+							int istate = Output_iState[l];
+							if(istate == 0){
+								istate = 1;
+							}else if(istate == 1){
+								istate = 0;
+							}else{
+								istate = 1;
+							}
+							if(l >= 0 && l <= 7){
+								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], istate);
+								if(temp[2].equals("0")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED0.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED0.getIndex()).on();
+										}
+									}
+								}else if(temp[2].equals("1")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED1.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED1.getIndex()).on();
+										}
+									}
+								}else if(temp[2].equals("2")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED2.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED2.getIndex()).on();
+										}
+									}
+								}else if(temp[2].equals("3")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED3.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED3.getIndex()).on();
+										}
+									}
+								}else if(temp[2].equals("4")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED4.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED4.getIndex()).on();
+										}
+									}
+								}else if(temp[2].equals("5")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED5.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED5.getIndex()).on();
+										}
+									}
+								}else if(temp[2].equals("6")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED6.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED6.getIndex()).on();
+										}
+									}
+								}else if(temp[2].equals("7")){
+									if(PiBuild){
+										if(istate == 0){
+											piface.getLed(PiFaceLed.LED7.getIndex()).off();
+										}else if(istate == 1){
+											piface.getLed(PiFaceLed.LED7.getIndex()).on();
+										}
+									}
+								}
+							}else{
+								OtherStuff.addToPrintQueue("AuthAction Failed:: Toggle: Invalid Output value");
+							}
+						}else if(temp[0].equals("Add")){
+							// Add@Console@Thisiscooltext
+							if(temp[1].equals("Console")){
+								OtherStuff.addToPrintQueue(temp[2]);
+							}
+						}else if(temp[0].equals("Set")){
+							if(temp[1].equals("Music_Slider")){
+								// Set@Music_Slider@32.5
+								Music_Slider.setValue(Double.parseDouble(temp[2]));
+							}else if(temp[1].equals("Music_Title")){
+								// Set@Music_Title@Bangerang-Skriller
+								Music_Title.setText(temp[2]);
+								MatchSize(Music_Title, 235, 19);
+							}else if(temp[1].equals("RssFeedObject")){
+								// Set@RssFeedObject@1@objecttextlol
+								FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
+							}else if(temp[1].equals("RssFeedTooltip")){
+								// Set@RssFeedTooltip@1@objecttooltiplol
+								FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
+							}
+						}else if(temp[0].equals("Refresh")){
+							if(temp[1].equals("WeatherTextLabel")){
+								// Refresh@WeatherTextLabel
+								GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
+							}else if(temp[1].equals("WeatherIconLabel")){
+								// Refresh@WeatherIconLabel
 								weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						
 							}
-					}else if(temp[0].equals("setParams")){
-						// setParams@Y@<double>@RssTextObject@1
-						//      0    1    2           3       4
-						if(temp[1].equals("Y")){
-							if(temp[3].equals("RssTextObject")){
-								FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
+						}else if(temp[0].equals("setParams")){
+							// setParams@Y@<double>@RssTextObject@1
+							//      0    1    2           3       4
+							if(temp[1].equals("Y")){
+								if(temp[3].equals("RssTextObject")){
+									FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
+								}
+							}
+						}else if(temp[0].equals("lock all")){
+							for(int i = 0; i<8; i++){
+								Output_isLocked[i] = true;
+								Output_Lockcross[i].setVisible(true);
+							}
+						}else if(temp[0].equals("unlock all")){
+							for(int i = 0; i<8; i++){
+								Output_isLocked[i] = false;
+								Output_Lockcross[i].setVisible(false);
+							}
+						}else if(temp[0].equals("enable all")){
+							for(int i=0; i<8; i++){
+								SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1);
+								if(PiBuild){
+									for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+										piface.getLed(index).on();
+									}
+								}
+							}
+						}else if(temp[0].equals("disable all")){
+							for(int i=0; i<8; i++){
+								SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
+								if(PiBuild){
+									for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+										piface.getLed(index).off();
+									}
+								}
 							}
 						}
 					}else{
 						System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!");
 					}
-
+					
 					todocmd[y] = "";
 					todocmdsize--;
 				}
