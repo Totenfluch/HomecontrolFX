@@ -307,7 +307,7 @@ public class Main extends Application{
 				Platform.runLater(new Runnable() {
 					@Override public void run() {
 						if(!isClicked){
-							FeedReader.RssTextObjectTooltip.setFont(Font.font("System Regular", FontWeight.BOLD, 16));
+							FeedReader.RssTextObjectTooltip.setFont(Font.font("Futura", FontWeight.BOLD, 16));
 							FeedReader.RssTextObjectTooltip.setText(stats_string);
 						}
 					}
@@ -434,7 +434,7 @@ public class Main extends Application{
 				public void handle(javafx.scene.input.MouseEvent e) {
 					Platform.runLater(new Runnable() {
 						@Override public void run() {
-							FeedReader.RssTextObjectTooltip.setFont(Font.font("System Regular", FontWeight.BOLD, 16));
+							FeedReader.RssTextObjectTooltip.setFont(Font.font("Futura", FontWeight.BOLD, 16));
 							FeedReader.RssTextObjectTooltip.setText(stats_string);
 							isClicked = false;
 						}
@@ -447,7 +447,7 @@ public class Main extends Application{
 			public void handle(javafx.scene.input.MouseEvent e) {
 				Platform.runLater(new Runnable() {
 					@Override public void run() {
-						FeedReader.RssTextObjectTooltip.setFont(Font.font("System Regular", FontWeight.BOLD, 16));
+						FeedReader.RssTextObjectTooltip.setFont(Font.font("Futura", FontWeight.BOLD, 16));
 						FeedReader.RssTextObjectTooltip.setText(stats_string);
 						isClicked = false;
 					}
@@ -1342,7 +1342,7 @@ public class Main extends Application{
 						}	
 					}else if(Dev_console.getText().equals("enable all")){
 						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1);
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1, i);
 							if(!Testbuild){
 								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
 									piface.getLed(index).on();
@@ -1351,7 +1351,7 @@ public class Main extends Application{
 						}	
 					}else if(Dev_console.getText().equals("disable all")){
 						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
 							if(!Testbuild){
 								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
 									piface.getLed(index).off();
@@ -1616,7 +1616,7 @@ public class Main extends Application{
 			}
 		}
 		for(int i=0;i<8;i++){
-			SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
+			SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
 		}
 		System.out.println("Finished [3]: Final init");
 		new ChangeOutStream();
@@ -1898,7 +1898,7 @@ public class Main extends Application{
 								System.out.println("Invalid Cmd: " + todocmd[y]);
 							}
 							if(l >= 0 && l <= 7){
-								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 1);
+								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 1, l);
 								if(temp[2].equals("0")){
 									if(PiBuild){
 										piface.getLed(PiFaceLed.LED0.getIndex()).on();
@@ -1945,7 +1945,7 @@ public class Main extends Application{
 								System.out.println("Invalid Cmd: " + todocmd[y]);
 							}
 							if(l >= 0 && l <= 7){
-								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 2);
+								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 2, l);
 								if(temp[2].equals("0")){
 									if(PiBuild){
 										piface.getLed(PiFaceLed.LED0.getIndex()).off();
@@ -1994,15 +1994,15 @@ public class Main extends Application{
 								l = -1;
 							}
 							int istate = Output_iState[l];
-							if(istate == 0){
+							if(istate == 2){
 								istate = 1;
 							}else if(istate == 1){
-								istate = 0;
+								istate = 2;
 							}else{
 								istate = 1;
 							}
 							if(l >= 0 && l <= 7){
-								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], istate);
+								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], istate, l);
 								if(temp[2].equals("0")){
 									if(PiBuild){
 										if(istate == 0){
@@ -2108,28 +2108,28 @@ public class Main extends Application{
 								FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
 							}
 						}
-					}else if(temp[0].equals("lock all")){
+					}else if(temp[0].equals("lock_all")){
 						for(int i = 0; i<8; i++){
 							Output_isLocked[i] = true;
 							Output_Lockcross[i].setVisible(true);
 						}
-					}else if(temp[0].equals("unlock all")){
+					}else if(temp[0].equals("unlock_all")){
 						for(int i = 0; i<8; i++){
 							Output_isLocked[i] = false;
 							Output_Lockcross[i].setVisible(false);
 						}
-					}else if(temp[0].equals("enable all")){
+					}else if(temp[0].equals("enable_all")){
 						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1);
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1, i);
 							if(PiBuild){
 								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
 									piface.getLed(index).on();
 								}
 							}
 						}
-					}else if(temp[0].equals("disable all")){
+					}else if(temp[0].equals("disable_all")){
 						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2);
+							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
 							if(PiBuild){
 								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
 									piface.getLed(index).off();
@@ -2216,7 +2216,7 @@ public class Main extends Application{
 	}
 
 	// to change the icons of the check states // Light/door/window ect.
-	public static void SetState(ImageView img1, ImageView img2, ImageView img3, int state){
+	public static void SetState(ImageView img1, ImageView img2, ImageView img3, int state, int id){
 		if(state == 0){
 			img1.setVisible(true);
 			img2.setVisible(false);
@@ -2232,6 +2232,7 @@ public class Main extends Application{
 		}else{
 			System.out.println("SetStates Error - Out of bounds");
 		}
+		Output_iState[id] = state;
 	}
 
 	// Switches from Main to Login Scene
@@ -2300,19 +2301,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED0.getIndex()).on();
 						}
-						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 1);
+						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 1, 0);
 						Output_iState[0] = 1;
 					}else if(Output_iState[0] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED0.getIndex()).off();
 						}
-						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 2);
+						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 2, 0);
 						Output_iState[0] = 2;
 					}else if(Output_iState[0] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED0.getIndex()).on();
 						}
-						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 1);
+						SetState(Output_State[0][0], Output_State[0][1], Output_State[0][2], 1, 0);
 						Output_iState[0] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
@@ -2347,19 +2348,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED1.getIndex()).on();
 						}
-						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 1);
+						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 1, 1);
 						Output_iState[1] = 1;
 					}else if(Output_iState[1] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED1.getIndex()).off();
 						}
-						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 2);
+						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 2, 1);
 						Output_iState[1] = 2;
 					}else if(Output_iState[1] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED1.getIndex()).on();
 						}
-						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 1);
+						SetState(Output_State[1][0], Output_State[1][1], Output_State[1][2], 1, 1);
 						Output_iState[1] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
@@ -2394,19 +2395,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED2.getIndex()).on();
 						}
-						SetState(Output_State[2][0], Output_State[2][1], Output_State[2][2], 1);
+						SetState(Output_State[2][0], Output_State[2][1], Output_State[2][2], 1, 2);
 						Output_iState[2] = 1;
 					}else if(Output_iState[2] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED2.getIndex()).off();
 						}
-						SetState(Output_State[2][0], Output_State[2][1], Output_State[2][2], 2);
+						SetState(Output_State[2][0], Output_State[2][1], Output_State[2][2], 2, 2);
 						Output_iState[2] = 2;
 					}else if(Output_iState[2] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED2.getIndex()).on();
 						}
-						SetState(Output_State[2][0], Output_State[2][1], Output_State[2][2], 1);
+						SetState(Output_State[2][0], Output_State[2][1], Output_State[2][2], 1, 2);
 						Output_iState[2] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
@@ -2441,19 +2442,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED3.getIndex()).on();
 						}
-						SetState(Output_State[3][0], Output_State[3][1], Output_State[3][2], 1);
+						SetState(Output_State[3][0], Output_State[3][1], Output_State[3][2], 1, 3);
 						Output_iState[3] = 1;
 					}else if(Output_iState[3] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED3.getIndex()).off();
 						}
-						SetState(Output_State[3][0], Output_State[3][1], Output_State[3][2], 2);
+						SetState(Output_State[3][0], Output_State[3][1], Output_State[3][2], 2, 3);
 						Output_iState[3] = 2;
 					}else if(Output_iState[3] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED3.getIndex()).on();
 						}
-						SetState(Output_State[3][0], Output_State[3][1], Output_State[3][2], 1);
+						SetState(Output_State[3][0], Output_State[3][1], Output_State[3][2], 1, 3);
 						Output_iState[3] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
@@ -2488,19 +2489,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED4.getIndex()).on();
 						}
-						SetState(Output_State[4][0], Output_State[4][1], Output_State[4][2], 1);
+						SetState(Output_State[4][0], Output_State[4][1], Output_State[4][2], 1, 4);
 						Output_iState[4] = 1;
 					}else if(Output_iState[4] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED4.getIndex()).off();
 						}
-						SetState(Output_State[4][0], Output_State[4][1], Output_State[4][2], 2);
+						SetState(Output_State[4][0], Output_State[4][1], Output_State[4][2], 2, 4);
 						Output_iState[4] = 2;
 					}else if(Output_iState[4] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED4.getIndex()).on();
 						}
-						SetState(Output_State[4][0], Output_State[4][1], Output_State[4][2], 1);
+						SetState(Output_State[4][0], Output_State[4][1], Output_State[4][2], 1, 4);
 						Output_iState[4] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
@@ -2535,19 +2536,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
 						}
-						SetState(Output_State[5][0], Output_State[5][1], Output_State[5][2], 1);
+						SetState(Output_State[5][0], Output_State[5][1], Output_State[5][2], 1, 5);
 						Output_iState[5] = 1;
 					}else if(Output_iState[5] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).off();
 						}
-						SetState(Output_State[5][0], Output_State[5][1], Output_State[5][2], 2);
+						SetState(Output_State[5][0], Output_State[5][1], Output_State[5][2], 2, 5);
 						Output_iState[5] = 2;
 					}else if(Output_iState[5] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
 						}
-						SetState(Output_State[5][0], Output_State[5][1], Output_State[5][2], 1);
+						SetState(Output_State[5][0], Output_State[5][1], Output_State[5][2], 1, 5);
 						Output_iState[5] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
@@ -2582,19 +2583,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
-						SetState(Output_State[6][0], Output_State[6][1], Output_State[6][2], 1);
+						SetState(Output_State[6][0], Output_State[6][1], Output_State[6][2], 1, 6);
 						Output_iState[6] = 1;
 					}else if(Output_iState[6] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).off();
 						}
-						SetState(Output_State[6][0], Output_State[6][1], Output_State[6][2], 2);
+						SetState(Output_State[6][0], Output_State[6][1], Output_State[6][2], 2, 6);
 						Output_iState[6] = 2;
 					}else if(Output_iState[6] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
 						}
-						SetState(Output_State[6][0], Output_State[6][1], Output_State[6][2], 1);
+						SetState(Output_State[6][0], Output_State[6][1], Output_State[6][2], 1, 6);
 						Output_iState[6] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
@@ -2629,19 +2630,19 @@ public class Main extends Application{
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
-						SetState(Output_State[7][0], Output_State[7][1], Output_State[7][2], 1);
+						SetState(Output_State[7][0], Output_State[7][1], Output_State[7][2], 1, 7);
 						Output_iState[7] = 1;
 					}else if(Output_iState[7] == 1){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).off();
 						}
-						SetState(Output_State[7][0], Output_State[7][1], Output_State[7][2], 2);
+						SetState(Output_State[7][0], Output_State[7][1], Output_State[7][2], 2, 7);
 						Output_iState[7] = 2;
 					}else if(Output_iState[7] == 2){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
 						}
-						SetState(Output_State[7][0], Output_State[7][1], Output_State[7][2], 1);
+						SetState(Output_State[7][0], Output_State[7][1], Output_State[7][2], 1, 7);
 						Output_iState[7] = 1;
 					}
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){

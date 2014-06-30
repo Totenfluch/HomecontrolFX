@@ -36,7 +36,6 @@ public class CheckMessage {
 
 
 		OtherStuff.addToPrintQueue(" CMD from: " + pcname + " " + cmd + " " + arg1 + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 );
-		System.out.println(OtherStuff.TheNormalTime() +  " CMD from: "+socket + " : " + pcname + " " + cmd + " " + arg1 + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 );
 	}
 }
 

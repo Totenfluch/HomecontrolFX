@@ -46,12 +46,10 @@ Commands available thru socker server:
    		* next
    		* pause
    		* play
-    * lock all
-    * unlock all
-    * enable all
-    * disable all
-    
-    
+    * lock_all
+    * unlock_all
+    * enable_all
+    * disable_all
     
 EXAMPLES:
     - On@Output@0
@@ -64,6 +62,9 @@ EXAMPLES:
     - setParams@Y@90@RssTextObject@1
     - Lock@2
     - Unlock@7
+    - Music@play
+    - Music@pause
+    - Music@prev
     - lock all
     - disable all
     
