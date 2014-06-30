@@ -29,6 +29,7 @@ import me.Christian.other.FeedReader;
 import me.Christian.other.OtherStuff;
 import me.Christian.threads.Thread_GetWeather;
 import javafx.animation.AnimationTimer;
+import javafx.animation.PathTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -47,11 +48,14 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 
 public class Main extends Application{
 	//
@@ -139,8 +143,11 @@ public class Main extends Application{
 
 	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer, stats_refreshtimer, sync_timer;
 	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
-	public static boolean goLeft, goRight;
-	public static int entrypos = 265;
+
+	public static int dir = 1;
+	// 0 -> Right, 1 -> Left
+	public static Path[][] FeedPath = new Path[10][2];
+	public static PathTransition[][] FeedTransition = new PathTransition[10][2];
 
 	// Developer in app stuff
 	public static PasswordField Dev_masterpw;
@@ -201,6 +208,12 @@ public class Main extends Application{
 
 		System.out.println("|> checking Rss feed file <|");
 		if(RssEnabled){
+			for(int i=0;i<10;i++){
+				FeedPath[i][0] = new Path();
+				FeedPath[i][1] = new Path();
+				FeedTransition[i][0] = new PathTransition();
+				FeedTransition[i][1] = new PathTransition();
+			}
 			FeedReader.ReadFeedFile();
 			FeedReader.CreateFeedObjects();
 			System.out.println("RssFeeds File location: " + OtherStuff.jarlocation().toString().replace("/HomeControl.jar", "") + "/RSSFeeds.txt");
@@ -410,7 +423,8 @@ public class Main extends Application{
 		});;
 		Pane root = new Pane();
 		Sroot = new Scene(root, 1024, 600);
-
+		
+		
 		// Background
 		ImageView imgView = null;
 		// Watermark for Testbuild
@@ -455,7 +469,13 @@ public class Main extends Application{
 			}
 		});
 
-
+		for(int i=0; i<10; i++){
+			FeedPath[i][0].setStroke(Color.RED);
+			FeedPath[i][1].setStroke(Color.RED);
+			root.getChildren().add(FeedPath[i][0]);
+			root.getChildren().add(FeedPath[i][1]);
+		}
+		
 		// Refresh timer for anything
 		new AnimationTimer() {
 			@Override
@@ -483,8 +503,9 @@ public class Main extends Application{
 		System.out.println(weathericonlabel.getLayoutX());
 
 		for(int i=0; i<10;i++){
-			if(FeedReader.RssTextObject[i] != null)
+			if(FeedReader.RssTextObject[i] != null){
 				root.getChildren().add(FeedReader.RssTextObject[i]);
+			}
 		}
 		FeedReader.RssTextObjectTooltip.setX(20);
 		FeedReader.RssTextObjectTooltip.setY(580);
@@ -1831,45 +1852,6 @@ public class Main extends Application{
 				}
 			}
 		}else{
-			if(goLeft){
-				// Starts moving away from the console
-				if(entrypos > 265){
-					entrypos = entrypos - 6;
-					masteropacity = masteropacity-0.0316;
-					setDevOpacity(masteropacity);
-					for(int i=0;i<10;i++){
-						if(FeedReader.RssTextObject[i] != null){
-							FeedReader.RssTextObject[i].setX(entrypos);
-						}
-					}
-				}else{
-					goLeft = false;
-					Console.setVisible(true);
-					masteropacity = 0;
-					setDevVisibility(false);
-					// Hits the left side
-				}
-			}else if(goRight){
-				// Starts moving right towards the console
-				setDevVisibility(true);
-				Console.setVisible(false);
-				if(entrypos < 500){
-					entrypos = entrypos + 6;
-					masteropacity = masteropacity+0.025;
-					setDevOpacity(masteropacity);
-					for(int i=0;i<10;i++){
-						if(FeedReader.RssTextObject[i] != null){
-							FeedReader.RssTextObject[i].setX(entrypos);
-						}
-					}
-				}else{
-					goRight = false;
-					// hits the right side
-					masteropacity = 1;
-					setDevOpacity(masteropacity);
-				}
-			}
-
 			// Print queue
 			if(todoprint[0] != ""){
 				for(int x = todoprintsize; x > -1; x--){
@@ -2808,17 +2790,22 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Console Toggle");
 					Console_Button2.setVisible(false);
 					Console_Button1.setVisible(true);
-
-					if(Console.isVisible()){
-						goRight = true;
-						goLeft = false;
-					}else if(!Console.isVisible() && goLeft){
-						goRight = true;
-						goLeft = false;
-					}else{
-						goRight = false;
-						goLeft = true;
+					if(dir == 1){
+						for(int i=0;i<10;i++){
+							Duration y = Duration.millis(FeedTransition[i][0].getDuration().toMillis()-FeedTransition[i][1].getCurrentTime().toMillis());
+							FeedTransition[i][1].playFrom(y);
+							FeedTransition[i][1].stop();
+						}
+						dir = 2;
+					}else if(dir == 2){
+						for(int i=0;i<10;i++){
+							Duration y = Duration.millis(FeedTransition[i][1].getDuration().toMillis()-FeedTransition[i][0].getCurrentTime().toMillis());
+							FeedTransition[i][0].playFrom(y);
+							FeedTransition[i][0].stop();
+						}
+						dir = 1;
 					}
+
 					Console_ButtonText.setLayoutX(Console_ButtonText.getLayoutX()+12);
 					Console_ButtonText.setLayoutY(Console_ButtonText.getLayoutY()-10);
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){

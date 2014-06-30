@@ -16,9 +16,16 @@ import java.util.List;
 
 
 
+
+
+
+
 import me.Christian.pack.Main;
+import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
+import javafx.scene.shape.HLineTo;
+import javafx.scene.shape.MoveTo;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -28,6 +35,11 @@ import javafx.scene.text.Text;
 
 
 
+
+
+
+
+import javafx.util.Duration;
 
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.SyndFeedInput;
@@ -236,7 +248,27 @@ public class FeedReader {
 					RssTextObject[transint].setId("...");
 				}
 			}
-
+			
+			
+			Main.FeedPath[transint][0].getElements().add(new MoveTo(265, transdouble[transint]));
+			Main.FeedPath[transint][0].getElements().add(new HLineTo(265+265));
+			
+			Main.FeedTransition[transint][0].setDuration(Duration.millis(3000));
+			Main.FeedTransition[transint][0].setPath(Main.FeedPath[transint][0]);
+			Main.FeedTransition[transint][0].setNode(RssTextObject[transint]);
+			Main.FeedTransition[transint][0].setOrientation(PathTransition.OrientationType.NONE);
+			
+			Main.FeedPath[transint][1].getElements().add(new MoveTo(265+265, transdouble[transint]));
+			Main.FeedPath[transint][1].getElements().add(new HLineTo(265));
+			
+			Main.FeedTransition[transint][1].setDuration(Duration.millis(3000));
+			Main.FeedTransition[transint][1].setPath(Main.FeedPath[transint][1]);
+			Main.FeedTransition[transint][1].setNode(RssTextObject[transint]);
+			Main.FeedTransition[transint][1].setOrientation(PathTransition.OrientationType.NONE);
+			
+			System.out.println(transint + " " + RssTextObject[transint].getLayoutX());
+			System.out.println(transint + " " + RssTextObject[transint].getLayoutY());
+			
 			if(!Main.StartupDone){
 				RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
 					@Override
