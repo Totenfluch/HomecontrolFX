@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Random;
 
 import javax.swing.Timer;
 
@@ -36,6 +37,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -48,8 +50,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.CubicCurveTo;
+import javafx.scene.shape.HLineTo;
+import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
+import javafx.scene.shape.VLineTo;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -146,8 +153,8 @@ public class Main extends Application{
 
 	public static int dir = 1;
 	// 0 -> Right, 1 -> Left
-	public static Path[][] FeedPath = new Path[10][2];
-	public static PathTransition[][] FeedTransition = new PathTransition[10][2];
+	public static Path[] FeedPath = new Path[2];
+	public static PathTransition[] FeedTransition = new PathTransition[2];
 
 	// Developer in app stuff
 	public static PasswordField Dev_masterpw;
@@ -156,6 +163,7 @@ public class Main extends Application{
 	public static boolean isMasterLoggedIn = false;
 	public static String MasterPassword;
 	public static double masteropacity = 0.0;
+	public static VBox rssvbox;
 
 	// print queue
 	public static String[] todoprint = new String[10000];
@@ -208,12 +216,12 @@ public class Main extends Application{
 
 		System.out.println("|> checking Rss feed file <|");
 		if(RssEnabled){
-			for(int i=0;i<10;i++){
-				FeedPath[i][0] = new Path();
-				FeedPath[i][1] = new Path();
-				FeedTransition[i][0] = new PathTransition();
-				FeedTransition[i][1] = new PathTransition();
-			}
+
+			FeedPath[0] = new Path();
+			FeedPath[1] = new Path();
+			FeedTransition[0] = new PathTransition();
+			FeedTransition[1] = new PathTransition();
+
 			FeedReader.ReadFeedFile();
 			FeedReader.CreateFeedObjects();
 			System.out.println("RssFeeds File location: " + OtherStuff.jarlocation().toString().replace("/HomeControl.jar", "") + "/RSSFeeds.txt");
@@ -229,6 +237,8 @@ public class Main extends Application{
 				});
 				RssRefreshTimer.start();
 			}
+
+
 		}else{
 			System.out.println("Rss is disabled.");
 		}
@@ -423,8 +433,8 @@ public class Main extends Application{
 		});;
 		Pane root = new Pane();
 		Sroot = new Scene(root, 1024, 600);
-		
-		
+
+
 		// Background
 		ImageView imgView = null;
 		// Watermark for Testbuild
@@ -469,13 +479,49 @@ public class Main extends Application{
 			}
 		});
 
-		for(int i=0; i<10; i++){
-			FeedPath[i][0].setStroke(Color.RED);
-			FeedPath[i][1].setStroke(Color.RED);
-			root.getChildren().add(FeedPath[i][0]);
-			root.getChildren().add(FeedPath[i][1]);
+
+		VBox rssvbox = new VBox();
+		rssvbox.setPadding(new Insets(10));
+		rssvbox.setSpacing(8);
+		rssvbox.setLayoutX(255);
+		rssvbox.setLayoutY(100);
+
+		Text title = new Text("Rss Feed");
+		title.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+		rssvbox.getChildren().add(title);
+
+		for (int i=0; i<10; i++) {
+			VBox.setMargin(FeedReader.RssTextObject[i], new Insets(0, 0, 0, 8));
+			rssvbox.getChildren().add(FeedReader.RssTextObject[i]);
 		}
-		
+		root.getChildren().add(rssvbox);
+
+		FeedPath[0].getElements().add(new MoveTo(145, 218));
+		FeedPath[0].getElements().add(new HLineTo(370));
+
+		FeedPath[1].getElements().add(new MoveTo(370, 218));
+		FeedPath[1].getElements().add(new HLineTo(145));
+
+		FeedTransition[0].setDuration(Duration.millis(3000));
+		FeedTransition[0].setPath(Main.FeedPath[0]);
+		FeedTransition[0].setNode(rssvbox);
+		FeedTransition[0].setOrientation(PathTransition.OrientationType.NONE);
+		FeedTransition[0].setOnFinished(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				setDevVisibility(true);
+			}
+		});
+
+		FeedTransition[1].setDuration(Duration.millis(3000));
+		FeedTransition[1].setPath(Main.FeedPath[1]);
+		FeedTransition[1].setNode(rssvbox);
+		FeedTransition[1].setOrientation(PathTransition.OrientationType.NONE);
+		FeedTransition[1].setOnFinished(new EventHandler<ActionEvent>() {
+			@Override public void handle(ActionEvent e) {
+				Console.setVisible(true);
+			}
+		});
+
 		// Refresh timer for anything
 		new AnimationTimer() {
 			@Override
@@ -502,11 +548,6 @@ public class Main extends Application{
 		System.out.println(weathericonlabel.getLayoutBounds().getWidth());
 		System.out.println(weathericonlabel.getLayoutX());
 
-		for(int i=0; i<10;i++){
-			if(FeedReader.RssTextObject[i] != null){
-				root.getChildren().add(FeedReader.RssTextObject[i]);
-			}
-		}
 		FeedReader.RssTextObjectTooltip.setX(20);
 		FeedReader.RssTextObjectTooltip.setY(580);
 		root.getChildren().add(FeedReader.RssTextObjectTooltip);
@@ -1388,11 +1429,6 @@ public class Main extends Application{
 			setDevVisibility(false);
 		}
 
-		if(!dev_console_enabled){
-			for(int i=0;i<10;i++){
-				FeedReader.RssTextObject[i].setX(500);
-			}
-		}
 
 		System.out.println("Gui objects loaded: 90%");
 
@@ -1640,6 +1676,7 @@ public class Main extends Application{
 			SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
 		}
 		System.out.println("Finished [3]: Final init");
+		//OtherStuff.addToCmdQueue("Refresh@RssFeedObjectPath");
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
@@ -2182,7 +2219,7 @@ public class Main extends Application{
 				Weatherinit = true;
 			}
 			try {
-				Thread.sleep(33);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -2791,18 +2828,24 @@ public class Main extends Application{
 					Console_Button2.setVisible(false);
 					Console_Button1.setVisible(true);
 					if(dir == 1){
-						for(int i=0;i<10;i++){
-							Duration y = Duration.millis(FeedTransition[i][0].getDuration().toMillis()-FeedTransition[i][1].getCurrentTime().toMillis());
-							FeedTransition[i][1].playFrom(y);
-							FeedTransition[i][1].stop();
+						double y = 3000-FeedTransition[1].getCurrentTime().toMillis();
+						if(y == 3000){
+							y = 0;
 						}
+						System.out.println(y);
+						FeedTransition[1].stop();
+						FeedTransition[0].playFrom(Duration.millis(y));
+						Console.setVisible(false);
 						dir = 2;
 					}else if(dir == 2){
-						for(int i=0;i<10;i++){
-							Duration y = Duration.millis(FeedTransition[i][1].getDuration().toMillis()-FeedTransition[i][0].getCurrentTime().toMillis());
-							FeedTransition[i][0].playFrom(y);
-							FeedTransition[i][0].stop();
+						double y = 3000-FeedTransition[1].getCurrentTime().toMillis();
+						if(y == 3000){
+							y = 0;
 						}
+						System.out.println(y);
+						FeedTransition[0].stop();
+						FeedTransition[1].playFrom(Duration.millis(y));
+						setDevVisibility(false);
 						dir = 1;
 					}
 

@@ -57,6 +57,8 @@ public class FeedReader {
 	public static Text RssTextObjectTooltip = new Text("");
 	public static int transint;
 	public static double[] transdouble = new double[10];
+	public static double totalmaxy;
+	
 	public static void GetFeed(String feedurl) {
 		boolean ok = false;
 		try {
@@ -183,6 +185,7 @@ public class FeedReader {
 				n = maxy+57;
 				maxy = maxy+57;
 			}
+			totalmaxy = maxy;
 			transdouble[i] = n;
 			transint = i;
 
@@ -248,27 +251,7 @@ public class FeedReader {
 					RssTextObject[transint].setId("...");
 				}
 			}
-			
-			
-			Main.FeedPath[transint][0].getElements().add(new MoveTo(265, transdouble[transint]));
-			Main.FeedPath[transint][0].getElements().add(new HLineTo(265+265));
-			
-			Main.FeedTransition[transint][0].setDuration(Duration.millis(3000));
-			Main.FeedTransition[transint][0].setPath(Main.FeedPath[transint][0]);
-			Main.FeedTransition[transint][0].setNode(RssTextObject[transint]);
-			Main.FeedTransition[transint][0].setOrientation(PathTransition.OrientationType.NONE);
-			
-			Main.FeedPath[transint][1].getElements().add(new MoveTo(265+265, transdouble[transint]));
-			Main.FeedPath[transint][1].getElements().add(new HLineTo(265));
-			
-			Main.FeedTransition[transint][1].setDuration(Duration.millis(3000));
-			Main.FeedTransition[transint][1].setPath(Main.FeedPath[transint][1]);
-			Main.FeedTransition[transint][1].setNode(RssTextObject[transint]);
-			Main.FeedTransition[transint][1].setOrientation(PathTransition.OrientationType.NONE);
-			
-			System.out.println(transint + " " + RssTextObject[transint].getLayoutX());
-			System.out.println(transint + " " + RssTextObject[transint].getLayoutY());
-			
+
 			if(!Main.StartupDone){
 				RssTextObject[i].setOnMouseClicked(new EventHandler<javafx.scene.input.MouseEvent>() {
 					@Override

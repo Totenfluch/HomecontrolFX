@@ -40,22 +40,23 @@ public class OtherStuff {
 	}
 
 	public static void addToCmdQueue(String string){
-		int x = 0;
-		while(Main.todocmd[x] != ""){
-			x++;
-		}
-		Main.todocmd[x] = string;
-		Main.todocmdsize = x;
+			int x = 0;
+			while(Main.todocmd[x] != ""){
+				x++;
+			}
+			Main.todocmd[x] = string;
+			Main.todocmdsize = x;
+		
 	}
 
 	public static void initDatabase(){
 		// Just Test Accounts, data will be decryted in a database later
 		UserCredicalsDatabase.put("Totenfluch", "s123C");
 		UserPermissionsDatabase.put("Totenfluch", 1000);
-		
+
 		UserCredicalsDatabase.put("Soulrescuer", "s321C");
 		UserPermissionsDatabase.put("Soulrescuer", 1000);
-		
+
 		UserCredicalsDatabase.put("root", Main.MasterPassword);
 		UserPermissionsDatabase.put("root", 1000);
 	}
@@ -69,7 +70,7 @@ public class OtherStuff {
 		}
 		return a;
 	}
-	
+
 	public static File jarlocation(){
 		return new File(OtherStuff.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 	}
