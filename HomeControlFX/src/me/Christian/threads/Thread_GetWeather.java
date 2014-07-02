@@ -6,13 +6,18 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import me.Christian.other.OtherStuff;
+import me.Christian.pack.Main;
+import javafx.application.Platform;
+import javafx.scene.image.Image;
+
 
 public class Thread_GetWeather implements Runnable {
-	
+
 	public static String City = "Fetching..";
 	public static int degree = 0;
 	public static String weathericon = null; 
-	
+
 	public void run() {
 		URL url = null;
 		try {
@@ -23,40 +28,47 @@ public class Thread_GetWeather implements Runnable {
 		BufferedReader reader = null;
 
 		try {
-		    reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
+			reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
 
-		    for (String line; (line = reader.readLine()) != null;) {
-		        if(line.contains("temperature")){
-		        	String temp;
-		        	temp = line;
-		        	temp = temp.substring(22, 26);
-		        	temp = temp.replace("\"", "");
-		        	Double tempdouble = Double.parseDouble(temp);
-		        	tempdouble = tempdouble + 0.5;
-		        	tempdouble = Math.floor(tempdouble);
-		        	int tempint = tempdouble.intValue();
-		        	degree = tempint;
-		        }
-		        if(line.contains("weather number")){
-		        	String halfturn;
-		        	String[] temp = line.split("icon=");
-		        	String r1 = "\"\\";
-		        	r1 = r1.replace("\\", "");
-		        	temp[1] = temp[1].replace(r1, "");
-		        	halfturn = temp[1].replace("/>", "");
-		        	weathericon = halfturn;
-		        }
-		    }
+			for (String line; (line = reader.readLine()) != null;) {
+				if(line.contains("temperature")){
+					String temp;
+					temp = line;
+					temp = temp.substring(22, 26);
+					temp = temp.replace("\"", "");
+					Double tempdouble = Double.parseDouble(temp);
+					tempdouble = tempdouble + 0.5;
+					tempdouble = Math.floor(tempdouble);
+					int tempint = tempdouble.intValue();
+					degree = tempint;
+				}
+				if(line.contains("weather number")){
+					String halfturn;
+					String[] temp = line.split("icon=");
+					String r1 = "\"\\";
+					r1 = r1.replace("\\", "");
+					temp[1] = temp[1].replace(r1, "");
+					halfturn = temp[1].replace("/>", "");
+					weathericon = halfturn;
+				}
+			}
+			Platform.runLater(new Runnable(){
+				@Override
+				public void run(){
+					Main.GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
+					Main.weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));	
+				}
+			});	
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-		    if (reader != null) try { reader.close(); } catch (IOException ignore) {}
+			if (reader != null) try { reader.close(); } catch (IOException ignore) {}
 		}
-		
+
 	}
-	
+
 	public static void StartCheck(String tempCity){
 		City = tempCity;
-	    (new Thread(new Thread_GetWeather())).start();
+		(new Thread(new Thread_GetWeather())).start();
 	}
 }

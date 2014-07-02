@@ -13,33 +13,13 @@ import java.util.List;
 
 
 
-
-
-
-
-
-
-
 import me.Christian.pack.Main;
-import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
-import javafx.scene.shape.HLineTo;
-import javafx.scene.shape.MoveTo;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-
-
-
-
-
-
-
-
-
-import javafx.util.Duration;
 
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.SyndFeedInput;
@@ -173,6 +153,9 @@ public class FeedReader {
 				RssTextObject[i] = new Text();
 				RssTextObject[i].prefWidth(100);
 				RssTextObject[i].setX(265);
+				if(Main.PiBuild){
+					RssTextObject[i].setFont(Font.font("Futura", FontWeight.BOLD, 11));
+				}
 			}
 			double n = maxy;
 			if(difnext == 0){

@@ -12,6 +12,7 @@ public class OtherStuff {
 	public static Hashtable<String, String> UserCredicalsDatabase = new Hashtable<String, String>();
 	public static Hashtable<String, Integer> UserPermissionsDatabase = new Hashtable<String, Integer>();
 	public static Hashtable<String, String> PrivateKeys = new Hashtable<String, String>();
+	public static Main main = new Main();
 
 	public static String TheNormalTime(){
 		Calendar cal = Calendar.getInstance();
@@ -37,6 +38,7 @@ public class OtherStuff {
 		}
 		Main.todoprint[x] = string;
 		Main.todoprintsize = x;
+		main.doqueue();
 	}
 
 	public static void addToCmdQueue(String string){
@@ -46,7 +48,7 @@ public class OtherStuff {
 			}
 			Main.todocmd[x] = string;
 			Main.todocmdsize = x;
-		
+			main.doqueue();
 	}
 
 	public static void initDatabase(){

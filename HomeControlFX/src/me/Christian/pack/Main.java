@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Random;
+import java.util.TimerTask;
 
 import javax.swing.Timer;
 
@@ -28,9 +28,11 @@ import me.Christian.other.ChangeOutStream;
 import me.Christian.other.ConfigFileStuff;
 import me.Christian.other.FeedReader;
 import me.Christian.other.OtherStuff;
+import me.Christian.other.UnlockTimer;
 import me.Christian.threads.Thread_GetWeather;
-import javafx.animation.AnimationTimer;
 import javafx.animation.PathTransition;
+import javafx.animation.Timeline;
+import javafx.animation.PathTransition.OrientationType;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -52,11 +54,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.CubicCurveTo;
+import javafx.scene.shape.ArcTo;
+import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.HLineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
-import javafx.scene.shape.VLineTo;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
@@ -70,8 +72,10 @@ public class Main extends Application{
 	public static final int MainVersion = 1;
 	public static final int cfgVersion = 2; 
 	public static final int ncfgVersion = 1;
+	public static int rcfgVersion;
+	public static int rncfgVersion;
 	//
-	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
+	// SET TO FALSE IF YOU ARE vUSING ON RASPBERRY!!!!!!
 	public static boolean Testbuild = true;
 	// SET TO FALSE IF YOU ARE USING ON RASPBERRY!!!!!!
 	//
@@ -187,6 +191,9 @@ public class Main extends Application{
 	public static double Login_SparkPos[][] = new double[6][2];
 	public static int Login_SparkSeq[] = new int[6];
 	public static boolean[] Output_isLocked = new boolean[8];
+	public static boolean Console_Button_islocked;
+	public static Path[] LoginPath = new Path[6];
+	public static PathTransition[] LoginTransition = new PathTransition[6];
 
 	// Setup Piface instances
 	public static GpioController gpio;
@@ -255,8 +262,6 @@ public class Main extends Application{
 		System.out.println("Starting [1]: Server");
 		// Init user database
 		OtherStuff.initDatabase();
-		// Get the weather from thread
-		Thread_GetWeather.StartCheck(City);
 
 		// Create a object, create a Thread, start the Thread
 		try{
@@ -275,6 +280,13 @@ public class Main extends Application{
 				@Override
 				public void actionPerformed(java.awt.event.ActionEvent arg0) {
 					RefreshMpc();
+					if(currenttitle.contains("consume")){
+						try {
+							Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " play"});
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
 				}
 			});
 		}
@@ -309,6 +321,14 @@ public class Main extends Application{
 		{
 			@Override
 			public void actionPerformed(java.awt.event.ActionEvent arg0) {
+				if(StartupDone){
+					Platform.runLater(new Runnable() {
+						@Override public void run() {
+							GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
+						}
+					});
+				}
+
 				uptime[0]++;
 				if(uptime[0] >= 60){
 					uptime[0] = 0;
@@ -481,14 +501,9 @@ public class Main extends Application{
 
 
 		VBox rssvbox = new VBox();
-		rssvbox.setPadding(new Insets(10));
-		rssvbox.setSpacing(8);
+		rssvbox.setSpacing(6);
 		rssvbox.setLayoutX(255);
-		rssvbox.setLayoutY(100);
-
-		Text title = new Text("Rss Feed");
-		title.setFont(Font.font("Arial", FontWeight.BOLD, 14));
-		rssvbox.getChildren().add(title);
+		rssvbox.setLayoutY(130);
 
 		for (int i=0; i<10; i++) {
 			VBox.setMargin(FeedReader.RssTextObject[i], new Insets(0, 0, 0, 8));
@@ -496,11 +511,11 @@ public class Main extends Application{
 		}
 		root.getChildren().add(rssvbox);
 
-		FeedPath[0].getElements().add(new MoveTo(145, 218));
+		FeedPath[0].getElements().add(new MoveTo(120, 189));
 		FeedPath[0].getElements().add(new HLineTo(370));
 
-		FeedPath[1].getElements().add(new MoveTo(370, 218));
-		FeedPath[1].getElements().add(new HLineTo(145));
+		FeedPath[1].getElements().add(new MoveTo(370, 189));
+		FeedPath[1].getElements().add(new HLineTo(120));
 
 		FeedTransition[0].setDuration(Duration.millis(3000));
 		FeedTransition[0].setPath(Main.FeedPath[0]);
@@ -523,12 +538,12 @@ public class Main extends Application{
 		});
 
 		// Refresh timer for anything
-		new AnimationTimer() {
+		/*new AnimationTimer() {
 			@Override
 			public void handle(long now) {
 				update();
 			}
-		}.start();
+		}.start();*/
 		System.out.println("Gui objects loaded: 10%");
 
 		GeneralInformation = new Text(OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C");
@@ -536,7 +551,6 @@ public class Main extends Application{
 		GeneralInformation.setLayoutY(40);
 		GeneralInformation.setFont(Font.font("Futura", FontWeight.BOLD, 18));
 		root.getChildren().add(GeneralInformation);
-		System.out.println(GeneralInformation.getLayoutBounds().getWidth());
 
 		// Icon for weather
 		weathericonlabel = new ImageView();
@@ -545,8 +559,6 @@ public class Main extends Application{
 		weathericonlabel.setFitHeight(60);
 		weathericonlabel.setFitWidth(60);
 		root.getChildren().add(weathericonlabel);
-		System.out.println(weathericonlabel.getLayoutBounds().getWidth());
-		System.out.println(weathericonlabel.getLayoutX());
 
 		FeedReader.RssTextObjectTooltip.setX(20);
 		FeedReader.RssTextObjectTooltip.setY(580);
@@ -1470,7 +1482,7 @@ public class Main extends Application{
 		Music_Slider.setLayoutX(840);
 		Music_Slider.setLayoutY(210);
 		Music_Slider.setShowTickLabels(true);
-		Music_Slider.setScaleX(1.5);
+		Music_Slider.setScaleX(1.25);
 		Music_Slider.setScaleY(1.25);
 		Music_Slider.setShowTickMarks(true);
 		Music_Slider.valueProperty().addListener(new ChangeListener<Number>() {
@@ -1571,6 +1583,21 @@ public class Main extends Application{
 			Login.getChildren().add(Login_LoginButton1);
 			Login_SparkPos[0][0] = Login_LoginButton1.getLayoutX();
 			Login_SparkPos[0][1] = Login_LoginButton1.getLayoutY();
+			
+			/*
+			LoginPath[0] = new Path();
+			LoginPath[0] = createCirclePath(Login_LoginButton1.getLayoutX(), Login_LoginButton1.getLayoutY(), 300, 300, 0);
+			root.getChildren().add(LoginPath[0]);
+			
+			LoginTransition[0] = new PathTransition();
+			LoginTransition[0].setDuration(Duration.seconds(2));
+			LoginTransition[0].setPath(LoginPath[0]);
+			LoginTransition[0].setNode(Login_LoginButton1);
+			LoginTransition[0].setOrientation(OrientationType.ORTHOGONAL_TO_TANGENT);
+			LoginTransition[0].setCycleCount(Timeline.INDEFINITE);
+			LoginTransition[0].play();
+			*/
+			
 
 			Login_LoginButton2 = new ImageView(new Image("tapbutton.png"));
 			Login_LoginButton2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -1666,6 +1693,8 @@ public class Main extends Application{
 	}
 
 	public void FinalInit(){
+		// Get the weather from thread
+		Thread_GetWeather.StartCheck(City);
 		// Turn LED's off again
 		if(!Testbuild){
 			for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
@@ -1680,6 +1709,26 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
+	
+	private Path createCirclePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
+        ArcTo arcTo = new ArcTo();
+        arcTo.setX(centerX - radiusX + 1); // to simulate a full 360 degree celcius circle.
+        arcTo.setY(centerY - radiusY);
+        arcTo.setSweepFlag(false);
+        arcTo.setLargeArcFlag(true);
+        arcTo.setRadiusX(radiusX);
+        arcTo.setRadiusY(radiusY);
+        arcTo.setXAxisRotation(rotate);
+
+        Path path = new Path();
+        path.getElements().add(new MoveTo(centerX - radiusX, centerY - radiusY));
+        path.getElements().add(arcTo);
+        path.getElements().add(new ClosePath());
+        
+        path.setStroke(Color.DODGERBLUE);
+        path.getStrokeDashArray().setAll(5d, 5d);
+        return path;
+    }
 
 	private void setDevOpacity(double w){
 		if(!isMasterLoggedIn){
@@ -1875,363 +1924,348 @@ public class Main extends Application{
 		}
 	}
 
-	// Let the sparks fly and work the Queues
-	protected void update() {
-		if(MainStage.getScene() == SLogin){
-			for(int i = 0; i < 6; i++){
-				Login_Spark[i].setLayoutX(Login_SparkPos[i][0] + 80*Math.cos(Math.toRadians(Login_SparkSeq[i])));
-				Login_Spark[i].setLayoutY(Login_SparkPos[i][1] + 80*Math.sin(Math.toRadians(Login_SparkSeq[i])));
-				Login_Spark[i].setRotate(Login_SparkSeq[i]);
+	public void doqueue(){
+		Platform.runLater(new Runnable(){
+			@Override
+			public void run(){
 
-				Login_SparkSeq[i] = Login_SparkSeq[i]+3;
-				if(Login_SparkSeq[i] > 360){
-					Login_SparkSeq[i] = 0;
+				// Print queue
+				if(todoprint[0] != ""){
+					for(int x = todoprintsize; x > -1; x--){
+						System.out.println(todoprint[x]);
+						todoprint[x] = "";
+						todoprintsize--;
+					}
 				}
-			}
-		}else{
-			// Print queue
-			if(todoprint[0] != ""){
-				for(int x = todoprintsize; x > -1; x--){
-					System.out.println(todoprint[x]);
-					todoprint[x] = "";
-					todoprintsize--;
-				}
-			}
-			// Cmd queue
-			if(todocmd[0] != ""){
-				for(int y = todocmdsize; y > -1; y--){
-					// USAGE:
-					// CMD:-> * On * Off * Toggle *  Add + @
-					// Item: -> Full Item name + @
-					// List of Items: Output1, Output2, Output3, Console
-					// params: -> special things, text
-					// example: On@Output@1 Off@Output@2 Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
+				// Cmd queue
+				if(todocmd[0] != ""){
+					for(int y = todocmdsize; y > -1; y--){
+						// USAGE:
+						// CMD:-> * On * Off * Toggle *  Add + @
+						// Item: -> Full Item name + @
+						// List of Items: Output1, Output2, Output3, Console
+						// params: -> special things, text
+						// example: On@Output@1 Off@Output@2 Add@Console@THIS IS AWESOME AS FUCK!!! <3, -
 
-					String temp[] = todocmd[y].split("@");
-					if(temp[0].equals("On")){
-						if(temp[1].equals("Output")){
-							int l = -1;
-							try{
-								l = Integer.valueOf(temp[2]);
-							}catch(Exception e){
-								System.out.println("Invalid Cmd: " + todocmd[y]);
-							}
-							if(l >= 0 && l <= 7){
-								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 1, l);
-								if(temp[2].equals("0")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED0.getIndex()).on();
-									}
-								}else if(temp[2].equals("1")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED1.getIndex()).on();
-									}
-								}else if(temp[2].equals("2")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED2.getIndex()).on();
-									}
-								}else if(temp[2].equals("3")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED3.getIndex()).on();
-									}
-								}else if(temp[2].equals("4")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED4.getIndex()).on();
-									}
-								}else if(temp[2].equals("5")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED5.getIndex()).on();
-									}
-								}else if(temp[2].equals("6")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED6.getIndex()).on();
-									}
-								}else if(temp[2].equals("7")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED7.getIndex()).on();
-									}
+						String temp[] = todocmd[y].split("@");
+						if(temp[0].equals("On")){
+							if(temp[1].equals("Output")){
+								int l = -1;
+								try{
+									l = Integer.valueOf(temp[2]);
+								}catch(Exception e){
+									System.out.println("Invalid Cmd: " + todocmd[y]);
 								}
-							}else{
-								OtherStuff.addToPrintQueue("AuthAction Failed:: On: Invalid Output value");
-							}
-						}
-					}else if(temp[0].equals("Off")){
-						if(temp[1].equals("Output")){
-							int l = -1;
-							try{
-								l = Integer.valueOf(temp[2]);
-							}catch(Exception e){
-								System.out.println("Invalid Cmd: " + todocmd[y]);
-							}
-							if(l >= 0 && l <= 7){
-								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 2, l);
-								if(temp[2].equals("0")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED0.getIndex()).off();
-									}
-								}else if(temp[2].equals("1")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED1.getIndex()).off();
-									}
-								}else if(temp[2].equals("2")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED2.getIndex()).off();
-									}
-								}else if(temp[2].equals("3")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED3.getIndex()).off();
-									}
-								}else if(temp[2].equals("4")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED4.getIndex()).off();
-									}
-								}else if(temp[2].equals("5")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED5.getIndex()).off();
-									}
-								}else if(temp[2].equals("6")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED6.getIndex()).off();
-									}
-								}else if(temp[2].equals("7")){
-									if(PiBuild){
-										piface.getLed(PiFaceLed.LED7.getIndex()).off();
-									}
-								}
-							}else{
-								OtherStuff.addToPrintQueue("AuthAction Failed:: Off: Invalid Output value");
-							}
-						}
-					}else if(temp[0].equals("Toggle")){
-						if(temp[1].equals("Output")){
-							// Toggle@Output@1
-							int l = -1;
-							try{
-								l = Integer.valueOf(temp[2]);
-							}catch(Exception e){
-								System.out.println("Invalid Cmd: " + todocmd[y]);
-								l = -1;
-							}
-							int istate = Output_iState[l];
-							if(istate == 2){
-								istate = 1;
-							}else if(istate == 1){
-								istate = 2;
-							}else{
-								istate = 1;
-							}
-							if(l >= 0 && l <= 7){
-								SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], istate, l);
-								if(temp[2].equals("0")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED0.getIndex()).off();
-										}else if(istate == 1){
+								if(l >= 0 && l <= 7){
+									SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 1, l);
+									if(temp[2].equals("0")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED0.getIndex()).on();
 										}
-									}
-								}else if(temp[2].equals("1")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED1.getIndex()).off();
-										}else if(istate == 1){
+									}else if(temp[2].equals("1")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED1.getIndex()).on();
 										}
-									}
-								}else if(temp[2].equals("2")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED2.getIndex()).off();
-										}else if(istate == 1){
+									}else if(temp[2].equals("2")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED2.getIndex()).on();
 										}
-									}
-								}else if(temp[2].equals("3")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED3.getIndex()).off();
-										}else if(istate == 1){
+									}else if(temp[2].equals("3")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED3.getIndex()).on();
 										}
-									}
-								}else if(temp[2].equals("4")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED4.getIndex()).off();
-										}else if(istate == 1){
+									}else if(temp[2].equals("4")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED4.getIndex()).on();
 										}
-									}
-								}else if(temp[2].equals("5")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED5.getIndex()).off();
-										}else if(istate == 1){
+									}else if(temp[2].equals("5")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED5.getIndex()).on();
 										}
-									}
-								}else if(temp[2].equals("6")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED6.getIndex()).off();
-										}else if(istate == 1){
+									}else if(temp[2].equals("6")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED6.getIndex()).on();
 										}
-									}
-								}else if(temp[2].equals("7")){
-									if(PiBuild){
-										if(istate == 0){
-											piface.getLed(PiFaceLed.LED7.getIndex()).off();
-										}else if(istate == 1){
+									}else if(temp[2].equals("7")){
+										if(PiBuild){
 											piface.getLed(PiFaceLed.LED7.getIndex()).on();
 										}
 									}
-								}
-							}else{
-								OtherStuff.addToPrintQueue("AuthAction Failed:: Toggle: Invalid Output value");
-							}
-						}
-					}else if(temp[0].equals("Add")){
-						// Add@Console@Thisiscooltext
-						if(temp[1].equals("Console")){
-							OtherStuff.addToPrintQueue(temp[2]);
-						}
-					}else if(temp[0].equals("Set")){
-						if(temp[1].equals("Music_Slider")){
-							// Set@Music_Slider@32.5
-							Music_Slider.setValue(Double.parseDouble(temp[2]));
-						}else if(temp[1].equals("Music_Title")){
-							// Set@Music_Title@Bangerang-Skriller
-							Music_Title.setText(temp[2]);
-							MatchSize(Music_Title, 235, 19);
-						}else if(temp[1].equals("RssFeedObject")){
-							// Set@RssFeedObject@1@objecttextlol
-							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
-						}else if(temp[1].equals("RssFeedTooltip")){
-							// Set@RssFeedTooltip@1@objecttooltiplol
-							FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
-						}
-					}else if(temp[0].equals("Refresh")){
-						if(temp[1].equals("WeatherTextLabel")){
-							// Refresh@WeatherTextLabel
-							GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
-						}else if(temp[1].equals("WeatherIconLabel")){
-							// Refresh@WeatherIconLabel
-							weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						
-						}
-					}else if(temp[0].equals("setParams")){
-						// setParams@Y@<double>@RssTextObject@1
-						//      0    1    2           3       4
-						if(temp[1].equals("Y")){
-							if(temp[3].equals("RssTextObject")){
-								FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
-							}
-						}
-					}else if(temp[0].equals("lock_all")){
-						for(int i = 0; i<8; i++){
-							Output_isLocked[i] = true;
-							Output_Lockcross[i].setVisible(true);
-						}
-					}else if(temp[0].equals("unlock_all")){
-						for(int i = 0; i<8; i++){
-							Output_isLocked[i] = false;
-							Output_Lockcross[i].setVisible(false);
-						}
-					}else if(temp[0].equals("enable_all")){
-						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1, i);
-							if(PiBuild){
-								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-									piface.getLed(index).on();
+								}else{
+									OtherStuff.addToPrintQueue("AuthAction Failed:: On: Invalid Output value");
 								}
 							}
-						}
-					}else if(temp[0].equals("disable_all")){
-						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
-							if(PiBuild){
-								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-									piface.getLed(index).off();
+						}else if(temp[0].equals("Off")){
+							if(temp[1].equals("Output")){
+								int l = -1;
+								try{
+									l = Integer.valueOf(temp[2]);
+								}catch(Exception e){
+									System.out.println("Invalid Cmd: " + todocmd[y]);
+								}
+								if(l >= 0 && l <= 7){
+									SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], 2, l);
+									if(temp[2].equals("0")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED0.getIndex()).off();
+										}
+									}else if(temp[2].equals("1")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED1.getIndex()).off();
+										}
+									}else if(temp[2].equals("2")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED2.getIndex()).off();
+										}
+									}else if(temp[2].equals("3")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED3.getIndex()).off();
+										}
+									}else if(temp[2].equals("4")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED4.getIndex()).off();
+										}
+									}else if(temp[2].equals("5")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED5.getIndex()).off();
+										}
+									}else if(temp[2].equals("6")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED6.getIndex()).off();
+										}
+									}else if(temp[2].equals("7")){
+										if(PiBuild){
+											piface.getLed(PiFaceLed.LED7.getIndex()).off();
+										}
+									}
+								}else{
+									OtherStuff.addToPrintQueue("AuthAction Failed:: Off: Invalid Output value");
 								}
 							}
+						}else if(temp[0].equals("Toggle")){
+							if(temp[1].equals("Output")){
+								// Toggle@Output@1
+								int l = -1;
+								try{
+									l = Integer.valueOf(temp[2]);
+								}catch(Exception e){
+									System.out.println("Invalid Cmd: " + todocmd[y]);
+									l = -1;
+								}
+								int istate = Output_iState[l];
+								if(istate == 2){
+									istate = 1;
+								}else if(istate == 1){
+									istate = 2;
+								}else{
+									istate = 1;
+								}
+								if(l >= 0 && l <= 7){
+									SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], istate, l);
+									if(temp[2].equals("0")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED0.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED0.getIndex()).on();
+											}
+										}
+									}else if(temp[2].equals("1")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED1.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED1.getIndex()).on();
+											}
+										}
+									}else if(temp[2].equals("2")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED2.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED2.getIndex()).on();
+											}
+										}
+									}else if(temp[2].equals("3")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED3.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED3.getIndex()).on();
+											}
+										}
+									}else if(temp[2].equals("4")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED4.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED4.getIndex()).on();
+											}
+										}
+									}else if(temp[2].equals("5")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED5.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED5.getIndex()).on();
+											}
+										}
+									}else if(temp[2].equals("6")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED6.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED6.getIndex()).on();
+											}
+										}
+									}else if(temp[2].equals("7")){
+										if(PiBuild){
+											if(istate == 0){
+												piface.getLed(PiFaceLed.LED7.getIndex()).off();
+											}else if(istate == 1){
+												piface.getLed(PiFaceLed.LED7.getIndex()).on();
+											}
+										}
+									}
+								}else{
+									OtherStuff.addToPrintQueue("AuthAction Failed:: Toggle: Invalid Output value");
+								}
+							}
+						}else if(temp[0].equals("Add")){
+							// Add@Console@Thisiscooltext
+							if(temp[1].equals("Console")){
+								OtherStuff.addToPrintQueue(temp[2]);
+							}
+						}else if(temp[0].equals("Set")){
+							if(temp[1].equals("Music_Slider")){
+								// Set@Music_Slider@32.5
+								Music_Slider.setValue(Double.parseDouble(temp[2]));
+							}else if(temp[1].equals("Music_Title")){
+								// Set@Music_Title@Bangerang-Skriller
+								Music_Title.setText(temp[2]);
+								MatchSize(Music_Title, 235, 19);
+							}else if(temp[1].equals("RssFeedObject")){
+								// Set@RssFeedObject@1@objecttextlol
+								FeedReader.RssTextObject[Integer.valueOf(temp[2])].setText(temp[3]);
+							}else if(temp[1].equals("RssFeedTooltip")){
+								// Set@RssFeedTooltip@1@objecttooltiplol
+								FeedReader.RssTextObject[Integer.valueOf(temp[2])].setId(temp[3]);
+							}
+						}else if(temp[0].equals("Refresh")){
+							if(temp[1].equals("WeatherTextLabel")){
+								// Refresh@WeatherTextLabel
+								GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
+							}else if(temp[1].equals("WeatherIconLabel")){
+								// Refresh@WeatherIconLabel
+								weathericonlabel.setImage(new Image(Thread_GetWeather.weathericon + ".png"));						
+							}
+						}else if(temp[0].equals("setParams")){
+							// setParams@Y@<double>@RssTextObject@1
+							//      0    1    2           3       4
+							if(temp[1].equals("Y")){
+								if(temp[3].equals("RssTextObject")){
+									FeedReader.RssTextObject[Integer.valueOf(temp[4])].setY(Double.parseDouble(temp[2]));
+								}
+							}
+						}else if(temp[0].equals("lock_all")){
+							for(int i = 0; i<8; i++){
+								Output_isLocked[i] = true;
+								Output_Lockcross[i].setVisible(true);
+							}
+						}else if(temp[0].equals("unlock_all")){
+							for(int i = 0; i<8; i++){
+								Output_isLocked[i] = false;
+								Output_Lockcross[i].setVisible(false);
+							}
+						}else if(temp[0].equals("enable_all")){
+							for(int i=0; i<8; i++){
+								SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1, i);
+								if(PiBuild){
+									for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+										piface.getLed(index).on();
+									}
+								}
+							}
+						}else if(temp[0].equals("disable_all")){
+							for(int i=0; i<8; i++){
+								SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
+								if(PiBuild){
+									for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
+										piface.getLed(index).off();
+									}
+								}
+							}
+
+						}else if(temp[0].equals("Lock")){
+							try{
+								Output_isLocked[Integer.valueOf(temp[1])] = true;
+								Output_Lockcross[Integer.valueOf(temp[1])].setVisible(true);
+							}catch(Exception e){
+								OtherStuff.addToPrintQueue("Error in Lock cmd int");
+							}
+						}else if(temp[0].equals("Unlock")){
+							try{
+								Output_isLocked[Integer.valueOf(temp[1])] = false;
+								Output_Lockcross[Integer.valueOf(temp[1])].setVisible(false);
+							}catch(Exception e){
+								OtherStuff.addToPrintQueue("Error in unlock cmd int");
+							}
+						}else if(temp[0].equals("Music")){
+							if(MPCEnabled){
+								if(temp[1].equals("prev")){
+									try {
+										Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " prev"});
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}
+							}else if(temp[1].equals("next")){
+								if(MPCEnabled){
+									try {
+										Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " next"});
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}
+							}else if(temp[1].equals("pause")){
+								if(MPCEnabled){
+									try {
+										Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " pause"});
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}
+							}else if(temp[1].equals("play")){
+								if(MPCEnabled){
+									try {
+										Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " play"});
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}
+							}
+						}else{	
+							System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!: " + todocmd[y]);
 						}
 
-					}else if(temp[0].equals("Lock")){
-						try{
-							Output_isLocked[Integer.valueOf(temp[1])] = true;
-							Output_Lockcross[Integer.valueOf(temp[1])].setVisible(true);
-						}catch(Exception e){
-							OtherStuff.addToPrintQueue("Error in Lock cmd int");
-						}
-					}else if(temp[0].equals("Unlock")){
-						try{
-							Output_isLocked[Integer.valueOf(temp[1])] = false;
-							Output_Lockcross[Integer.valueOf(temp[1])].setVisible(false);
-						}catch(Exception e){
-							OtherStuff.addToPrintQueue("Error in unlock cmd int");
-						}
-					}else if(temp[0].equals("Music")){
-						if(MPCEnabled){
-							if(temp[1].equals("prev")){
-								try {
-									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " prev"});
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}else if(temp[1].equals("next")){
-							if(MPCEnabled){
-								try {
-									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " next"});
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}else if(temp[1].equals("pause")){
-							if(MPCEnabled){
-								try {
-									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " pause"});
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}else if(temp[1].equals("play")){
-							if(MPCEnabled){
-								try {
-									Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " play"});
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							}
-						}
-					}else{	
-						System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!: " + todocmd[y]);
+						todocmd[y] = "";
+						todocmdsize--;
 					}
-
-					todocmd[y] = "";
-					todocmdsize--;
 				}
 			}
-			// Get le time
-			GeneralInformation.setText((OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C"));
-			if(Thread_GetWeather.weathericon != null && !Weatherinit){
-				refreshweather();
-				Weatherinit = true;
-			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+
+		});
 	}
 
-	// Resets the weater, obviously
+	// Refreshes the weather, obviously
 	public static void refreshweather(){
 		OtherStuff.addToPrintQueue("Refreshed the Weather");
-		Thread_GetWeather.StartCheck(City);
-		OtherStuff.addToCmdQueue("Refresh@WeatherTextLabel");
-		OtherStuff.addToCmdQueue("Refresh@WeatherIconLabel");
+		Platform.runLater(new Runnable(){
+			@Override
+			public void run(){
+				Thread_GetWeather.StartCheck(City);					
+			}
+		});
 	}
 
 	// to change the icons of the check states // Light/door/window ect.
@@ -2252,7 +2286,13 @@ public class Main extends Application{
 			System.out.println("SetStates Error - Out of bounds");
 		}
 		Output_iState[id] = state;
+		Output_isLocked[id] = true;
+		java.util.Timer timer = new java.util.Timer();
+		TimerTask task = new UnlockTimer(id);
+		timer.schedule(task, 300);
+
 	}
+
 
 	// Switches from Main to Login Scene
 	public static void SwitchToMainScene(){
@@ -2314,8 +2354,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output1_Button");
 					Output_Button[0][1].setVisible(false);
 					Output_Button[0][0].setVisible(true);
-					Output_Text[0].setLayoutX(Output_Text[0].getLayoutX()-12);
-					Output_Text[0].setLayoutY(Output_Text[0].getLayoutY()-10);
+					Output_Text[0].setLayoutX(Output_Button[0][0].getLayoutX()+20);
+					Output_Text[0].setLayoutY(Output_Button[0][0].getLayoutY()+25);
 					if(Output_iState[0] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED0.getIndex()).on();
@@ -2339,8 +2379,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output1_Button");
 					Output_Button[0][0].setVisible(false);
 					Output_Button[0][1].setVisible(true);
-					Output_Text[0].setLayoutX(Output_Text[0].getLayoutX()+12);
-					Output_Text[0].setLayoutY(Output_Text[0].getLayoutY()+10);
+					Output_Text[0].setLayoutX(Output_Button[0][0].getLayoutX()+32);
+					Output_Text[0].setLayoutY(Output_Button[0][0].getLayoutY()+37);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[0] || e.getSource() == Output_Lockcross[0]){
@@ -2361,8 +2401,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output2_Button");
 					Output_Button[1][1].setVisible(false);
 					Output_Button[1][0].setVisible(true);
-					Output_Text[1].setLayoutX(Output_Text[1].getLayoutX()-12);
-					Output_Text[1].setLayoutY(Output_Text[1].getLayoutY()-10);
+					Output_Text[1].setLayoutX(Output_Button[1][0].getLayoutX()+20);
+					Output_Text[1].setLayoutY(Output_Button[1][0].getLayoutY()+25);
 					if(Output_iState[1] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED1.getIndex()).on();
@@ -2386,8 +2426,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output2_Button");
 					Output_Button[1][0].setVisible(false);
 					Output_Button[1][1].setVisible(true);
-					Output_Text[1].setLayoutX(Output_Text[1].getLayoutX()+12);
-					Output_Text[1].setLayoutY(Output_Text[1].getLayoutY()+10);
+					Output_Text[1].setLayoutX(Output_Button[1][0].getLayoutX()+32);
+					Output_Text[1].setLayoutY(Output_Button[1][0].getLayoutY()+37);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[1] || e.getSource() == Output_Lockcross[1]){
@@ -2408,8 +2448,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output3_Button");
 					Output_Button[2][1].setVisible(false);
 					Output_Button[2][0].setVisible(true);
-					Output_Text[2].setLayoutX(Output_Text[2].getLayoutX()-12);
-					Output_Text[2].setLayoutY(Output_Text[2].getLayoutY()-10);
+					Output_Text[2].setLayoutX(Output_Button[2][0].getLayoutX()+20);
+					Output_Text[2].setLayoutY(Output_Button[2][0].getLayoutY()+25);
 					if(Output_iState[2] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED2.getIndex()).on();
@@ -2433,8 +2473,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output3_Button");
 					Output_Button[2][0].setVisible(false);
 					Output_Button[2][1].setVisible(true);
-					Output_Text[2].setLayoutX(Output_Text[2].getLayoutX()+12);
-					Output_Text[2].setLayoutY(Output_Text[2].getLayoutY()+10);
+					Output_Text[2].setLayoutX(Output_Button[2][0].getLayoutX()+32);
+					Output_Text[2].setLayoutY(Output_Button[2][0].getLayoutY()+37);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[2] || e.getSource() == Output_Lockcross[2]){
@@ -2455,8 +2495,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output4_Button");
 					Output_Button[3][1].setVisible(false);
 					Output_Button[3][0].setVisible(true);
-					Output_Text[3].setLayoutX(Output_Text[3].getLayoutX()-12);
-					Output_Text[3].setLayoutY(Output_Text[3].getLayoutY()-10);
+					Output_Text[3].setLayoutX(Output_Button[3][0].getLayoutX()+20);
+					Output_Text[3].setLayoutY(Output_Button[3][0].getLayoutY()+25);
 					if(Output_iState[3] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED3.getIndex()).on();
@@ -2480,8 +2520,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output4_Button");
 					Output_Button[3][0].setVisible(false);
 					Output_Button[3][1].setVisible(true);
-					Output_Text[3].setLayoutX(Output_Text[3].getLayoutX()+12);
-					Output_Text[3].setLayoutY(Output_Text[3].getLayoutY()+10);
+					Output_Text[3].setLayoutX(Output_Button[3][0].getLayoutX()+32);
+					Output_Text[3].setLayoutY(Output_Button[3][0].getLayoutY()+37);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[3] || e.getSource() == Output_Lockcross[3]){
@@ -2502,8 +2542,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output5_Button");
 					Output_Button[4][1].setVisible(false);
 					Output_Button[4][0].setVisible(true);
-					Output_Text[4].setLayoutX(Output_Text[4].getLayoutX()-12);
-					Output_Text[4].setLayoutY(Output_Text[4].getLayoutY()-10);
+					Output_Text[4].setLayoutX(Output_Button[4][0].getLayoutX()+20);
+					Output_Text[4].setLayoutY(Output_Button[4][0].getLayoutY()+25);
 					if(Output_iState[4] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED4.getIndex()).on();
@@ -2527,8 +2567,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output5_Button");
 					Output_Button[4][0].setVisible(false);
 					Output_Button[4][1].setVisible(true);
-					Output_Text[4].setLayoutX(Output_Text[4].getLayoutX()+12);
-					Output_Text[4].setLayoutY(Output_Text[4].getLayoutY()+10);
+					Output_Text[4].setLayoutX(Output_Button[4][0].getLayoutX()+32);
+					Output_Text[4].setLayoutY(Output_Button[4][0].getLayoutY()+37);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[4] || e.getSource() == Output_Lockcross[4]){
@@ -2549,8 +2589,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output6_Button");
 					Output_Button[5][1].setVisible(false);
 					Output_Button[5][0].setVisible(true);
-					Output_Text[5].setLayoutX(Output_Text[5].getLayoutX()+12);
-					Output_Text[5].setLayoutY(Output_Text[5].getLayoutY()-10);
+					Output_Text[5].setLayoutX(Output_Button[5][0].getLayoutX()+82);
+					Output_Text[5].setLayoutY(Output_Button[5][0].getLayoutY()+26);
 					if(Output_iState[5] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED5.getIndex()).on();
@@ -2574,8 +2614,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output6_Button");
 					Output_Button[5][0].setVisible(false);
 					Output_Button[5][1].setVisible(true);
-					Output_Text[5].setLayoutX(Output_Text[5].getLayoutX()-12);
-					Output_Text[5].setLayoutY(Output_Text[5].getLayoutY()+10);
+					Output_Text[5].setLayoutX(Output_Button[5][0].getLayoutX()+70);
+					Output_Text[5].setLayoutY(Output_Button[5][0].getLayoutY()+36);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[5] || e.getSource() == Output_Lockcross[5]){
@@ -2596,8 +2636,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output7_Button");
 					Output_Button[6][1].setVisible(false);
 					Output_Button[6][0].setVisible(true);
-					Output_Text[6].setLayoutX(Output_Text[6].getLayoutX()+12);
-					Output_Text[6].setLayoutY(Output_Text[6].getLayoutY()-10);
+					Output_Text[6].setLayoutX(Output_Button[6][0].getLayoutX()+82);
+					Output_Text[6].setLayoutY(Output_Button[6][0].getLayoutY()+26);
 					if(Output_iState[6] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED6.getIndex()).on();
@@ -2621,8 +2661,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output7_Button");
 					Output_Button[6][0].setVisible(false);
 					Output_Button[6][1].setVisible(true);
-					Output_Text[6].setLayoutX(Output_Text[6].getLayoutX()-12);
-					Output_Text[6].setLayoutY(Output_Text[6].getLayoutY()+10);
+					Output_Text[6].setLayoutX(Output_Button[6][0].getLayoutX()+70);
+					Output_Text[6].setLayoutY(Output_Button[6][0].getLayoutY()+36);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[6] || e.getSource() == Output_Lockcross[6]){
@@ -2643,8 +2683,8 @@ public class Main extends Application{
 					System.out.println("Released & Triggered Output8_Button");
 					Output_Button[7][1].setVisible(false);
 					Output_Button[7][0].setVisible(true);
-					Output_Text[7].setLayoutX(Output_Text[7].getLayoutX()+12);
-					Output_Text[7].setLayoutY(Output_Text[7].getLayoutY()-10);
+					Output_Text[7].setLayoutX(Output_Button[7][0].getLayoutX()+82);
+					Output_Text[7].setLayoutY(Output_Button[7][0].getLayoutY()+26);
 					if(Output_iState[7] == 0){
 						if(!Testbuild){
 							piface.getLed(PiFaceLed.LED7.getIndex()).on();
@@ -2668,8 +2708,8 @@ public class Main extends Application{
 					System.out.println("Pressed Output8_Button");
 					Output_Button[7][0].setVisible(false);
 					Output_Button[7][1].setVisible(true);
-					Output_Text[7].setLayoutX(Output_Text[7].getLayoutX()-12);
-					Output_Text[7].setLayoutY(Output_Text[7].getLayoutY()+10);
+					Output_Text[7].setLayoutX(Output_Button[7][0].getLayoutX()+70);
+					Output_Text[7].setLayoutY(Output_Button[7][0].getLayoutY()+36);
 				}
 			}
 			else if(e.getSource() == Output_Lockquad[7] || e.getSource() == Output_Lockcross[7]){
@@ -2822,7 +2862,7 @@ public class Main extends Application{
 					Music_play.setOpacity(0.5);
 				}
 			}
-			else if(e.getSource() == Console_Button1 || e.getSource() == Console_ButtonText){
+			else if((e.getSource() == Console_Button1 || e.getSource() == Console_ButtonText) && !Console_Button_islocked){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Console Toggle");
 					Console_Button2.setVisible(false);
@@ -2838,25 +2878,27 @@ public class Main extends Application{
 						Console.setVisible(false);
 						dir = 2;
 					}else if(dir == 2){
-						double y = 3000-FeedTransition[1].getCurrentTime().toMillis();
+						double y = 3000-FeedTransition[0].getCurrentTime().toMillis();
 						if(y == 3000){
 							y = 0;
 						}
-						System.out.println(y);
 						FeedTransition[0].stop();
 						FeedTransition[1].playFrom(Duration.millis(y));
 						setDevVisibility(false);
 						dir = 1;
 					}
-
-					Console_ButtonText.setLayoutX(Console_ButtonText.getLayoutX()+12);
-					Console_ButtonText.setLayoutY(Console_ButtonText.getLayoutY()-10);
+					Console_Button_islocked = true;
+					java.util.Timer timer = new java.util.Timer();
+					TimerTask task = new UnlockTimer(8);
+					timer.schedule(task, 300);
+					Console_ButtonText.setLayoutX(Console_Button1.getLayoutX()+85);
+					Console_ButtonText.setLayoutY(Console_Button1.getLayoutY()+25);
 				}else if (e.getEventType() == MouseEvent.MOUSE_PRESSED){
 					System.out.println("Pressed Console Toggle");
 					Console_Button1.setVisible(false);
 					Console_Button2.setVisible(true);
-					Console_ButtonText.setLayoutX(Console_ButtonText.getLayoutX()-12);
-					Console_ButtonText.setLayoutY(Console_ButtonText.getLayoutY()+10);
+					Console_ButtonText.setLayoutX(Console_Button1.getLayoutX()+73);
+					Console_ButtonText.setLayoutY(Console_Button1.getLayoutY()+37);
 				}
 			}
 

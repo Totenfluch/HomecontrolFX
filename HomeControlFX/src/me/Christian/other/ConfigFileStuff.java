@@ -22,7 +22,7 @@ public class ConfigFileStuff {
 				output = new FileOutputStream("config.properties");
 
 				// set the properties value
-				prop.setProperty("Version", "2");
+				prop.setProperty("Version", "3");
 				prop.setProperty("Is_Testbuild", "false");
 				prop.setProperty("Mpc_enabled", "true");
 				prop.setProperty("Mpc_refresh_delay_ms", "2000");
@@ -35,6 +35,7 @@ public class ConfigFileStuff {
 				prop.setProperty("Rss_refresh_delay_ms", "850000");
 				prop.setProperty("Dev_prompt_enabled", "true");
 				prop.setProperty("Dev_console_enabled", "true");
+				prop.setProperty("Pi_Build", "true");
 				// Add more if needed, but make sure to read them afterwards otherwise they are useless
 				
 				// save properties to project root folder
@@ -75,6 +76,10 @@ public class ConfigFileStuff {
 				Main.RssRefreshDelay = Integer.valueOf(prop.getProperty("Rss_refresh_delay_ms"));
 				Main.dev_promt_enabled = Boolean.valueOf(prop.getProperty("Dev_prompt_enabled"));
 				Main.dev_console_enabled = Boolean.valueOf(prop.getProperty("Dev_console_enabled"));
+				Main.rcfgVersion = Integer.valueOf(prop.getProperty("Version"));
+				if(Main.rcfgVersion >= 3){
+					Main.PiBuild = Boolean.valueOf(prop.getProperty("Pi_Build"));
+				}
 				
 		 
 			} catch (IOException ex) {
