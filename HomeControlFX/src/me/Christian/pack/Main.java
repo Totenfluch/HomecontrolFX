@@ -393,8 +393,17 @@ public class Main extends Application{
 			gpio.addListener(new GpioPinListenerDigital() {
 				@Override
 				public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-					OtherStuff.addToPrintQueue(" Input Pin changed: " + event.getPin() + " = "
-							+ event.getState());
+					//OtherStuff.addToPrintQueue(" Input Pin changed: " + event.getPin() + " = "
+						//	+ event.getState());
+					if(event.getPin().toString().contains("1") && event.getState().toString().contains("HIGH")){
+						OtherStuff.addToCmdQueue("Toggle@Output@0");
+					}else if(event.getPin().toString().contains("2") && event.getState().toString().contains("HIGH")){
+						OtherStuff.addToCmdQueue("Toggle@Output@1");
+					}else if(event.getPin().toString().contains("3") && event.getState().toString().contains("HIGH")){
+						OtherStuff.addToCmdQueue("Toggle@Output@2");
+					}else if(event.getPin().toString().contains("4") && event.getState().toString().contains("HIGH")){
+						OtherStuff.addToCmdQueue("Toggle@Output@3");
+					}
 				}
 			}, myInputs);
 
@@ -2064,7 +2073,7 @@ public class Main extends Application{
 									SetState(Output_State[l][0], Output_State[l][1], Output_State[l][2], istate, l);
 									if(temp[2].equals("0")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED0.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED0.getIndex()).on();
@@ -2072,7 +2081,7 @@ public class Main extends Application{
 										}
 									}else if(temp[2].equals("1")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED1.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED1.getIndex()).on();
@@ -2080,7 +2089,7 @@ public class Main extends Application{
 										}
 									}else if(temp[2].equals("2")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED2.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED2.getIndex()).on();
@@ -2088,7 +2097,7 @@ public class Main extends Application{
 										}
 									}else if(temp[2].equals("3")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED3.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED3.getIndex()).on();
@@ -2096,7 +2105,7 @@ public class Main extends Application{
 										}
 									}else if(temp[2].equals("4")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED4.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED4.getIndex()).on();
@@ -2104,7 +2113,7 @@ public class Main extends Application{
 										}
 									}else if(temp[2].equals("5")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED5.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED5.getIndex()).on();
@@ -2112,7 +2121,7 @@ public class Main extends Application{
 										}
 									}else if(temp[2].equals("6")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED6.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED6.getIndex()).on();
@@ -2120,7 +2129,7 @@ public class Main extends Application{
 										}
 									}else if(temp[2].equals("7")){
 										if(PiBuild){
-											if(istate == 0){
+											if(istate == 2){
 												piface.getLed(PiFaceLed.LED7.getIndex()).off();
 											}else if(istate == 1){
 												piface.getLed(PiFaceLed.LED7.getIndex()).on();
