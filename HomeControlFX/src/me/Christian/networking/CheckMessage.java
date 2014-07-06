@@ -34,8 +34,13 @@ public class CheckMessage {
 		}
 
 
-
-		OtherStuff.addToPrintQueue(" CMD from: " + pcname + " " + cmd + " " + arg1 + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 );
+		if(cmd.equals("/AuthAction")){
+			OtherStuff.addToPrintQueue(" CMD from: " + pcname + " " + cmd + " " + "*key*" + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 );
+		}else if(cmd.equals("/login")){
+			OtherStuff.addToPrintQueue(" CMD from: " + pcname + " " + cmd + " " + arg1 + " " + "*pw*" + " " + arg3 + " " + arg4 + " " + arg5 );
+		}else{
+			OtherStuff.addToPrintQueue(" CMD from: " + pcname + " " + cmd + " " + arg1 + " " + arg2 + " " + arg3 + " " + arg4 + " " + arg5 );
+		}
 	}
 }
 

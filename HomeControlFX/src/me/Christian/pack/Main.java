@@ -31,8 +31,6 @@ import me.Christian.other.OtherStuff;
 import me.Christian.other.UnlockTimer;
 import me.Christian.threads.Thread_GetWeather;
 import javafx.animation.PathTransition;
-import javafx.animation.Timeline;
-import javafx.animation.PathTransition.OrientationType;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -53,9 +51,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.ArcTo;
-import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.HLineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
@@ -394,7 +389,7 @@ public class Main extends Application{
 				@Override
 				public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 					//OtherStuff.addToPrintQueue(" Input Pin changed: " + event.getPin() + " = "
-						//	+ event.getState());
+					//	+ event.getState());
 					if(event.getPin().toString().contains("1") && event.getState().toString().contains("HIGH")){
 						OtherStuff.addToCmdQueue("Toggle@Output@0");
 					}else if(event.getPin().toString().contains("2") && event.getState().toString().contains("HIGH")){
@@ -546,13 +541,6 @@ public class Main extends Application{
 			}
 		});
 
-		// Refresh timer for anything
-		/*new AnimationTimer() {
-			@Override
-			public void handle(long now) {
-				update();
-			}
-		}.start();*/
 		System.out.println("Gui objects loaded: 10%");
 
 		GeneralInformation = new Text(OtherStuff.TheNormalTime() + Main.City + ", " + Thread_GetWeather.degree + "°C");
@@ -1592,12 +1580,12 @@ public class Main extends Application{
 			Login.getChildren().add(Login_LoginButton1);
 			Login_SparkPos[0][0] = Login_LoginButton1.getLayoutX();
 			Login_SparkPos[0][1] = Login_LoginButton1.getLayoutY();
-			
+
 			/*
 			LoginPath[0] = new Path();
 			LoginPath[0] = createCirclePath(Login_LoginButton1.getLayoutX(), Login_LoginButton1.getLayoutY(), 300, 300, 0);
 			root.getChildren().add(LoginPath[0]);
-			
+
 			LoginTransition[0] = new PathTransition();
 			LoginTransition[0].setDuration(Duration.seconds(2));
 			LoginTransition[0].setPath(LoginPath[0]);
@@ -1605,8 +1593,8 @@ public class Main extends Application{
 			LoginTransition[0].setOrientation(OrientationType.ORTHOGONAL_TO_TANGENT);
 			LoginTransition[0].setCycleCount(Timeline.INDEFINITE);
 			LoginTransition[0].play();
-			*/
-			
+			 */
+
 
 			Login_LoginButton2 = new ImageView(new Image("tapbutton.png"));
 			Login_LoginButton2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
@@ -1718,8 +1706,8 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
-	
-	private Path createCirclePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
+
+	/*private Path createCirclePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
         ArcTo arcTo = new ArcTo();
         arcTo.setX(centerX - radiusX + 1); // to simulate a full 360 degree celcius circle.
         arcTo.setY(centerY - radiusY);
@@ -1733,11 +1721,11 @@ public class Main extends Application{
         path.getElements().add(new MoveTo(centerX - radiusX, centerY - radiusY));
         path.getElements().add(arcTo);
         path.getElements().add(new ClosePath());
-        
+
         path.setStroke(Color.DODGERBLUE);
         path.getStrokeDashArray().setAll(5d, 5d);
         return path;
-    }
+    }*/
 
 	private void setDevOpacity(double w){
 		if(!isMasterLoggedIn){
@@ -2252,6 +2240,59 @@ public class Main extends Application{
 										e.printStackTrace();
 									}
 								}
+							}else if(temp[1].equals("volume")){
+								if(MPCEnabled){
+									try {
+										Runtime.getRuntime().exec(new String[]{"bash","-c","mpc -h " + MPCServerIP +  " volume " + Double.parseDouble(temp[2])});
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}
+								Music_Slider.setValue(Double.parseDouble(temp[2]));
+							}
+						}else if(temp[0].equals("shutdown")){
+							if(temp[1].equals(MasterPassword)){
+								if(PiBuild && !Testbuild){
+									try {
+										Runtime.getRuntime().exec(new String[]{"bash","-c","sudo shutdown -h 0"});
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}else{
+									System.out.println("Accepted shutdown but not running on linux");
+								}
+							}
+						}else if(temp[0].equals("reboot")){
+							if(temp[1].equals(MasterPassword)){
+								if(PiBuild && !Testbuild){
+									try {
+										Runtime.getRuntime().exec(new String[]{"bash","-c","sudo reboot"});
+									} catch (IOException e) {
+										e.printStackTrace();
+									}
+								}else{
+									System.out.println("Accepted reboot but not running on linux");
+								}
+							}
+						}else if(temp[0].equals("toggle")){
+							if(dir == 1){
+								double y1 = 3000-FeedTransition[1].getCurrentTime().toMillis();
+								if(y1 == 3000){
+									y1 = 0;
+								}
+								FeedTransition[1].stop();
+								FeedTransition[0].playFrom(Duration.millis(y1));
+								Console.setVisible(false);
+								dir = 2;
+							}else if(dir == 2){
+								double y2 = 3000-FeedTransition[0].getCurrentTime().toMillis();
+								if(y2 == 3000){
+									y2 = 0;
+								}
+								FeedTransition[0].stop();
+								FeedTransition[1].playFrom(Duration.millis(y2));
+								setDevVisibility(false);
+								dir = 1;
 							}
 						}else{	
 							System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!: " + todocmd[y]);
@@ -2881,7 +2922,6 @@ public class Main extends Application{
 						if(y == 3000){
 							y = 0;
 						}
-						System.out.println(y);
 						FeedTransition[1].stop();
 						FeedTransition[0].playFrom(Duration.millis(y));
 						Console.setVisible(false);
