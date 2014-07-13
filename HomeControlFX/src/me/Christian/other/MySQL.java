@@ -47,12 +47,12 @@ public class MySQL {
 		return true;
 	}
 
-	public static boolean Register(String username, String password, String email){
+	public static boolean Register(String username, String password, String flags, int permissions){
 		String url = "jdbc:mysql://" + MySQL_IP + "/" + MySQL_dir;
 
 		Connection conn;
 
-		String createString = "INSERT INTO Accounts (username,password,email) VALUES ('"+username+"','"+password+"','"+email+"')";
+		String createString = "INSERT INTO Accounts (username,password,flags,permissions) VALUES ('"+username+"','"+password+"','"+flags+"','"+permissions+"')";
 		Statement stmt;
 
 		try{
@@ -73,11 +73,10 @@ public class MySQL {
 			conn.close();
 		}
 		catch(SQLException sqle){
+			sqle.printStackTrace();
 			return false;
-			//System.out.println("SQL Exception: " + sqle.getMessage());
 		}
 
-		//System.out.println("Register");
 		return true;
 	}
 

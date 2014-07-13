@@ -13,7 +13,7 @@ public class CheckMessage {
 	public static void forcmd(Socket socket, String pcname, String cmd, String arg1, String arg2, String arg3, String arg4, String arg5, String arg6, String arg7, String arg8, String arg9, String arg10 ){
 		if(cmd.equals(ReqPrivateKey)){
 			if(OtherStuff.UserCredicalsDatabase.containsKey(arg1)){
-				if(OtherStuff.UserCredicalsDatabase.get(arg1).equals(arg2)){
+				if(OtherStuff.UserCredicalsDatabase.get(arg1).equals(Crypter.hashit(arg2))){
 					String temp = OtherStuff.GeneratePrivateKey();
 					if(OtherStuff.PrivateKeys.contains(socket.toString())){
 						OtherStuff.PrivateKeys.remove(socket.toString());

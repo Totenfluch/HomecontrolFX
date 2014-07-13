@@ -50,6 +50,18 @@ Commands available thru socker server:
     * unlock_all
     * enable_all
     * disable_all
+    * register
+    	* <MasterPw>
+    		* <Username>
+    			* <Password>
+    				* <Flags> 
+    					* <Permissions>
+    * removeuser
+    	* <MaserPw>
+    		* <username>
+    * refreshdb
+    	* <MasterPw>
+    
     
 EXAMPLES:
     - On@Output@0
@@ -67,4 +79,7 @@ EXAMPLES:
     - Music@prev
     - lock all
     - disable all
+    - register@thisiscool@Adam@eva1@15:a@1337
+    - removeuser@Adam
+    - refreshdb
     

@@ -195,7 +195,6 @@ public class ConfigFileStuff {
 
 				// set the properties value
 				prop.setProperty("Use_MySQL", "false");
-				prop.setProperty("Use_hashing", "false");
 				prop.setProperty("MySQL_IP", "<IP of the Server>");
 				prop.setProperty("MySQL_User", "<MySQL user>");
 				prop.setProperty("MySQL_Pass", "<MySQL pass>");
@@ -229,7 +228,6 @@ public class ConfigFileStuff {
 		 
 				// get the property value and stores it in the variable of the class Main
 				MySQL.MySQL_enabled = Boolean.valueOf(prop.getProperty("Use_MySQL"));
-				MySQL.MySQL_hashing = Boolean.valueOf(prop.getProperty("Use_hashing"));
 				MySQL.MySQL_IP = prop.getProperty("MySQL_IP");
 				MySQL.MySQL_dir = prop.getProperty("MySQL_direction");
 				MySQL.MySQL_User = prop.getProperty("MySQL_User");

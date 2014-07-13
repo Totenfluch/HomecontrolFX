@@ -13,33 +13,39 @@ import org.apache.commons.codec.binary.Hex;
 
 public class Crypter {
 	private static byte[] key1 = {
-		
+
 	};
 	private static byte[] key2 = {
-		
+
 	};
 	private static byte[] key3 = {
-		
+
 	};
 	private static byte[] key4 = {
-		
+
 	};
 	private static byte[] key5 = {
-		
+
 	};
 	private static byte[] key6 = {
-		
+
 	};
-	
-	public static String hashit(String string) throws NoSuchAlgorithmException{
-		final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-		messageDigest.reset();
-		messageDigest.update(string.getBytes(Charset.forName("UTF8")));
-		final byte[] resultByte = messageDigest.digest();
-		final String result = new String(Hex.encodeHex(resultByte));
-		return result;
+
+	public static String hashit(String string){
+		MessageDigest messageDigest;
+		try {
+			messageDigest = MessageDigest.getInstance("MD5");
+			messageDigest.reset();
+			messageDigest.update(string.getBytes(Charset.forName("UTF8")));
+			final byte[] resultByte = messageDigest.digest();
+			final String result = new String(Hex.encodeHex(resultByte));
+			return result;
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return "ERROR";
+		}
 	}
-	
+
 	public static String encrypt(String strToEncrypt, int ikey){
 		byte[] key = null;
 		if(ikey == 1){

@@ -23,6 +23,7 @@ import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import com.pi4j.wiringpi.Spi;
 
+import me.Christian.networking.Crypter;
 import me.Christian.networking.Server;
 import me.Christian.other.ChangeOutStream;
 import me.Christian.other.ConfigFileStuff;
@@ -1414,35 +1415,7 @@ public class Main extends Application{
 			Dev_console.setDisable(true);
 			Dev_console.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e) {
-					if(Dev_console.getText().equals("lock all")){
-						for(int i=0; i<8; i++){
-							Output_isLocked[i] = true;
-							Output_Lockcross[i].setVisible(true);
-						}
-					}else if(Dev_console.getText().equals("unlock all")){
-						for(int i=0; i<8; i++){
-							Output_isLocked[i] = false;
-							Output_Lockcross[i].setVisible(false);
-						}	
-					}else if(Dev_console.getText().equals("enable all")){
-						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 1, i);
-							if(!Testbuild){
-								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-									piface.getLed(index).on();
-								}
-							}
-						}	
-					}else if(Dev_console.getText().equals("disable all")){
-						for(int i=0; i<8; i++){
-							SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
-							if(!Testbuild){
-								for(int index = PiFaceLed.LED7.getIndex(); index >= PiFaceLed.LED0.getIndex(); index--) {
-									piface.getLed(index).off();
-								}
-							}
-						}	
-					}
+					OtherStuff.addToCmdQueue(Dev_console.getText().toString());
 					Dev_console.setText("");
 				}
 			});
@@ -1667,18 +1640,17 @@ public class Main extends Application{
 				LoginTransition[i].setNode(Login_Spark[i]);
 				LoginTransition[i].setOrientation(PathTransition.OrientationType.NONE);
 				LoginTransition[i].setCycleCount(Timeline.INDEFINITE);
-				LoginTransition[i].play();	
 			}
-			
+
 			LoginToMain = new FadeTransition(Duration.millis(1000), Login);
 			LoginToMain.setFromValue(1.0);
 			LoginToMain.setToValue(0.0);
 			LoginToMain.setOnFinished(new EventHandler<ActionEvent>(){
-			    public void handle(ActionEvent AE){
-			    	Login.setVisible(false);
-			    }
+				public void handle(ActionEvent AE){
+					Login.setVisible(false);
+				}
 			});
-			
+
 			MainToLogin = new FadeTransition(Duration.millis(1000), Login);
 			MainToLogin.setFromValue(0.0);
 			MainToLogin.setToValue(1.0);
@@ -1687,21 +1659,21 @@ public class Main extends Application{
 			    	Login.setVisible(true);
 			    }
 			});*/
-			
+
 			Login.setVisible(true);
 			root.getChildren().add(Login);
 			System.out.println("Finished loading Objects of Login GUI");
 		}
 		primaryStage.setScene(Sroot);
 		System.out.println("Launching GUI Now!!!");
-		
+
 		primaryStage.show();
 		System.out.println("Finished [2]: GUI");
 		System.out.println("Starting [3]: Final init");
 		FinalInit();
 		System.out.println("|>--- finished loading ---<|");
 	}
-	
+
 	public Path createArc(double circleposx, double circleposy, double radius){
 		circleposx+=40;
 		circleposy+=40;
@@ -1743,6 +1715,9 @@ public class Main extends Application{
 		}
 		for(int i=0;i<8;i++){
 			SetState(Output_State[i][0], Output_State[i][1], Output_State[i][2], 2, i);
+		}
+		for(int i=0;i<6;i++){
+			LoginTransition[i].play();	
 		}
 		System.out.println("Finished [3]: Final init");
 		//OtherStuff.addToCmdQueue("Refresh@RssFeedObjectPath");
@@ -2316,6 +2291,23 @@ public class Main extends Application{
 								FeedTransition[1].playFrom(Duration.millis(y2));
 								setDevVisibility(false);
 								dir = 1;
+							}
+						}else if(temp[0].equals("register")){
+							// register@masterpw@user@pass@flags@permissions
+							if(temp[1].equals(MasterPassword)){
+								MySQL.Register(temp[2], Crypter.hashit(temp[3]), temp[4], Integer.valueOf(temp[5]));
+							}
+						}else if(temp[0].equals("removeuser")){
+							// removeuser@pw@username
+							if(temp[1].equals(MasterPassword)){
+								MySQL.Userdelete(temp[2]);
+							}
+						}else if(temp[0].equals("refreshdb")){
+							if(temp[1].equals(MasterPassword)){
+								OtherStuff.UserCredicalsDatabase.clear();
+								OtherStuff.UserFlagsDatabase.clear();
+								OtherStuff.UserPermissionsDatabase.clear();
+								MySQL.Userlist();
 							}
 						}else{	
 							System.out.println("ERROR: Thread: Main.update.cmdqueue @ Invalid CMD!: " + todocmd[y]);
