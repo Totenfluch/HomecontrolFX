@@ -42,25 +42,27 @@ public class OtherStuff {
 	}
 
 	public static void addToCmdQueue(String string){
-			int x = 0;
-			while(Main.todocmd[x] != ""){
-				x++;
-			}
-			Main.todocmd[x] = string;
-			Main.todocmdsize = x;
-			main.doqueue();
+		int x = 0;
+		while(Main.todocmd[x] != ""){
+			x++;
+		}
+		Main.todocmd[x] = string;
+		Main.todocmdsize = x;
+		main.doqueue();
 	}
 
 	public static void initDatabase(){
 		// Just Test Accounts, data will be decryted in a database later
-		UserCredicalsDatabase.put("Totenfluch", "s123C");
-		UserPermissionsDatabase.put("Totenfluch", 1000);
+		if(!MySQL.MySQL_enabled){
+			UserCredicalsDatabase.put("Totenfluch", "s123C");
+			UserPermissionsDatabase.put("Totenfluch", 1000);
 
-		UserCredicalsDatabase.put("Soulrescuer", "s321C");
-		UserPermissionsDatabase.put("Soulrescuer", 1000);
+			UserCredicalsDatabase.put("Soulrescuer", "s321C");
+			UserPermissionsDatabase.put("Soulrescuer", 1000);
 
-		UserCredicalsDatabase.put("root", Main.MasterPassword);
-		UserPermissionsDatabase.put("root", 1000);
+			UserCredicalsDatabase.put("root", Main.MasterPassword);
+			UserPermissionsDatabase.put("root", 1000);
+		}
 	}
 
 	public static String GeneratePrivateKey(){

@@ -182,4 +182,72 @@ public class ConfigFileStuff {
 			}
 		}
 	}
+	
+	public static void setupMySQL(){
+		Properties prop = new Properties();
+		File file = new File("MySQLconfig.properties");
+		OutputStream output = null;
+		// Check if file exists
+		if(!file.exists()){
+			try {
+				file.createNewFile();
+				output = new FileOutputStream("MySQLconfig.properties");
+
+				// set the properties value
+				prop.setProperty("Use_MySQL", "false");
+				prop.setProperty("Use_hashing", "false");
+				prop.setProperty("MySQL_IP", "<IP of the Server>");
+				prop.setProperty("MySQL_User", "<MySQL user>");
+				prop.setProperty("MySQL_Pass", "<MySQL pass>");
+				prop.setProperty("MySQL_direction", "<e.g. (127.0.0.1)/*yourdirection*>");
+				// Add more if needed, but make sure to read them afterwards otherwise they are useless
+				
+				// save properties to project root folder
+				prop.store(output, null);
+
+			} catch (IOException io) {
+				io.printStackTrace();
+			} finally {
+				if (output != null) {
+					try {
+						output.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		}
+		// File exists ~ Read it!
+		else{
+			InputStream input = null;
+			try {
+				input = new FileInputStream("MySQLconfig.properties");
+				
+				// load a properties file
+				prop.load(input);
+		 
+				// get the property value and stores it in the variable of the class Main
+				MySQL.MySQL_enabled = Boolean.valueOf(prop.getProperty("Use_MySQL"));
+				MySQL.MySQL_hashing = Boolean.valueOf(prop.getProperty("Use_hashing"));
+				MySQL.MySQL_IP = prop.getProperty("MySQL_IP");
+				MySQL.MySQL_dir = prop.getProperty("MySQL_direction");
+				MySQL.MySQL_User = prop.getProperty("MySQL_User");
+				MySQL.MySQL_Pass = prop.getProperty("MySQL_Pass");
+		 
+			} catch (IOException ex) {
+				System.out.println("Error in config File! Deleting old one, creating new one.");
+				file.delete();
+				startup();
+			} finally {
+				if (input != null) {
+					try {
+						input.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
 }

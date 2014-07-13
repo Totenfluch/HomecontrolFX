@@ -1,9 +1,14 @@
 package me.Christian.networking;
 
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 
 
 public class Crypter {
@@ -25,6 +30,16 @@ public class Crypter {
 	private static byte[] key6 = {
 		
 	};
+	
+	public static String hashit(String string) throws NoSuchAlgorithmException{
+		final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+		messageDigest.reset();
+		messageDigest.update(string.getBytes(Charset.forName("UTF8")));
+		final byte[] resultByte = messageDigest.digest();
+		final String result = new String(Hex.encodeHex(resultByte));
+		return result;
+	}
+	
 	public static String encrypt(String strToEncrypt, int ikey){
 		byte[] key = null;
 		if(ikey == 1){
