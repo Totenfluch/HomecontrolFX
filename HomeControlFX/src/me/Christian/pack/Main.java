@@ -31,7 +31,9 @@ import me.Christian.other.MySQL;
 import me.Christian.other.OtherStuff;
 import me.Christian.other.UnlockTimer;
 import me.Christian.threads.Thread_GetWeather;
+import javafx.animation.FadeTransition;
 import javafx.animation.PathTransition;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -52,6 +54,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.ArcTo;
 import javafx.scene.shape.HLineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.Path;
@@ -104,7 +107,8 @@ public class Main extends Application{
 	// Main Stage - where everything goes thing thing
 	public static Stage MainStage;
 	// Scene for Root(control GUI) and Scene for Login - both can be places in MainStage.
-	public static Scene Sroot, SLogin;
+	public static Scene Sroot;
+	public static Pane Login;
 	//
 	//Rss Feeds
 	public static boolean RssEnabled = true;
@@ -149,8 +153,8 @@ public class Main extends Application{
 	// Login thingy for later
 
 	private static Timer MpcRefreshTimer, WeatherRefreshTimer, RssRefreshTimer, stats_refreshtimer, sync_timer;
-	public static int Login_LoginButton1_State = 0, Login_LoginButton2_State = 0, Login_LoginButton3_State = 0, Login_LoginButton4_State = 0, Login_LoginButton5_State = 0, Login_LoginButton6_State = 0;
-
+	//public static int Login_LoginButton_State[0] = 0, Login_LoginButton_State[1] = 0, Login_LoginButton_State[2] = 0, Login_LoginButton_State[3] = 0, Login_LoginButton_State[4] = 0, Login_LoginButton_State[5] = 0;
+	public static int[] Login_LoginButton_State = new int[6];
 	public static int dir = 1;
 	// 0 -> Right, 1 -> Left
 	public static Path[] FeedPath = new Path[2];
@@ -182,7 +186,8 @@ public class Main extends Application{
 	public static boolean StartupDone = false;
 
 	// Login Window Stuff
-	public static ImageView Login_LoginButton1, Login_LoginButton2, Login_LoginButton3, Login_LoginButton4, Login_LoginButton5, Login_LoginButton6;
+	//public static ImageView Login_LoginButton1, Login_LoginButton2, Login_LoginButton3, Login_LoginButton4, Login_LoginButton5, Login_LoginButton6;
+	public static ImageView[] Login_LoginButton = new ImageView[6];
 	public static ImageView Login_Spark[] = new ImageView[6];
 	public static double Login_SparkPos[][] = new double[6][2];
 	public static int Login_SparkSeq[] = new int[6];
@@ -190,6 +195,7 @@ public class Main extends Application{
 	public static boolean Console_Button_islocked;
 	public static Path[] LoginPath = new Path[6];
 	public static PathTransition[] LoginTransition = new PathTransition[6];
+	public static FadeTransition LoginToMain, MainToLogin;
 
 	// Setup Piface instances
 	public static GpioController gpio;
@@ -1559,7 +1565,9 @@ public class Main extends Application{
 
 		if(StartWithLoginScreen){
 			System.out.println("Loading Objects of Login GUI");
-			Pane Login = new Pane();
+			Login = new Pane();
+			Login.setPrefHeight(800);
+			Login.setPrefWidth(1100);
 
 			screen_lock = new ImageView("lock.png");
 			screen_lock.setLayoutX(970);
@@ -1574,104 +1582,77 @@ public class Main extends Application{
 
 			Login.setStyle("-fx-background-color: #000000");
 
-			Login_LoginButton1 = new ImageView(new Image("tapbutton.png"));
-			Login_LoginButton1.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-			Login_LoginButton1.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-			Login_LoginButton1.getOnMouseReleased();
-			Login_LoginButton1.getOnMousePressed();
-			Login_LoginButton1.setLayoutX(115);
-			Login_LoginButton1.setLayoutY(115);
-			Login_LoginButton1.setFitHeight(80);
-			Login_LoginButton1.setFitWidth(80);
-			Login_LoginButton1.setVisible(true);
-			Login.getChildren().add(Login_LoginButton1);
-			Login_SparkPos[0][0] = Login_LoginButton1.getLayoutX();
-			Login_SparkPos[0][1] = Login_LoginButton1.getLayoutY();
+			Login_LoginButton[0] = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton[0].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton[0].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton[0].getOnMouseReleased();
+			Login_LoginButton[0].getOnMousePressed();
+			Login_LoginButton[0].setLayoutX(115);
+			Login_LoginButton[0].setLayoutY(115);
+			Login_LoginButton[0].setFitHeight(80);
+			Login_LoginButton[0].setFitWidth(80);
+			Login_LoginButton[0].setVisible(true);
+			Login.getChildren().add(Login_LoginButton[0]);
 
-			/*
-			LoginPath[0] = new Path();
-			LoginPath[0] = createCirclePath(Login_LoginButton1.getLayoutX(), Login_LoginButton1.getLayoutY(), 300, 300, 0);
-			root.getChildren().add(LoginPath[0]);
+			Login_LoginButton[1] = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton[1].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton[1].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton[1].getOnMouseReleased();
+			Login_LoginButton[1].getOnMousePressed();
+			Login_LoginButton[1].setLayoutX(115);
+			Login_LoginButton[1].setLayoutY(415);
+			Login_LoginButton[1].setFitHeight(80);
+			Login_LoginButton[1].setFitWidth(80);
+			Login_LoginButton[1].setVisible(true);
+			Login.getChildren().add(Login_LoginButton[1]);
 
-			LoginTransition[0] = new PathTransition();
-			LoginTransition[0].setDuration(Duration.seconds(2));
-			LoginTransition[0].setPath(LoginPath[0]);
-			LoginTransition[0].setNode(Login_LoginButton1);
-			LoginTransition[0].setOrientation(OrientationType.ORTHOGONAL_TO_TANGENT);
-			LoginTransition[0].setCycleCount(Timeline.INDEFINITE);
-			LoginTransition[0].play();
-			 */
+			Login_LoginButton[2] = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton[2].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton[2].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton[2].getOnMouseReleased();
+			Login_LoginButton[2].getOnMousePressed();
+			Login_LoginButton[2].setLayoutX(475);
+			Login_LoginButton[2].setLayoutY(115);
+			Login_LoginButton[2].setFitHeight(80);
+			Login_LoginButton[2].setFitWidth(80);
+			Login_LoginButton[2].setVisible(true);
+			Login.getChildren().add(Login_LoginButton[2]);
 
+			Login_LoginButton[3] = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton[3].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton[3].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton[3].getOnMouseReleased();
+			Login_LoginButton[3].getOnMousePressed();
+			Login_LoginButton[3].setLayoutX(475);
+			Login_LoginButton[3].setLayoutY(415);
+			Login_LoginButton[3].setFitHeight(80);
+			Login_LoginButton[3].setFitWidth(80);
+			Login_LoginButton[3].setVisible(true);
+			Login.getChildren().add(Login_LoginButton[3]);
 
-			Login_LoginButton2 = new ImageView(new Image("tapbutton.png"));
-			Login_LoginButton2.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-			Login_LoginButton2.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-			Login_LoginButton2.getOnMouseReleased();
-			Login_LoginButton2.getOnMousePressed();
-			Login_LoginButton2.setLayoutX(115);
-			Login_LoginButton2.setLayoutY(415);
-			Login_LoginButton2.setFitHeight(80);
-			Login_LoginButton2.setFitWidth(80);
-			Login_LoginButton2.setVisible(true);
-			Login.getChildren().add(Login_LoginButton2);
-			Login_SparkPos[1][0] = Login_LoginButton2.getLayoutX();
-			Login_SparkPos[1][1] = Login_LoginButton2.getLayoutY();
+			Login_LoginButton[4] = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton[4].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton[4].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton[4].getOnMouseReleased();
+			Login_LoginButton[4].getOnMousePressed();
+			Login_LoginButton[4].setLayoutX(835);
+			Login_LoginButton[4].setLayoutY(115);
+			Login_LoginButton[4].setFitHeight(80);
+			Login_LoginButton[4].setFitWidth(80);
+			Login_LoginButton[4].setVisible(true);
+			Login.getChildren().add(Login_LoginButton[4]);
 
-			Login_LoginButton3 = new ImageView(new Image("tapbutton.png"));
-			Login_LoginButton3.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-			Login_LoginButton3.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-			Login_LoginButton3.getOnMouseReleased();
-			Login_LoginButton3.getOnMousePressed();
-			Login_LoginButton3.setLayoutX(475);
-			Login_LoginButton3.setLayoutY(115);
-			Login_LoginButton3.setFitHeight(80);
-			Login_LoginButton3.setFitWidth(80);
-			Login_LoginButton3.setVisible(true);
-			Login.getChildren().add(Login_LoginButton3);
-			Login_SparkPos[2][0] = Login_LoginButton3.getLayoutX();
-			Login_SparkPos[2][1] = Login_LoginButton3.getLayoutY();
-
-			Login_LoginButton4 = new ImageView(new Image("tapbutton.png"));
-			Login_LoginButton4.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-			Login_LoginButton4.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-			Login_LoginButton4.getOnMouseReleased();
-			Login_LoginButton4.getOnMousePressed();
-			Login_LoginButton4.setLayoutX(475);
-			Login_LoginButton4.setLayoutY(415);
-			Login_LoginButton4.setFitHeight(80);
-			Login_LoginButton4.setFitWidth(80);
-			Login_LoginButton4.setVisible(true);
-			Login.getChildren().add(Login_LoginButton4);
-			Login_SparkPos[3][0] = Login_LoginButton4.getLayoutX();
-			Login_SparkPos[3][1] = Login_LoginButton4.getLayoutY();
-
-			Login_LoginButton5 = new ImageView(new Image("tapbutton.png"));
-			Login_LoginButton5.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-			Login_LoginButton5.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-			Login_LoginButton5.getOnMouseReleased();
-			Login_LoginButton5.getOnMousePressed();
-			Login_LoginButton5.setLayoutX(835);
-			Login_LoginButton5.setLayoutY(115);
-			Login_LoginButton5.setFitHeight(80);
-			Login_LoginButton5.setFitWidth(80);
-			Login_LoginButton5.setVisible(true);
-			Login.getChildren().add(Login_LoginButton5);
-			Login_SparkPos[4][0] = Login_LoginButton5.getLayoutX();
-			Login_SparkPos[4][1] = Login_LoginButton5.getLayoutY();
-
-			Login_LoginButton6 = new ImageView(new Image("tapbutton.png"));
-			Login_LoginButton6.addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
-			Login_LoginButton6.addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
-			Login_LoginButton6.getOnMouseReleased();
-			Login_LoginButton6.getOnMousePressed();
-			Login_LoginButton6.setLayoutX(835);
-			Login_LoginButton6.setLayoutY(415);
-			Login_LoginButton6.setFitHeight(80);
-			Login_LoginButton6.setFitWidth(80);
-			Login_LoginButton6.setVisible(true);
-			Login.getChildren().add(Login_LoginButton6);
-			Login_SparkPos[5][0] = Login_LoginButton6.getLayoutX();
-			Login_SparkPos[5][1] = Login_LoginButton6.getLayoutY();
+			Login_LoginButton[5] = new ImageView(new Image("tapbutton.png"));
+			Login_LoginButton[5].addEventHandler(MouseEvent.MOUSE_RELEASED, new MyEventHandler());
+			Login_LoginButton[5].addEventHandler(MouseEvent.MOUSE_PRESSED, new MyEventHandler());
+			Login_LoginButton[5].getOnMouseReleased();
+			Login_LoginButton[5].getOnMousePressed();
+			Login_LoginButton[5].setLayoutX(835);
+			Login_LoginButton[5].setLayoutY(415);
+			Login_LoginButton[5].setFitHeight(80);
+			Login_LoginButton[5].setFitWidth(80);
+			Login_LoginButton[5].setVisible(true);
+			Login.getChildren().add(Login_LoginButton[5]);
 
 			// Set up sparks (flying around the buttons)
 			for(int i=0;i<6;i++){
@@ -1679,21 +1660,76 @@ public class Main extends Application{
 				Login_Spark[i].setFitHeight(100);
 				Login_Spark[i].setFitWidth(100);
 				Login.getChildren().add(Login_Spark[i]);
+				LoginPath[i] = createArc(Login_LoginButton[i].getLayoutX(), Login_LoginButton[i].getLayoutY(), 75);
+				LoginTransition[i] = new PathTransition();
+				LoginTransition[i].setDuration(Duration.millis(3000));
+				LoginTransition[i].setPath(LoginPath[i]);
+				LoginTransition[i].setNode(Login_Spark[i]);
+				LoginTransition[i].setOrientation(PathTransition.OrientationType.NONE);
+				LoginTransition[i].setCycleCount(Timeline.INDEFINITE);
+				LoginTransition[i].play();	
 			}
-
-			SLogin = new Scene(Login, 1024, 600);
-			primaryStage.setScene(SLogin);
+			
+			LoginToMain = new FadeTransition(Duration.millis(1000), Login);
+			LoginToMain.setFromValue(1.0);
+			LoginToMain.setToValue(0.0);
+			LoginToMain.setOnFinished(new EventHandler<ActionEvent>(){
+			    public void handle(ActionEvent AE){
+			    	Login.setVisible(false);
+			    }
+			});
+			
+			MainToLogin = new FadeTransition(Duration.millis(1000), Login);
+			MainToLogin.setFromValue(0.0);
+			MainToLogin.setToValue(1.0);
+			/*MainToLogin.setOnFinished(new EventHandler<ActionEvent>(){
+			    public void handle(ActionEvent AE){
+			    	Login.setVisible(true);
+			    }
+			});*/
+			
+			Login.setVisible(true);
+			root.getChildren().add(Login);
 			System.out.println("Finished loading Objects of Login GUI");
-		}else{
-			primaryStage.setScene(Sroot);
 		}
+		primaryStage.setScene(Sroot);
 		System.out.println("Launching GUI Now!!!");
-
+		
 		primaryStage.show();
 		System.out.println("Finished [2]: GUI");
 		System.out.println("Starting [3]: Final init");
 		FinalInit();
 		System.out.println("|>--- finished loading ---<|");
+	}
+	
+	public Path createArc(double circleposx, double circleposy, double radius){
+		circleposx+=40;
+		circleposy+=40;
+		Path path = new Path();
+		MoveTo moveTo1 = new MoveTo();
+		ArcTo arcTo1 = new ArcTo();
+		MoveTo moveTo2 = new MoveTo();
+		ArcTo arcTo2 = new ArcTo();
+
+		moveTo1.setX(circleposx-radius);
+		moveTo1.setY(circleposy-radius);
+
+		arcTo1.setX(circleposx+radius);
+		arcTo1.setY(circleposy+radius);
+		arcTo1.setRadiusX(radius);
+		arcTo1.setRadiusY(radius);
+
+		moveTo2.setX(circleposx+radius);
+		moveTo2.setY(circleposy+radius);
+
+		arcTo2.setX(circleposx-radius);
+		arcTo2.setY(circleposy-radius);
+		arcTo2.setRadiusX(radius);
+		arcTo2.setRadiusY(radius);
+
+		path.getElements().addAll(moveTo1, arcTo1, moveTo2, arcTo2);
+
+		return path;
 	}
 
 	public void FinalInit(){
@@ -1713,26 +1749,6 @@ public class Main extends Application{
 		new ChangeOutStream();
 		System.out.println("Stream changed into GUI - now Operating fully in the GUI console. ( only FX Thread )");
 	}
-
-	/*private Path createCirclePath(double centerX, double centerY, double radiusX, double radiusY, double rotate) {
-        ArcTo arcTo = new ArcTo();
-        arcTo.setX(centerX - radiusX + 1); // to simulate a full 360 degree celcius circle.
-        arcTo.setY(centerY - radiusY);
-        arcTo.setSweepFlag(false);
-        arcTo.setLargeArcFlag(true);
-        arcTo.setRadiusX(radiusX);
-        arcTo.setRadiusY(radiusY);
-        arcTo.setXAxisRotation(rotate);
-
-        Path path = new Path();
-        path.getElements().add(new MoveTo(centerX - radiusX, centerY - radiusY));
-        path.getElements().add(arcTo);
-        path.getElements().add(new ClosePath());
-
-        path.setStroke(Color.DODGERBLUE);
-        path.getStrokeDashArray().setAll(5d, 5d);
-        return path;
-    }*/
 
 	private void setDevOpacity(double w){
 		if(!isMasterLoggedIn){
@@ -1830,99 +1846,99 @@ public class Main extends Application{
 
 	// Complete handeling for the login screen and the code .. ps: secret code :p
 	public static void LoginChecker(Object e){
-		if(e == Login_LoginButton1){
-			if(Login_LoginButton1_State < 3){
-				Login_LoginButton1_State++;
-				if(Login_LoginButton1_State == 1){
+		if(e == Login_LoginButton[0]){
+			if(Login_LoginButton_State[0] < 3){
+				Login_LoginButton_State[0]++;
+				if(Login_LoginButton_State[0] == 1){
 					Login_Spark[0].setEffect(new Glow(0.33));
-				}else if(Login_LoginButton1_State == 2){
+				}else if(Login_LoginButton_State[0] == 2){
 					Login_Spark[0].setEffect(new Glow(0.66));
-				}else if(Login_LoginButton1_State == 3){
+				}else if(Login_LoginButton_State[0] == 3){
 					Login_Spark[0].setEffect(new Glow(1.0));
 				}
 			}else{
-				Login_LoginButton1_State = 0;
+				Login_LoginButton_State[0] = 0;
 				Login_Spark[0].setEffect(new Glow(0));
 			}
-		}else if(e == Login_LoginButton2){
-			if(Login_LoginButton2_State < 3){
-				Login_LoginButton2_State++;
-				if(Login_LoginButton2_State == 1){
+		}else if(e == Login_LoginButton[1]){
+			if(Login_LoginButton_State[1] < 3){
+				Login_LoginButton_State[1]++;
+				if(Login_LoginButton_State[1] == 1){
 					Login_Spark[1].setEffect(new Glow(0.33));
-				}else if(Login_LoginButton2_State == 2){
+				}else if(Login_LoginButton_State[1] == 2){
 					Login_Spark[1].setEffect(new Glow(0.66));
-				}else if(Login_LoginButton2_State == 3){
+				}else if(Login_LoginButton_State[1] == 3){
 					Login_Spark[1].setEffect(new Glow(1.0));
 				}
 			}else{
-				Login_LoginButton2_State = 0;
+				Login_LoginButton_State[1] = 0;
 				Login_Spark[1].setEffect(new Glow(0));
 			}
-		}else if(e == Login_LoginButton3){
-			if(Login_LoginButton3_State < 3){
-				Login_LoginButton3_State++;
-				if(Login_LoginButton3_State == 1){
+		}else if(e == Login_LoginButton[2]){
+			if(Login_LoginButton_State[2] < 3){
+				Login_LoginButton_State[2]++;
+				if(Login_LoginButton_State[2] == 1){
 					Login_Spark[2].setEffect(new Glow(0.33));
-				}else if(Login_LoginButton3_State == 2){
+				}else if(Login_LoginButton_State[2] == 2){
 					Login_Spark[2].setEffect(new Glow(0.66));
-				}else if(Login_LoginButton3_State == 3){
+				}else if(Login_LoginButton_State[2] == 3){
 					Login_Spark[2].setEffect(new Glow(1.0));
 				}
 			}else{
-				Login_LoginButton3_State = 0;
+				Login_LoginButton_State[2] = 0;
 				Login_Spark[2].setEffect(new Glow(0));
 			}
-		}else if(e == Login_LoginButton4){
-			if(Login_LoginButton4_State < 3){
-				Login_LoginButton4_State++;
-				if(Login_LoginButton4_State == 1){
+		}else if(e == Login_LoginButton[3]){
+			if(Login_LoginButton_State[3] < 3){
+				Login_LoginButton_State[3]++;
+				if(Login_LoginButton_State[3] == 1){
 					Login_Spark[3].setEffect(new Glow(0.33));
-				}else if(Login_LoginButton4_State == 2){
+				}else if(Login_LoginButton_State[3] == 2){
 					Login_Spark[3].setEffect(new Glow(0.66));
-				}else if(Login_LoginButton4_State == 3){
+				}else if(Login_LoginButton_State[3] == 3){
 					Login_Spark[3].setEffect(new Glow(1.0));
 				}
 			}else{
-				Login_LoginButton4_State = 0;
+				Login_LoginButton_State[3] = 0;
 				Login_Spark[3].setEffect(new Glow(0));
 			}
-		}else if(e == Login_LoginButton5){
-			if(Login_LoginButton5_State < 3){
-				Login_LoginButton5_State++;
-				if(Login_LoginButton5_State == 1){
+		}else if(e == Login_LoginButton[4]){
+			if(Login_LoginButton_State[4] < 3){
+				Login_LoginButton_State[4]++;
+				if(Login_LoginButton_State[4] == 1){
 					Login_Spark[4].setEffect(new Glow(0.33));
-				}else if(Login_LoginButton5_State == 2){
+				}else if(Login_LoginButton_State[4] == 2){
 					Login_Spark[4].setEffect(new Glow(0.66));
-				}else if(Login_LoginButton5_State == 3){
+				}else if(Login_LoginButton_State[4] == 3){
 					Login_Spark[4].setEffect(new Glow(1.0));
 				}
 			}else{
-				Login_LoginButton5_State = 0;
+				Login_LoginButton_State[4] = 0;
 				Login_Spark[4].setEffect(new Glow(0));
 			}
-		}else if(e == Login_LoginButton6){
-			if(Login_LoginButton6_State < 3){
-				Login_LoginButton6_State++;
-				if(Login_LoginButton6_State == 1){
+		}else if(e == Login_LoginButton[5]){
+			if(Login_LoginButton_State[5] < 3){
+				Login_LoginButton_State[5]++;
+				if(Login_LoginButton_State[5] == 1){
 					Login_Spark[5].setEffect(new Glow(0.33));
-				}else if(Login_LoginButton6_State == 2){
+				}else if(Login_LoginButton_State[5] == 2){
 					Login_Spark[5].setEffect(new Glow(0.66));
-				}else if(Login_LoginButton6_State == 3){
+				}else if(Login_LoginButton_State[5] == 3){
 					Login_Spark[5].setEffect(new Glow(1.0));
 				}
 			}else{
-				Login_LoginButton6_State = 0;
+				Login_LoginButton_State[5] = 0;
 				Login_Spark[5].setEffect(new Glow(0));
 			}
 		}
-		if(Login_LoginButton1_State == 1 && Login_LoginButton4_State == 2 && Login_LoginButton5_State == 1){
-			if(Login_LoginButton2_State == 0 && Login_LoginButton3_State == 0 && Login_LoginButton6_State == 0){
-				Login_LoginButton1_State = 0;
-				Login_LoginButton2_State = 0;
-				Login_LoginButton3_State = 0;
-				Login_LoginButton4_State = 0;
-				Login_LoginButton5_State = 0;
-				Login_LoginButton6_State = 0;
+		if(Login_LoginButton_State[0] == 1 && Login_LoginButton_State[3] == 2 && Login_LoginButton_State[4] == 1){
+			if(Login_LoginButton_State[1] == 0 && Login_LoginButton_State[2] == 0 && Login_LoginButton_State[5] == 0){
+				Login_LoginButton_State[0] = 0;
+				Login_LoginButton_State[1] = 0;
+				Login_LoginButton_State[2] = 0;
+				Login_LoginButton_State[3] = 0;
+				Login_LoginButton_State[4] = 0;
+				Login_LoginButton_State[5] = 0;
 				SwitchToMainScene();
 			}
 		}
@@ -2353,14 +2369,19 @@ public class Main extends Application{
 
 	// Switches from Main to Login Scene
 	public static void SwitchToMainScene(){
-		MainStage.setScene(Sroot);
+		LoginToMain.play();
 		for(int i=0;i<6;i++){
 			Login_Spark[i].setEffect(new Glow(0.0));
+			LoginTransition[i].stop();
 		}
 	}
 
 	public static void SwitchToLoginScene(){
-		MainStage.setScene(SLogin);
+		Login.setVisible(true);
+		MainToLogin.play();
+		for(int i=0;i<6;i++){
+			LoginTransition[i].play();
+		}
 	}
 
 	// Refresh of music title
@@ -2959,7 +2980,7 @@ public class Main extends Application{
 			}
 
 			// Login Stuff
-			else if(e.getSource() == Login_LoginButton1 || e.getSource() == Login_LoginButton2 || e.getSource() == Login_LoginButton3 || e.getSource() == Login_LoginButton4 || e.getSource() == Login_LoginButton5 || e.getSource() == Login_LoginButton6){
+			else if(e.getSource() == Login_LoginButton[0] || e.getSource() == Login_LoginButton[1] || e.getSource() == Login_LoginButton[2] || e.getSource() == Login_LoginButton[3] || e.getSource() == Login_LoginButton[4] || e.getSource() == Login_LoginButton[5]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					((Node) e.getSource()).setOpacity(1);
 					LoginChecker(e.getSource());	

@@ -1,18 +1,18 @@
 package me.Christian.other;
 import java.sql.*;
-
+		
 public class MySQL {
 	public static String MySQL_IP, MySQL_User, MySQL_Pass, MySQL_dir;
 	public static boolean MySQL_enabled, MySQL_hashing;
 	public static boolean Login(String username, String password){
 		String url = "jdbc:mysql://" + MySQL_IP + "/" + MySQL_dir;
-
+		
 		Connection conn;
-
+		
 		String createString = "Select username,password from Accounts WHERE username = '"+username+"' AND password = '"+password+"'";
-
+		
 		Statement stmt;
-
+		
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
 		}
