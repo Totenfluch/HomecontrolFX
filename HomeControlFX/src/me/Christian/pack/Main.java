@@ -27,6 +27,7 @@ import me.Christian.networking.Server;
 import me.Christian.other.ChangeOutStream;
 import me.Christian.other.ConfigFileStuff;
 import me.Christian.other.FeedReader;
+import me.Christian.other.MySQL;
 import me.Christian.other.OtherStuff;
 import me.Christian.other.UnlockTimer;
 import me.Christian.threads.Thread_GetWeather;
@@ -214,8 +215,13 @@ public class Main extends Application{
 		ConfigFileStuff.startup();
 		System.out.println("NameConfig File location: " + OtherStuff.jarlocation().toString().replace("/HomeControl.jar", "") + "/NameConfig.properties");
 		ConfigFileStuff.customNameStartup();
-		ConfigFileStuff.setupMySQL();
 		System.out.println("|< config files checked >|");
+		ConfigFileStuff.setupMySQL();
+		if(MySQL.MySQL_enabled){
+			System.out.println("|> setting up MySQL <|");
+			MySQL.Userlist();
+			System.out.println("|< MySQL setup finished >|");
+		}
 
 		System.out.println("|> checking Rss feed file <|");
 		if(RssEnabled){

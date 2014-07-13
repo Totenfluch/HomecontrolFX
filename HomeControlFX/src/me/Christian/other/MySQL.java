@@ -85,6 +85,11 @@ public class MySQL {
 
 		String url = "jdbc:mysql://" + MySQL_IP + "/" + MySQL_dir;
 		String[][] userlist = new String[100][4];
+		for(int i=0;i<userlist.length;i++){
+			for(int b=0; b<4; b++){
+				userlist[i][b] = " ";
+			}
+		}
 
 		Connection conn;
 

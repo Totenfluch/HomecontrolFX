@@ -65,10 +65,13 @@ public class OtherStuff {
 			UserPermissionsDatabase.put("root", 10000);
 		}else{
 			String temp[][] = MySQL.Userlist();
+			System.out.println(temp.length);
 			for(int i = 0; i<temp.length;i++){
-				UserCredicalsDatabase.put(temp[i][0], temp[i][1]);
-				UserFlagsDatabase.put(temp[i][0], temp[i][2]);
-				UserPermissionsDatabase.put(temp[i][0], Integer.valueOf(temp[i][3]));
+				if(!temp[i][0].equals(" ")){
+					UserCredicalsDatabase.put(temp[i][0], temp[i][1]);
+					UserFlagsDatabase.put(temp[i][0], temp[i][2]);
+					UserPermissionsDatabase.put(temp[i][0], Integer.valueOf(temp[i][3]));
+				}
 			}
 			UserCredicalsDatabase.put("root", Main.MasterPassword);
 			UserPermissionsDatabase.put("root", 10000);
