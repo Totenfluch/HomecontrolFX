@@ -107,11 +107,11 @@ public class MySQL {
 			ResultSet rs = stmt.getResultSet();
 			int i = 0;
 			while (rs.next()) {      
-				System.out.println(rs.getString("username"));
+				/*System.out.println(rs.getString("username"));
 				System.out.println(rs.getString("password"));
 				System.out.println(rs.getString("flags"));
 				System.out.println(rs.getString("permissions"));
-				System.out.println("");
+				System.out.println("");*/
 				userlist[i][0] = rs.getString("username");
 				userlist[i][1] = rs.getString("password");
 				userlist[i][2] = rs.getString("flags");

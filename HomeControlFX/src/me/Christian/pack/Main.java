@@ -27,7 +27,6 @@ import me.Christian.networking.Server;
 import me.Christian.other.ChangeOutStream;
 import me.Christian.other.ConfigFileStuff;
 import me.Christian.other.FeedReader;
-import me.Christian.other.MySQL;
 import me.Christian.other.OtherStuff;
 import me.Christian.other.UnlockTimer;
 import me.Christian.threads.Thread_GetWeather;
@@ -2686,7 +2685,6 @@ public class Main extends Application{
 			else if((e.getSource() == Output_Button[6][0] || e.getSource() == Output_Text[6]) && !Output_isLocked[6]){
 				if(e.getEventType() == MouseEvent.MOUSE_RELEASED){
 					System.out.println("Released & Triggered Output7_Button");
-					MySQL.Userlist();
 					Output_Button[6][1].setVisible(false);
 					Output_Button[6][0].setVisible(true);
 					Output_Text[6].setLayoutX(Output_Button[6][0].getLayoutX()+82);

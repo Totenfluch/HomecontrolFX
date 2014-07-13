@@ -10,6 +10,7 @@ import me.Christian.pack.Main;
 
 public class OtherStuff {
 	public static Hashtable<String, String> UserCredicalsDatabase = new Hashtable<String, String>();
+	public static Hashtable<String, String> UserFlagsDatabase = new Hashtable<String, String>();
 	public static Hashtable<String, Integer> UserPermissionsDatabase = new Hashtable<String, Integer>();
 	public static Hashtable<String, String> PrivateKeys = new Hashtable<String, String>();
 	public static Main main = new Main();
@@ -61,7 +62,16 @@ public class OtherStuff {
 			UserPermissionsDatabase.put("Soulrescuer", 1000);
 
 			UserCredicalsDatabase.put("root", Main.MasterPassword);
-			UserPermissionsDatabase.put("root", 1000);
+			UserPermissionsDatabase.put("root", 10000);
+		}else{
+			String temp[][] = MySQL.Userlist();
+			for(int i = 0; i<temp.length;i++){
+				UserCredicalsDatabase.put(temp[i][0], temp[i][1]);
+				UserFlagsDatabase.put(temp[i][0], temp[i][2]);
+				UserPermissionsDatabase.put(temp[i][0], Integer.valueOf(temp[i][3]));
+			}
+			UserCredicalsDatabase.put("root", Main.MasterPassword);
+			UserPermissionsDatabase.put("root", 10000);
 		}
 	}
 
