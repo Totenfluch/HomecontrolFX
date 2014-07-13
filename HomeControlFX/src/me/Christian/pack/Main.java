@@ -166,7 +166,7 @@ public class Main extends Application{
 	public static Button Dev_login, Dev_logout, Dev_sendcmd, Dev_sendprint;
 	public static boolean isMasterLoggedIn = false;
 	public static String MasterPassword;
-	public static double masteropacity = 0.0;
+	public static double masteropacity = 1.00;
 	public static VBox rssvbox;
 
 	// print queue
