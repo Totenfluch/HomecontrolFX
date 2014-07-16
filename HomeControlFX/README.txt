@@ -1,3 +1,24 @@
+Compile:
+    To compile this project you need:
+    IDE
+        - Eclipse (preferable Kepler)
+    LIBARYS
+        - Feed4J 1.0
+        - jDom 1.1.3
+        - mysql-connector-java-5.1.1.8
+        - rome 1.0
+        - commons-codec-1.8
+        - pi4j 1.0
+        (packed here: https://www.dropbox.com/s/p32k2h7dgc4k1tz/dist.zip)
+        
+    What is mainly needed on the pi
+        - Java 8 ( SE & SDK )
+        
+    
+
+
+
+
 Private Key
     - obtainable thru login
     * /login <Username> <Password>
