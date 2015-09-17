@@ -1,6 +1,7 @@
 # HomecontrolFX
 Compile:
     To compile this project you need:
+    
     IDE
         - Eclipse (preferable Kepler)
     LIBARYS
@@ -17,17 +18,17 @@ Compile:
         
     
 
-
-
-
 Private Key
+
     - obtainable thru login
     * /login <Username> <Password>
     private key will be returned in a reply message and is active until server restart
 
 Commands available thru socker server:
+
     ~ ID can only be between 0 and 7 - rID can be 0 to 9 - Text can be anything but "@"
     Cmd Structure /AuthAction <Private Key> ....@....@...@...
+    
     * On
         * Output
             * <ID>
@@ -86,6 +87,7 @@ Commands available thru socker server:
     
     
 EXAMPLES:
+
     - On@Output@0
     - Off@Output@7
     - Toggle@Output@6
@@ -104,3 +106,4 @@ EXAMPLES:
     - register@thisiscool@Adam@eva1@15:a@1337
     - removeuser@Adam
     - refreshdb
+    
