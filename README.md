@@ -1,6 +1,6 @@
 # HomecontrolFX
 
-Documentation ( German only ): https://www.dropbox.com/s/surjy78l1vvzo9c/Raspberry%20Pi%20Project.docx?dl=0
+Documentation ( German only ): https://dl.dropboxusercontent.com/u/88851086/Raspberry%20Pi%20Project.docx
 
 Compile:
     To compile this project you need:
