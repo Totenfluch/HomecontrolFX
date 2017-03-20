@@ -1,6 +1,6 @@
 # HomecontrolFX
 
-Documentation ( German only ): https://dl.dropboxusercontent.com/u/88851086/Raspberry%20Pi%20Project.docx
+Documentation is in the file system
 
 Compile:
     To compile this project you need:
@@ -14,7 +14,7 @@ Compile:
         - rome 1.0
         - commons-codec-1.8
         - pi4j 1.0
-        (packed here: https://www.dropbox.com/s/p32k2h7dgc4k1tz/dist.zip)
+        (packed here: https://www.dropbox.com/s/clz0s9d857yapzr/dist.zip?dl=0)
         
     What is mainly needed on the pi
         - Java 8 ( SE & SDK )
